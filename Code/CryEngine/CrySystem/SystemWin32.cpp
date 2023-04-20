@@ -950,8 +950,11 @@ void AddSize(StringToSizeMap& mapSS, const char* szString, unsigned nSize)
 const char* GetModuleGroup(const char* szString)
 {
 	for (unsigned i = 0; i < CRY_ARRAY_COUNT(g_szModuleGroups); ++i)
+	{
 		if (stricmp(szString, g_szModuleGroups[i][0]) == 0)
 			return g_szModuleGroups[i][1];
+	}
+
 	return "Other";
 }
 

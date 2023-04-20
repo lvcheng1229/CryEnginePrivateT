@@ -58,7 +58,7 @@ bool GetCryEngineTemplatesRoot(QString& engineRoot, QString& templatesRoot)
 			QFileInfo info(engine.second.uri.c_str());
 			QDir rootDir = info.absoluteDir();
 
-			QString templatesFolder = QDir::cleanPath(rootDir.path() + "/Templates");
+			QString templatesFolder = QDir::cleanPath(rootDir.path() + "/Code/GameTemplates");
 			if (FileUtils::FolderExists(templatesFolder.toStdString().c_str()))
 			{
 				engineRoot = QDir::cleanPath(rootDir.path());
@@ -76,7 +76,7 @@ bool GetCryEngineTemplatesRoot(QString& engineRoot, QString& templatesRoot)
 			QFileInfo info(engine.second.uri.c_str());
 			QDir rootDir = info.absoluteDir();
 
-			QString templatesFolder = QDir::cleanPath(rootDir.path() + "/Templates");
+			QString templatesFolder = QDir::cleanPath(rootDir.path() + "/Code/GameTemplates");
 			if (FileUtils::FolderExists(templatesFolder.toStdString().c_str()))
 			{
 				engineRoot = QDir::cleanPath(rootDir.path());

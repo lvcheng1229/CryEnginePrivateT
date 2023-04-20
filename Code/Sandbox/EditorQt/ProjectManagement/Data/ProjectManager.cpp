@@ -369,7 +369,7 @@ bool CProjectManager::SetCurrentTime(const SProjectDescription& projectDescr)
 
 	it->lastOpened = QDateTime::currentDateTime().toTime_t();
 	SaveProjectDescriptions();
-	signalProjectDataChanged(&(*it));
+	//signalProjectDataChanged(&(*it));
 	return true;
 }
 

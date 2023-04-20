@@ -295,8 +295,9 @@ void CRendererResources::LoadDefaultSystemTextures()
 			{ s_ptexLTC2,                        "%ENGINE%/EngineAssets/Shading/ltc_2.dds",                          FT_DONT_RELEASE | FT_DONT_STREAM },
 
 #if !defined(_RELEASE)
-			{ s_ptexNoTexture,                   "%ENGINE%/EngineAssets/TextureMsg/ReplaceMe.tif",                   FT_DONT_RELEASE | FT_DONT_STREAM },
-			{ s_ptexNoTextureCM,                 "%ENGINE%/EngineAssets/TextureMsg/ReplaceMeCM.tif",                 FT_DONT_RELEASE | FT_DONT_STREAM },
+			//TanGram
+			{ s_ptexNoTexture,                   "%ENGINE%/EngineAssets/TextureMsg/replaceme.dds",                   FT_DONT_RELEASE | FT_DONT_STREAM },
+			{ s_ptexNoTextureCM,                 "%ENGINE%/EngineAssets/TextureMsg/replaceme.dds",                 FT_DONT_RELEASE | FT_DONT_STREAM },
 			{ s_ptexMipMapDebug,                 "%ENGINE%/EngineAssets/TextureMsg/MipMapDebug.dds",                 FT_DONT_RELEASE | FT_DONT_STREAM },
 			{ s_ptexColorBlue,                   "%ENGINE%/EngineAssets/TextureMsg/color_Blue.dds",                  FT_DONT_RELEASE | FT_DONT_STREAM },
 			{ s_ptexColorCyan,                   "%ENGINE%/EngineAssets/TextureMsg/color_Cyan.dds",                  FT_DONT_RELEASE | FT_DONT_STREAM },
@@ -315,6 +316,12 @@ void CRendererResources::LoadDefaultSystemTextures()
 
 		for (int t = 0; t < CRY_ARRAY_COUNT(texturesFromFile); ++t)
 		{
+			if (t == 29)
+			{
+				int A = 2;
+				A++;
+			}
+
 			if (!texturesFromFile[t].pTexture)
 			{
 				texturesFromFile[t].pTexture = CTexture::ForName(texturesFromFile[t].szFileName, texturesFromFile[t].flags, eTF_Unknown);
