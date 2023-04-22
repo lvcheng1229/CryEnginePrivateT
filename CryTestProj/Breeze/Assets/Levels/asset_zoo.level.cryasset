@@ -1,0 +1,82 @@
+<AssetMetadata version="0" type="Level" guid="d6b539bf-43f2-e6fb-2e1d-2b3bb6ef780f" source="" timestamp="1646675871">
+ <Files>
+  <File path="asset_zoo/asset_zoo.level"/>
+ </Files>
+ <Dependencies>
+  <Path usageCount="1">%ENGINE%/EngineAssets/Shading/default.env</Path>
+  <Path>%engine%/config/defaultscripts/compressionpolicy.xml</Path>
+  <Path>%engine%/engineassets/icons/averagememoryusage.dds</Path>
+  <Path>%engine%/engineassets/icons/highmemoryusage.dds</Path>
+  <Path>%engine%/engineassets/icons/livepreview.dds</Path>
+  <Path>%engine%/engineassets/icons/lowmemoryusage.dds</Path>
+  <Path>%engine%/engineassets/texturemsg/defaultsolids.mtl</Path>
+  <Path>%engine%/engineassets/textures/white.dds</Path>
+  <Path usageCount="1">Libs/environmentpresets/levels/tropical_toon_island_day.env</Path>
+  <Path usageCount="1">Libs/environmentpresets/levels/tropical_toon_island_morning.env</Path>
+  <Path usageCount="1">Libs/environmentpresets/levels/tropical_toon_island_night.env</Path>
+  <Path>materials/black.mtl</Path>
+  <Path>objects/beach/bush_beach01.cgf</Path>
+  <Path>objects/beach/bush_beach02.cgf</Path>
+  <Path>objects/beach/bush_beach_s01.cgf</Path>
+  <Path>objects/beach/bush_beach_s02.cgf</Path>
+  <Path>objects/beach/bush_palm_01.cgf</Path>
+  <Path>objects/beach/rock_beach_l.cgf</Path>
+  <Path>objects/beach/rock_beach_m.cgf</Path>
+  <Path>objects/beach/rock_beach_s.cgf</Path>
+  <Path>objects/beach/tree_palm_01.cgf</Path>
+  <Path>objects/beach/tree_palm_02.cgf</Path>
+  <Path>objects/beach/tree_palm_03.cgf</Path>
+  <Path>objects/beach/tree_palm_04.cgf</Path>
+  <Path>objects/cliff/cliff1.cgf</Path>
+  <Path>objects/cliff/cliff2.cgf</Path>
+  <Path>objects/cliff/cliff3.cgf</Path>
+  <Path>objects/forest/bush_forest_1.cgf</Path>
+  <Path>objects/forest/bush_forest_2.cgf</Path>
+  <Path>objects/forest/tree_forest_1.cgf</Path>
+  <Path>objects/forest/tree_forest_2.cgf</Path>
+  <Path>objects/forest/tree_forest_s_1.cgf</Path>
+  <Path>objects/forest/tree_forest_s_2.cgf</Path>
+  <Path>objects/ground/grass1_1.cgf</Path>
+  <Path>objects/ground/grass1_2.cgf</Path>
+  <Path>objects/ground/grass2_1.cgf</Path>
+  <Path>objects/ground/grass2_2.cgf</Path>
+  <Path>objects/ground/plants1_1.cgf</Path>
+  <Path>objects/ground/plants1_2.cgf</Path>
+  <Path>objects/ground/plants2_1.cgf</Path>
+  <Path>objects/ground/plants2_2.cgf</Path>
+  <Path>objects/house/boat1.cgf</Path>
+  <Path>objects/house/boat2.cgf</Path>
+  <Path>objects/house/house1.cgf</Path>
+  <Path>objects/house/house2.cgf</Path>
+  <Path>objects/house/roof1.cgf</Path>
+  <Path>objects/house/roof2.cgf</Path>
+  <Path>objects/ocean/water_surface2.cgf</Path>
+  <Path>objects/ocean/wave1.cgf</Path>
+  <Path>objects/ocean/wave2.cgf</Path>
+  <Path>objects/ocean/wave3.cgf</Path>
+  <Path>objects/plattforms/balloon.cgf</Path>
+  <Path>objects/plattforms/balloon_blue.cgf</Path>
+  <Path>objects/plattforms/balloon_yellow.cgf</Path>
+  <Path>objects/plattforms/designer_11.cgf</Path>
+  <Path>objects/plattforms/designer_15.cgf</Path>
+  <Path>objects/plattforms/designer_3.cgf</Path>
+  <Path>objects/plattforms/designer_5.cgf</Path>
+  <Path>objects/plattforms/designer_6.cgf</Path>
+  <Path>objects/plattforms/falling_plattform.cgf</Path>
+  <Path>objects/plattforms/falling_plattform2.cgf</Path>
+  <Path>objects/plattforms/fuel.cgf</Path>
+  <Path>objects/plattforms/jumping_plattform.cgf</Path>
+  <Path>objects/plattforms/mini_rock.cgf</Path>
+  <Path>objects/plattforms/plattform_1.cgf</Path>
+  <Path>objects/plattforms/plattform_2.cgf</Path>
+  <Path>objects/plattforms/plattform_3.cgf</Path>
+  <Path>objects/plattforms/plattforms.mtl</Path>
+  <Path>objects/plattforms/podium.cgf</Path>
+  <Path>objects/plattforms/rocket.cgf</Path>
+  <Path>objects/plattforms/rotating_plattform.cgf</Path>
+  <Path>objects/plattforms/sticks.cgf</Path>
+  <Path>objects/plattforms/turning_plattform.cgf</Path>
+  <Path>objects/sky/cloud1.cgf</Path>
+  <Path>objects/sky/cloud2.cgf</Path>
+ </Dependencies>
+</AssetMetadata>

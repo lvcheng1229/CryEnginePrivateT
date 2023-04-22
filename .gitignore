@@ -2,6 +2,7 @@
 *.pak
 *.caf
 
+
 # Config files
 /user.cfg
 /system.cfg
@@ -38,3 +39,8 @@ __pycache__/*
 
 # These are handled elsewhere.
 /Code/SDKs/*
+
+#TanGram
+/Code/GameSDK/cbuild/*
+/CryTestProj/Breeze/user/*
+CRYENGINE_v5.7.0_SDKs.zip
