@@ -155,11 +155,11 @@ HRESULT STDMETHODCALLTYPE CCryDX12SwapChain::ResizeBuffers(
 	// Submit pending barriers in case the we try to resize in the middle of a frame
 	m_pDX12SwapChain->UnblockBuffers(m_pDevice->GetDeviceContext()->GetCoreGraphicsCommandList());
 
-	// Give up the buffers, they are simply dropped and not passed to the release heap (it's an internal resource of DX12)
-	m_pDX12SwapChain->ForfeitBuffers();
-
 	// Submit pending command-lists in case there are left-overs, make sure it's flushed to and executed on the hardware
 	m_pDX12SwapChain->FlushAndWaitForBuffers();
+
+	// Give up the buffers, they are simply dropped and not passed to the release heap (it's an internal resource of DX12)
+	m_pDX12SwapChain->ForfeitBuffers();//TanGram::FixD3D12CrashBug:[BEGIN]
 
 	HRESULT res = m_pDX12SwapChain->ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags);
 	CRY_ASSERT(res == S_OK, "Failed ResizeBuffers, the resolution of the display will be out-of-sync!");

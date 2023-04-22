@@ -5,6 +5,10 @@
 #include "DX12CommandList.hpp"
 #include "DX12CommandScheduler.hpp"
 
+//TanGram::DX12Optimization:[BEGIN]
+#include "DX12Allocation.hpp"
+//TanGram::DX12Optimization:[END]
+
 namespace NCryDX12 {
 
 class CDevice : public CRefCounted
@@ -142,6 +146,8 @@ public:
 	void FlushAndWaitForGPU(const UINT64 (&fenceValues)[CMDQUEUE_NUM]);
 
 private:
+	CDX12BuddyAllocator m_BuddyAllocator;
+
 	// Queries ------------------------------------------------------------------------------------
 	// TODO: group in a class
 	CQueryHeap      m_TimestampHeap;

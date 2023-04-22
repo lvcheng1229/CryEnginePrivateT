@@ -50,6 +50,12 @@ struct ICryDX12Resource
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class CResourceHandle
+{
+public:
+	CResourceHandle(){}
+};
+
 template<typename T>
 class CCryDX12Resource : public CCryDX12DeviceChild<T>, public ICryDX12Resource
 {

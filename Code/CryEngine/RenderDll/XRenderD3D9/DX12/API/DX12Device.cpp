@@ -232,6 +232,7 @@ CDevice::CDevice(ID3D12Device* d3d12Device, D3D_FEATURE_LEVEL featureLevel, UINT
 	, m_featureLevel(featureLevel)
 	, m_nodeCount(nodeCount)
 	, m_nodeMask(nodeMask)
+	, m_BuddyAllocator(this)//TanGram::DX12Optimization
 	, m_TimestampHeap(this)
 	, m_OcclusionHeap(this)
 	, m_SamplerCache(this)
@@ -281,7 +282,17 @@ CDevice::CDevice(ID3D12Device* d3d12Device, D3D_FEATURE_LEVEL featureLevel, UINT
 	m_GlobalDescriptorHeaps.emplace_back(this);
 	m_GlobalDescriptorHeaps.emplace_back(this);
 #endif
+	//TanGram ------------------------------------------------------------------------------------
 
+	//Init placed resource heap , min block size = 64kb ,max block size = 512mb
+	SAllocatorConfig autoAllocatorConfig;
+	autoAllocatorConfig.m_HeapFlags = D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES;
+	autoAllocatorConfig.m_HeapType = D3D12_HEAP_TYPE_DEFAULT;
+	
+	autoAllocatorConfig.m_ResourceFlags = D3D12_RESOURCE_FLAG_NONE;
+	autoAllocatorConfig.m_ResourceStates = D3D12_RESOURCE_STATE_COMMON;
+	m_BuddyAllocator.Init(EGPUMemManageMethod::eAutoManage,autoAllocatorConfig,64 * 1024,512 * 1024 * 1024);
+	
 	// Queries ------------------------------------------------------------------------------------
 
 	// Timer query heap
@@ -328,11 +339,11 @@ CDevice::CDevice(ID3D12Device* d3d12Device, D3D_FEATURE_LEVEL featureLevel, UINT
 
 	m_TimestampMemory = nullptr;
 	m_OcclusionMemory = nullptr;
-
+	
 	// Caches ------------------------------------------------------------------------------------
 	m_PSOCache.Init(this);
 	m_RootSignatureCache.Init(this);
-
+	
 	// init sampler cache
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC desc = { D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 2048, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_nodeMask };

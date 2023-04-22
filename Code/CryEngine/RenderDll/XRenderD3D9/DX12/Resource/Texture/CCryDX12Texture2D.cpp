@@ -80,7 +80,7 @@ CCryDX12Texture2D* CCryDX12Texture2D::Create(CCryDX12Device* pDevice, CCryDX12Sw
 CCryDX12Texture2D* CCryDX12Texture2D::Create(CCryDX12Device* pDevice, const FLOAT cClearValue[4], const D3D11_TEXTURE2D_DESC* pDesc, const D3D11_SUBRESOURCE_DATA* pInitialData)
 {
 	DX12_ASSERT(pDesc, "CreateTexture() called without description!");
-
+	
 	CD3DX12_RESOURCE_DESC desc12 = CD3DX12_RESOURCE_DESC::Tex2D(
 	  pDesc->Format,
 	  pDesc->Width, pDesc->Height,

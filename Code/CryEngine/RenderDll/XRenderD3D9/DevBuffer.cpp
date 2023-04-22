@@ -484,7 +484,7 @@ struct SStagingResources
 // Does nothing - but still useful
 //
 template<size_t BIND_FLAGS, size_t USAGE_FLAGS>
-class CDefaultUpdater
+class  CDefaultUpdater
 {
 protected:
 

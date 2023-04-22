@@ -88,7 +88,8 @@ MainContext DesignerSession::GetMainContext()
 
 ModelCompiler* DesignerSession::GetCompiler() const
 {
-	DESIGNER_ASSERT(m_pBaseObject);
+	//TanGram::TempDisableAssert
+	//DESIGNER_ASSERT(m_pBaseObject);
 	if (!m_pBaseObject)
 		return nullptr;
 
