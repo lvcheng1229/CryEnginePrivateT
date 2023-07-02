@@ -21,10 +21,11 @@ public:
 	{
 		return CRenderer::CV_r_PostProcess;
 	}
-
+	void Init() final;
 	void Execute(CTexture* pSrcRT, CTexture* pAutoExposureDestRT, CTexture* pTiledBloomDestRT);
 
 private:
 
 	CComputeRenderPass m_passBloomSetup;
+
 };

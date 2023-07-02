@@ -1,5 +1,8 @@
 #include "BloomSetup.h"
 
+void CBloomSetupStage::Init()
+{
+}
 
 void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pAutoExposureDestRT, CTexture* pTiledBloomDestRT)
 {
@@ -8,10 +11,26 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pAutoExposureDestRT, 
 
 	m_passBloomSetup.SetTechnique(CShaderMan::s_shBloomSetup, CCryNameTSCRC("BloomSetup"), 0);
 	m_passBloomSetup.SetOutputUAV(0, pAutoExposureDestRT);
-	//m_passBloomSetup.SetTextureSamplerPair(0, pSrcRT, EDefaultSamplerStates::LinearClamp);
+	m_passBloomSetup.SetTextureSamplerPair(0, pSrcRT, EDefaultSamplerStates::LinearClamp);
 
-	int width = pSrcRT->GetWidth();
-	int height = pSrcRT->GetHeight();
+	int width = 0; 
+	int height = 0; 
+	
+	if (pAutoExposureDestRT)
+	{
+		width = pAutoExposureDestRT->GetWidth();
+		height = pAutoExposureDestRT->GetHeight();
+	}
+	else if (pTiledBloomDestRT)
+	{
+		width = pTiledBloomDestRT->GetWidth();
+		height = pTiledBloomDestRT->GetHeight();
+	}
+	else
+	{
+		return;
+	}
+
 
 	const uint32 groupSizeX = 16;
 	const uint32 groupSizeY = 16;

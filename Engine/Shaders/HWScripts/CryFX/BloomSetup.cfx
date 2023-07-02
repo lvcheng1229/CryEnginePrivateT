@@ -1,9 +1,16 @@
 //TanGram: TiledBloom:BloomSetup
+
+#include "Common.cfi"
+#include "ShadeLib.cfi"
+
 #define GROUP_SIZE_X    16
 #define GROUP_SIZE_Y    16
 #define GROUP_SIZE_Z    1
 
 RWTexture2D<float4> EyeAdaptionTargetUAV : register(u0);
+
+Texture2D<float4> Tx2Tx_Source          : register(t0); 
+SamplerState Tx2Tx_Sampler              : register(s0);
 
 float4 TexSize;
 
@@ -16,7 +23,98 @@ void BloomSetupCS(
     const uint2 pixelCoord = GroupID.xy * uint2(GROUP_SIZE_X, GROUP_SIZE_Y) + GroupThreadID.xy;
     float2 pixelUV = float2((pixelCoord.x + 0.5) * TexSize.z, (pixelCoord.y + 0.5) * TexSize.w );
 
-    EyeAdaptionTargetUAV[pixelCoord] = float4(0.5,0.5,0.5,1.0);
+    if(all(pixelUV)<=1.0)
+    {
+        //TanGram :TiledBloom:BloomSetup:Copy From DownsampleStablePS:[BEGIN]
+    
+        //High quality downsampling filter to reduce bloom flickering
+    	// Filter combines five 4x4 blocks (sampled bilinearly)
+    	// Reduces fireflies by applying tonemapping before averaging samples for each block
+    
+        float4 EyeAdaptionOUT = (float4)0;
+    //#if %_RT_SAMPLE0	
+    	const bool bKillFireflies = true;
+    //#else
+    	//const bool bKillFireflies = false;
+    //#endif
+    
+    	//const float2 TexSize = 1 / (PS_ScreenSize.xy * 2);
+    
+    	half3 blockTL = 0, blockTR = 0, blockBR = 0, blockBL = 0;
+    	half3 tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2, -2) * TexSize.zw * 0.5).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockTL += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0, -2) * TexSize.zw * 0.5).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockTL += tex; blockTR += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2, -2) * TexSize.zw * 0.5).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockTR += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2,  0) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockTL += tex; blockBL += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0,  0) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockTL += tex; blockTR += tex; blockBR += tex; blockBL += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2,  0) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockTR += tex; blockBR += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2,  2) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockBL += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0,  2) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockBL += tex; blockBR += tex;
+    
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2,  2) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockBR += tex;
+    
+    	half3 blockCC = 0;
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-1, -1) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockCC += tex;
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 1, -1) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockCC += tex;
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 1,  1) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockCC += tex;
+    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-1,  1) * TexSize.zw).rgb;
+    	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
+    	blockCC += tex;
+    
+    	blockTL /= 4; blockTR /= 4; blockBR /= 4; blockBL /= 4; blockCC /= 4;
+    
+    	if (bKillFireflies) 
+    	{
+    		// Convert back to uncompressed/linear range
+    		blockTL /= (1 - GetLuminance(blockTL));
+    		blockTR /= (1 - GetLuminance(blockTR));
+    		blockBR /= (1 - GetLuminance(blockBR));
+    		blockBL /= (1 - GetLuminance(blockBL));
+    		blockCC /= (1 - GetLuminance(blockCC));
+    	}
+    
+    	EyeAdaptionOUT.rgb = 0.5 * blockCC + 0.125 * (blockTL + blockTR + blockBR + blockBL);
+    
+    	// Filter out NaNs
+    	EyeAdaptionOUT.rgb = all(isfinite(EyeAdaptionOUT.rgb)) ? EyeAdaptionOUT.rgb : float3(0, 0, 0);
+    
+        //TanGram :TiledBloom:BloomSetup:Copy From DownsampleStablePS:[END]
+    
+        EyeAdaptionTargetUAV[pixelCoord] = float4(EyeAdaptionOUT.rgb,1.0);
+    }
+
 }
 
 technique BloomSetup
