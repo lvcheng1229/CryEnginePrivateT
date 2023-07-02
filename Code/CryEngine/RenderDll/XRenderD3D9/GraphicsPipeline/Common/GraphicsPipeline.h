@@ -23,6 +23,7 @@ enum EGraphicsPipelineStage
 	eStage_TiledLightVolumes,
 	eStage_TiledShading,
 	eStage_VolumetricClouds,
+	eStage_BloomSetup,//TanGram:BloomSetup
 
 	// Regular stages
 	eStage_SceneDepth, // TODO: pure compute
@@ -39,6 +40,7 @@ enum EGraphicsPipelineStage
 	eStage_DepthOfField,
 	eStage_AutoExposure,
 	eStage_Bloom,
+	eStage_TiledBloom,//TanGram:TiledBloom
 	eStage_ColorGrading,
 	eStage_ToneMapping,
 	eStage_Sunshafts,

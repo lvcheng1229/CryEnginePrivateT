@@ -188,6 +188,7 @@ int CRendererCVars::CV_r_HDRBloom;
 int CRendererCVars::CV_r_HDRBloomQuality;
 int CRendererCVars::CV_r_HDRVignetting;
 int CRendererCVars::CV_r_HDRTexFormat;
+int CRendererCVars::CV_r_HDRTiledBloom;//TanGram:TiledBloom
 AllocateConstIntCVar(CRendererCVars, CV_r_HDRRangeAdapt);
 
 float CRendererCVars::CV_r_HDRRangeAdaptMax;
@@ -1174,13 +1175,19 @@ void CRendererCVars::InitCVars()
 	                    "2 show gamma-corrected scene target without tone-mapping processing\n"
 	                    "3 identify illegal colors (grey=normal, red=NotANumber, green=negative)\n");
 
-	REGISTER_CVAR3("r_HDRBloom", CV_r_HDRBloom, 1, VF_NULL,
+	REGISTER_CVAR3("r_HDRBloom", CV_r_HDRBloom, 0/*TanGram:TiledBloom*/, VF_NULL,
 	               "Enables bloom/glare.\n"
 	               "Usage: r_HDRBloom [0/1]\n");
 
 	REGISTER_CVAR3("r_HDRBloomQuality", CV_r_HDRBloomQuality, 2, VF_NULL,
 	               "Set bloom quality (0: low, 1: medium, 2: high)\n");
 
+	//TanGram:TiledBloom:[BEGIN]
+	REGISTER_CVAR3("r_HDRTiledBloom", CV_r_HDRTiledBloom, 1, VF_NULL,
+			   "Enables tiled bloom.\n"
+			   "Usage: r_HDRTiledBloom [0/1]\n");
+	//TanGram:TiledBloom:[END]
+	
 	REGISTER_CVAR3("r_HDRVignetting", CV_r_HDRVignetting, 1, VF_DUMPTODISK,
 	               "HDR viggneting\n"
 	               "Usage: r_HDRVignetting [Value]\n"

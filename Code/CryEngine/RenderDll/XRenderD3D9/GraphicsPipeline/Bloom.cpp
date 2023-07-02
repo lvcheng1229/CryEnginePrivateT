@@ -8,7 +8,7 @@ void CBloomStage::Execute()
 	FUNCTION_PROFILER_RENDERER();
 
 	// Approximate function (1 - r)^4 by a sum of Gaussians: 0.0174*G(0.008,r) + 0.192*G(0.0576,r)
-	const float sigma1 = sqrtf(0.008f);
+	const float sigma1 = sqrtf(0.008f);//0.089
 	const float sigma2 = sqrtf(0.0576f - 0.008f);
 
 	PROFILE_LABEL_SCOPE("BLOOM_GEN");

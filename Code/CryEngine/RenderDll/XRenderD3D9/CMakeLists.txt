@@ -754,6 +754,14 @@ add_sources("CryRenderer_uber_6.cpp"
 		"GraphicsPipeline/BillboardGraphicsPipeline.cpp"
 		"GraphicsPipeline/Bloom.h"
 		"GraphicsPipeline/Bloom.cpp"
+		
+		#TanGram:TiledBasedBloom:[BEGIN]
+		"GraphicsPipeline/TiledBloom.h"
+        "GraphicsPipeline/TiledBloom.cpp"
+		"GraphicsPipeline/BloomSetup.h"
+        "GraphicsPipeline/BloomSetup.cpp"
+        #TanGram:TiledBasedBloom:[BEGIN]
+		
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.h"
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.cpp"
 		"GraphicsPipeline/ClipVolumes.h"

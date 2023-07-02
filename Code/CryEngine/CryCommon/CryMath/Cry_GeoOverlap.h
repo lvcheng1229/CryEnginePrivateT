@@ -848,7 +848,11 @@ inline bool AABB_Triangle(const AABB& aabb, const Vec3& tv0, const Vec3& tv1, co
 
 	//test if the box intersects the plane of the triangle
 	//compute plane equation of triangle: normal*x+d=0
-	Plane plane = Plane::CreatePlane((e0 % e1), v0);
+
+	//TanGram:FixBUG:[BEGIN]
+	//Plane plane = Plane::CreatePlane((e0 % e1), v0);
+	Plane plane = Plane::CreatePlane((e0 % e1).normalize(), v0);
+	//TanGram:FixBUG:[END]
 
 	Vec3 vmin, vmax;
 	if (plane.n.x > 0.0f) { vmin.x = -h.x; vmax.x = +h.x; }

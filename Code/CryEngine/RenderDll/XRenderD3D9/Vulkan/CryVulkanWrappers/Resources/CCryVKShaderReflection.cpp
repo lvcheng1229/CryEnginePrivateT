@@ -7,6 +7,10 @@
 #include <sstream>
 #include <fstream>
 
+//TanGram:Shader:[BEGIN]
+#include <filesystem>
+//TanGram:Shader:[END]
+
 HRESULT D3D10CreateBlob(size_t NumBytes, ID3DBlob** ppBuffer)
 {
 	*ppBuffer = new CCryVKBlob(NumBytes);
@@ -220,7 +224,12 @@ HRESULT D3DCompile(_In_reads_bytes_(SrcDataSize) LPCVOID pSrcData, _In_ SIZE_T S
 			shaderPathWithoutFormat.c_str(), OUTPUT_HUMAN_READABLE_SPIRV_FORMAT,
 			shaderPathWithoutFormat.c_str(), INPUT_HLSL_FORMAT);
 
-		ShellExecute("%ENGINE%\\..\\Tools\\RemoteShaderCompiler\\Compiler\\SPIRV\\V006\\dxc\\dxc.exe", params);
+		//TanGram:Shader:FixVulkanShaderCompileError:[BEGIN]
+		//ShellExecute("%ENGINE%\\..\\Tools\\RemoteShaderCompiler\\Compiler\\SPIRV\\V006\\dxc\\dxc.exe", params);
+		const static std::string enginePath = std::string(PathUtil::GetEnginePath().data(),PathUtil::GetEnginePath().size());
+		const static std::string file = enginePath + "\\Code\\SDKs\\DXC\\bin\\dxc.exe";
+		ShellExecute(file, params);
+		//TanGram:Shader:FixVulkanShaderCompileError:[END]
 	}
 	else if (vkShaderCompiler == STR_VK_SHADER_COMPILER_GLSLANG)
 	{

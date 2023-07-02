@@ -36,6 +36,7 @@ CShader* CShaderMan::s_ShaderShadowMaskGen;
 #if defined(FEATURE_SVO_GI)
 CShader* CShaderMan::s_ShaderSVOGI;
 #endif
+CShader* CShaderMan::s_shBloomSetup;//TanGram: TiledBloom
 CShader* CShaderMan::s_shHDRPostProcess;
 CShader* CShaderMan::s_ShaderDebug;
 CShader* CShaderMan::s_ShaderLensOptics;
@@ -1420,6 +1421,7 @@ void CShaderMan::mfReleaseSystemShaders()
 #if defined(FEATURE_SVO_GI)
 	SAFE_RELEASE_FORCE(s_ShaderSVOGI);
 #endif
+	SAFE_RELEASE_FORCE(s_shBloomSetup);
 	SAFE_RELEASE_FORCE(s_shHDRPostProcess);
 	SAFE_RELEASE_FORCE(s_ShaderDebug);
 	SAFE_RELEASE_FORCE(s_ShaderLensOptics);
@@ -1475,6 +1477,7 @@ void CShaderMan::mfLoadDefaultSystemShaders()
 		sLoadShader("FixedPipelineEmu", s_ShaderFPEmu);
 		sLoadShader("Light", s_ShaderLightStyles);
 		sLoadShader("ShadowMaskGen", s_ShaderShadowMaskGen);
+		sLoadShader("BloomSetup", s_shBloomSetup);
 		sLoadShader("HDRPostProcess", s_shHDRPostProcess);
 		sLoadShader("Hud3D", s_sh3DHUD);
 

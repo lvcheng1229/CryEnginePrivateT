@@ -222,7 +222,15 @@ void CGraphicsPipelineResources::CreateHDRMaps(int resourceWidth, int resourceHe
 
 	// Scaled versions of the HDR scene texture
 	m_renderTargetPool.AddRenderTarget(width_r2, height_r2, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$HDRTarget 1/2a").c_str(), &m_pTexHDRTargetScaled[0][0], FT_DONT_RELEASE);
-	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$HDRTarget 1/4a").c_str(), &m_pTexHDRTargetScaled[1][0], FT_DONT_RELEASE);
+
+	
+	uint32 nHDRTargetScaledFlagsUAV = FT_DONT_RELEASE;
+	if(CRendererCVars::CV_r_HDRTiledBloom > 0)
+	{
+		nHDRTargetScaledFlagsUAV |= FT_USAGE_UNORDERED_ACCESS;
+	}
+	
+	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$HDRTarget 1/4a").c_str(), &m_pTexHDRTargetScaled[1][0], nHDRTargetScaledFlagsUAV);
 	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$HDRTarget 1/4b").c_str(), &m_pTexHDRTargetScaled[1][1], FT_DONT_RELEASE);
 
 	// Scaled versions of compositions of the HDR scene texture (with alpha)

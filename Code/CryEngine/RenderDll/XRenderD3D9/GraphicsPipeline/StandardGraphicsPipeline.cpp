@@ -71,8 +71,10 @@ void CStandardGraphicsPipeline::Init()
 	RegisterStage<CWaterRipplesStage>();
 	RegisterStage<CMotionBlurStage>();
 	RegisterStage<CDepthOfFieldStage>();
+	RegisterStage<CBloomSetupStage>();//TanGram:TiledBasedBloom
 	RegisterStage<CAutoExposureStage>();
 	RegisterStage<CBloomStage>();
+	RegisterStage<CTiledBloomStage>();//TanGram:TiledBasedBloom
 	RegisterStage<CToneMappingStage>();
 	RegisterStage<CSunShaftsStage>();
 	RegisterStage<CPostAAStage>();
@@ -222,6 +224,17 @@ void CStandardGraphicsPipeline::ExecuteHDRPostProcessing()
 			m_LQSubResPass[1]->Execute(m_pipelineResources.m_pTexHDRTargetScaled[0][0], m_pipelineResources.m_pTexHDRTargetScaled[1][0]);
 	}
 
+	//TanGram :TiledBloom:[BEGIN]
+	if (GetStage<CAutoExposureStage>()->IsStageActive(m_renderingFlags) ||
+		GetStage<CBloomStage>()->IsStageActive(m_renderingFlags))
+	{
+		PROFILE_LABEL_SCOPE("QUARTER_RES_DOWNSAMPLE_HDRTARGET_BLOOM_SETUP");
+
+		GetStage<CBloomSetupStage>()->Execute(m_pipelineResources.m_pTexHDRTargetScaled[0][0], m_pipelineResources.m_pTexHDRTargetScaled[1][0], nullptr);
+	}
+	//TanGram :TiledBloom:[END]
+
+
 	// reads CRendererResources::s_ptexHDRTargetScaled[1][0]
 	if (GetStage<CAutoExposureStage>()->IsStageActive(m_renderingFlags))
 		GetStage<CAutoExposureStage>()->Execute();
@@ -230,6 +243,10 @@ void CStandardGraphicsPipeline::ExecuteHDRPostProcessing()
 	if (GetStage<CBloomStage>()->IsStageActive(m_renderingFlags))
 		GetStage<CBloomStage>()->Execute();
 
+	//TanGram:
+	if (GetStage<CTiledBloomStage>()->IsStageActive(m_renderingFlags))
+		GetStage<CTiledBloomStage>()->Execute();
+	
 	// writes m_graphicsPipelineResources.m_pTexSceneTargetR11G11B10F[0]
 	if (GetStage<CLensOpticsStage>()->IsStageActive(m_renderingFlags))
 		GetStage<CLensOpticsStage>()->Execute();
