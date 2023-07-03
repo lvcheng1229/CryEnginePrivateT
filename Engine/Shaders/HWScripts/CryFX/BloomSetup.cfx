@@ -12,7 +12,14 @@ RWTexture2D<float4> EyeAdaptionTargetUAV : register(u0);
 Texture2D<float4> Tx2Tx_Source          : register(t0); 
 SamplerState Tx2Tx_Sampler              : register(s0);
 
-float4 TexSize;
+cbuffer BloomCB : register(b0)
+{
+	struct
+	{
+		float4 TexSize;
+	} bloomCB;
+};
+
 
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, GROUP_SIZE_Z)]
 void BloomSetupCS(
@@ -20,6 +27,8 @@ void BloomSetupCS(
     uint3 GroupThreadID : SV_GroupThreadID,
     uint3 DispatchThreadID : SV_DispatchThreadID)
 {
+	const float4 TexSize = bloomCB.TexSize.xyzw;
+
     const uint2 pixelCoord = GroupID.xy * uint2(GROUP_SIZE_X, GROUP_SIZE_Y) + GroupThreadID.xy;
     float2 pixelUV = float2((pixelCoord.x + 0.5) * TexSize.z, (pixelCoord.y + 0.5) * TexSize.w );
 
@@ -37,8 +46,6 @@ void BloomSetupCS(
     //#else
     	//const bool bKillFireflies = false;
     //#endif
-    
-    	//const float2 TexSize = 1 / (PS_ScreenSize.xy * 2);
     
     	half3 blockTL = 0, blockTR = 0, blockBR = 0, blockBL = 0;
     	half3 tex;
@@ -114,7 +121,6 @@ void BloomSetupCS(
     
         EyeAdaptionTargetUAV[pixelCoord] = float4(EyeAdaptionOUT.rgb,1.0);
     }
-
 }
 
 technique BloomSetup
