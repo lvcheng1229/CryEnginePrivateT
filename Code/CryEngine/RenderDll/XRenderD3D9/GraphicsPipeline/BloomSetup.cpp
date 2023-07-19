@@ -33,11 +33,12 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pAutoExposureDestRT, 
 		return;
 	}
 
-	m_passBloomSetup.BeginConstantUpdate();
+	//only execute this function with flag : eFlags_ReflectConstantBuffersFromShader
+	//m_passBloomSetup.BeginConstantUpdate();
 
 	Vec4 screenSize(static_cast<float>(width), static_cast<float>(height), 1.0f / static_cast<float>(width), 1.0f / static_cast<float>(height));
 	m_parameters->TexSize = screenSize;
-	m_passBloomSetup.SetInlineConstantBuffer(0, m_parameters.GetDeviceConstantBuffer());
+	m_passBloomSetup.SetConstantBuffer(0, m_parameters.GetDeviceConstantBuffer());
 	
 	const uint32 groupSizeX = 16;
 	const uint32 groupSizeY = 16;

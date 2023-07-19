@@ -18,8 +18,8 @@ public:
 
 	CBloomSetupStage(CGraphicsPipeline& graphicsPipeline)
 		: CGraphicsPipelineStage(graphicsPipeline)
-		, m_passBloomSetup(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
-		//, m_passBloomSetup(&graphicsPipeline)
+		//, m_passBloomSetup(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
+		, m_passBloomSetup(&graphicsPipeline)
 	{
 
 	}
