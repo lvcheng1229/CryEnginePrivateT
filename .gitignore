@@ -4,9 +4,13 @@
 
 
 # Config files
-/user.cfg
-/system.cfg
-/editor.cfg
+
+#TanGram:[BEGIN]
+#/user.cfg
+#/system.cfg
+#/editor.cfg
+#TanGram:[END]
+
 /.bootstrap*.*
 
 # Temporary files.

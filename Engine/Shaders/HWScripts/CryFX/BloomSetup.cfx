@@ -7,7 +7,7 @@
 #define GROUP_SIZE_Y    16
 #define GROUP_SIZE_Z    1
 
-RWTexture2D<float4> EyeAdaptionTargetUAV : register(u0);
+RWTexture2D<float4> BloomOuputUAV : register(u0);
 
 Texture2D<float4> Tx2Tx_Source          : register(t0); 
 SamplerState Tx2Tx_Sampler              : register(s0);
@@ -40,7 +40,7 @@ void BloomSetupCS(
     	// Filter combines five 4x4 blocks (sampled bilinearly)
     	// Reduces fireflies by applying tonemapping before averaging samples for each block
     
-        float4 EyeAdaptionOUT = (float4)0;
+        float4 BloomOUT = (float4)0;
     //#if %_RT_SAMPLE0	
     	const bool bKillFireflies = true;
     //#else
@@ -112,14 +112,22 @@ void BloomSetupCS(
     		blockCC /= (1 - GetLuminance(blockCC));
     	}
     
-    	EyeAdaptionOUT.rgb = 0.5 * blockCC + 0.125 * (blockTL + blockTR + blockBR + blockBL);
+    	BloomOUT.rgb = 0.5 * blockCC + 0.125 * (blockTL + blockTR + blockBR + blockBL);
     
     	// Filter out NaNs
-    	EyeAdaptionOUT.rgb = all(isfinite(EyeAdaptionOUT.rgb)) ? EyeAdaptionOUT.rgb : float3(0, 0, 0);
-    
+    	BloomOUT.rgb = all(isfinite(BloomOUT.rgb)) ? BloomOUT.rgb : float3(0, 0, 0);
+		
         //TanGram :TiledBloom:BloomSetup:Copy From DownsampleStablePS:[END]
-    
-        EyeAdaptionTargetUAV[pixelCoord] = float4(EyeAdaptionOUT.rgb,1.0);
+
+		const float BloomThreshlod = 0.6f;
+		float Luminance = GetLuminance(BloomOUT.rgb);
+		float4 Result = (float4)0;
+		if(Luminance > BloomThreshlod)
+		{
+			Result.rgb = BloomOUT.rgb;
+		}
+
+        BloomOuputUAV[pixelCoord] = float4(Result.rgb,1.0);
     }
 }
 
