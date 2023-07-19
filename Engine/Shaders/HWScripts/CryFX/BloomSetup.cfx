@@ -50,53 +50,53 @@ void BloomSetupCS(
     	half3 blockTL = 0, blockTR = 0, blockBR = 0, blockBL = 0;
     	half3 tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2, -2) * TexSize.zw * 0.5).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2, -2) * TexSize.zw * 0.5,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockTL += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0, -2) * TexSize.zw * 0.5).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0, -2) * TexSize.zw * 0.5,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockTL += tex; blockTR += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2, -2) * TexSize.zw * 0.5).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2, -2) * TexSize.zw * 0.5,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockTR += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2,  0) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2,  0) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockTL += tex; blockBL += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0,  0) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0,  0) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockTL += tex; blockTR += tex; blockBR += tex; blockBL += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2,  0) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2,  0) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockTR += tex; blockBR += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2,  2) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-2,  2) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockBL += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0,  2) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 0,  2) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockBL += tex; blockBR += tex;
     
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2,  2) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 2,  2) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockBR += tex;
     
     	half3 blockCC = 0;
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-1, -1) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-1, -1) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockCC += tex;
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 1, -1) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 1, -1) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockCC += tex;
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 1,  1) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2( 1,  1) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockCC += tex;
-    	tex = GetTexture2D(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-1,  1) * TexSize.zw).rgb;
+    	tex = GetTexture2DLod(Tx2Tx_Source, Tx2Tx_Sampler, pixelUV + float2(-1,  1) * TexSize.zw,0.0).rgb;
     	if (bKillFireflies) tex /= 1 + GetLuminance(tex);
     	blockCC += tex;
     
