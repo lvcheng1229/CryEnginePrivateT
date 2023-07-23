@@ -18,15 +18,14 @@ void CBloomSetupStage::InitBuffer()
 
 	if (!m_tileBloomMaskBuffer.IsAvailable())
 	{
-		m_tileBloomMaskBuffer.Create(BufferSizeX * BufferSizeY, 1, DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+		m_tileBloomMaskBuffer.Create(BufferSizeX * BufferSizeY, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
 		m_tileBloomMaskBuffer.SetDebugName("TileBloomMaskBuffer");
 	}
 
 	if (!m_tileBloomInfoGen_TileInfoBuffer.IsAvailable())
 	{
-		m_tileBloomInfoGen_TileInfoBuffer.Create(BufferSizeX * BufferSizeY, 1, DXGI_FORMAT_R32_UINT, 
-			//CDeviceObjectFactory::USAGE_UAV_BUFFER/*TODO:FIxMe*/ |CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::BIND_UNORDERED_ACCESS,
-			CDeviceObjectFactory::BIND_SHADER_RESOURCE/*TODO:FIxMe*/ | CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS,
+		m_tileBloomInfoGen_TileInfoBuffer.Create(BufferSizeX * BufferSizeY, sizeof(uint32), DXGI_FORMAT_R32_UINT,
+			CDeviceObjectFactory::BIND_SHADER_RESOURCE| CDeviceObjectFactory::BIND_UNORDERED_ACCESS,
 			NULL);
 		m_tileBloomInfoGen_TileInfoBuffer.SetDebugName("m_tileBloomInfoGen_TileInfoBuffer");
 	}
@@ -35,7 +34,7 @@ void CBloomSetupStage::InitBuffer()
 	//TODO:FixMe
 	if (!m_tileBloomInfoGen_DispatchThreadCount.IsAvailable())
 	{
-		m_tileBloomInfoGen_DispatchThreadCount.Create(sizeof(uint32) * 3, 1, DXGI_FORMAT_R32_UINT,
+		m_tileBloomInfoGen_DispatchThreadCount.Create(3, sizeof(uint32), DXGI_FORMAT_R32_UINT,
 			CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_INDIRECTARGS,//USAGE_RAW
 			NULL);
 		m_tileBloomInfoGen_DispatchThreadCount.SetDebugName("m_tileBloomInfoGen_DispatchThreadCount");
@@ -71,10 +70,6 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CT
 	const ColorI nulls = { 0, 0, 0, 0 };
 
 	{
-		{
-			CClearSurfacePass::Execute(&m_tileBloomMaskBuffer, nulls);
-		}
-
 		m_passBloomSetup.SetTechnique(CShaderMan::s_shBloomSetup, CCryNameTSCRC("BloomSetup"), 0);
 		m_passBloomSetup.SetOutputUAV(0, pTiledBloomDestRT);
 		m_passBloomSetup.SetOutputUAV(1, &m_tileBloomMaskBuffer);
@@ -97,11 +92,6 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CT
 
 	//BloomTileInfo1Gen
 	{
-		{
-			//TODO:
-			//CClearSurfacePass::Execute(&m_tileBloomInfoGen_TileInfoBuffer, nulls);
-		}
-
 		m_passBloomTileInfo1Gen.SetTechnique(CShaderMan::s_shBloomSetup, CCryNameTSCRC("BloomTileInfoGen"), 0);
 
 		m_passBloomTileInfo1Gen.SetOutputUAV(0, &m_tileBloomInfoGen_TileInfoBuffer);
@@ -138,7 +128,6 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CT
 
 		m_pass1H.SetBuffer(0, &m_tileBloomInfoGen_TileInfoBuffer);
 
-		//m_pass1H.SetDispatchSize(10, 1, 1);
 		m_pass1H.SetDispatchIndirectArgs(&m_tileBloomInfoGen_DispatchThreadCount, 0);
 
 		m_pass1H.PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
@@ -146,7 +135,6 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CT
 		{
 			const bool bAsynchronousCompute = CRenderer::CV_r_D3D12AsynchronousCompute & BIT((eStage_BloomSetup - eStage_FIRST_ASYNC_COMPUTE)) ? true : false;
 			SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
-			//computeCommandList.m_pCommandList->GetComputeInterface()->ClearUAV();
 			m_pass1H.Execute(computeCommandList);
 		}
 	}
