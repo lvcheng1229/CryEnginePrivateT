@@ -4424,6 +4424,7 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		FX_TOKEN(RWBuffer)
 		FX_TOKEN(StructuredBuffer)
 		FX_TOKEN(RWStructuredBuffer)
+		FX_TOKEN(RWByteAddressBuffer)//TanGram:TileBloom
 		FX_TOKEN(cbuffer)
 		FX_TOKEN(struct)
 		FX_TOKEN(sampler1D)
@@ -4468,6 +4469,7 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		case eT_RWBuffer:
 		case eT_StructuredBuffer:
 		case eT_RWStructuredBuffer:
+		case eT_RWByteAddressBuffer://TanGram: TiledBloom
 		case eT_cbuffer:
 		case eT_struct:
 		case eT_SamplerState:

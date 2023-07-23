@@ -984,6 +984,15 @@ void CDeviceComputeCommandInterfaceImpl::DispatchImpl(uint32 X, uint32 Y, uint32
 	GetDX12CommandList()->Dispatch(X, Y, Z);
 }
 
+//TanGram:TiledBloom:[BEGIN]
+void CDeviceComputeCommandInterfaceImpl::DispatchIndirectImpl(const CDeviceBuffer* pBuffer, uint32 Offset)
+{
+	NCryDX12::CResource& Resource = GET_DX12_RAWBUFFER_RESOURCE(pBuffer)->GetDX12Resource();
+
+	GetDX12CommandList()->DispatchIn(X, Y, Z);
+}
+//TanGram:TiledBloom:[END]
+
 void CDeviceComputeCommandInterfaceImpl::ClearUAVImpl(D3DUAV* pView, const FLOAT Values[4], UINT NumRects, const D3D11_RECT* pRects)
 {
 	const NCryDX12::CView& View = reinterpret_cast<CCryDX12UnorderedAccessView*>(pView)->GetDX12View();

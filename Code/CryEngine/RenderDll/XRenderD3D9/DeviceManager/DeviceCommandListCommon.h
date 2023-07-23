@@ -177,6 +177,7 @@ public:
 	void SetInlineConstants(uint32 bindSlot, uint32 constantCount, float* pConstants);
 
 	void Dispatch(uint32 X, uint32 Y, uint32 Z);
+	void DispatchIndirect(CDeviceBuffer* pBuffer, uint32 Offset);//TanGram: TiledBloom
 
 	void ClearUAV(D3DUAV* pView, const ColorF& Values, UINT NumRects = 0, const D3D11_RECT* pRects = nullptr);
 	void ClearUAV(D3DUAV* pView, const ColorI& Values, UINT NumRects = 0, const D3D11_RECT* pRects = nullptr);

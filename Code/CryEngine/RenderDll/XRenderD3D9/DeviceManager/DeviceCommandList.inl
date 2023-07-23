@@ -584,6 +584,13 @@ inline void CDeviceComputeCommandInterface::Dispatch(uint32 X, uint32 Y, uint32 
 	DispatchImpl(X, Y, Z);
 }
 
+//TanGram: TiledBloom:[BEGIN]
+inline void CDeviceComputeCommandInterface::DispatchIndirect(CDeviceBuffer* pBuffer, uint32 Offset)
+{
+	DispatchIndirectImpl(pBuffer, Offset);
+}
+//TanGram: TiledBloom:[END]
+
 inline void CDeviceComputeCommandInterface::ClearUAV(D3DUAV* pView, const ColorF& Values, UINT NumRects, const D3D11_RECT* pRects)
 {
 	ClearUAVImpl(pView, (float*)&Values, NumRects, pRects);
@@ -713,6 +720,7 @@ inline void CDeviceCopyCommandInterface::Copy(CDeviceTexture* pSrc, void* pDst, 
 
 #if CRY_RENDERER_GNM
 	#include "GNM/DeviceCommandList_GNM.inl"
+#include "DeviceCommandListCommon.h"
 #endif
 
 

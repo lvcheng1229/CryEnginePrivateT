@@ -36,6 +36,9 @@ public:
 	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_Compute);
 	void SetOutputUAV(uint32 slot, CGpuBuffer* pBuffer, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_Compute);
 	void SetDispatchSize(uint32 sizeX, uint32 sizeY, uint32 sizeZ);
+	
+	void SetDispatchIndirectArgs(CGpuBuffer* pBuffer, uint32 Offset);//TanGram:TiledBloom
+
 	void SetTechnique(CShader* pShader, const CCryNameTSCRC& techName, uint64 rtMask);
 	void SetFlags(EPassFlags flags);
 	void SetTexture(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::Default);
@@ -53,7 +56,7 @@ public:
 	void BeginConstantUpdate();
 
 	void BeginRenderPass(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
-	void Dispatch(CDeviceCommandListRef RESTRICT_REFERENCE commandList, ::EShaderStage srvUsage);
+	void Dispatch(CDeviceCommandListRef RESTRICT_REFERENCE commandList, ::EShaderStage srvUsage, bool bDispatchIndirect = false);
 	void EndRenderPass(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
 
 	// Executes this pass as if it's the only participant of a compute stage (see CSceneGBufferStage + CSceneRenderPass)
@@ -87,6 +90,12 @@ private:
 
 	CGraphicsPipeline*       m_pGraphicsPipeline;
 
+	//TanGram: TiledBloom:[BEGIN]
+	bool					 m_bIndirectDispatch;
+	CGpuBuffer*				 m_pIndirectBuffer;
+	uint32					 m_IndirectOffset;
+	//TanGram: TiledBloom:[END]
+
 	bool                     m_bPendingConstantUpdate;
 	bool                     m_bCompiled;
 
@@ -108,6 +117,15 @@ inline void CComputeRenderPass::SetDispatchSize(uint32 sizeX, uint32 sizeY, uint
 	m_dispatchSizeY = sizeY;
 	m_dispatchSizeZ = sizeZ;
 }
+
+//TanGram: TiledBloom:[BEGIN]
+inline void CComputeRenderPass::SetDispatchIndirectArgs(CGpuBuffer* pBuffer, uint32 Offset)
+{
+	m_bIndirectDispatch = true;
+	m_pIndirectBuffer = pBuffer;
+	m_IndirectOffset = Offset;
+}
+//TanGram: TiledBloom:[END]
 
 inline void CComputeRenderPass::SetTechnique(CShader* pShader, const CCryNameTSCRC& techName, uint64 rtMask)
 {

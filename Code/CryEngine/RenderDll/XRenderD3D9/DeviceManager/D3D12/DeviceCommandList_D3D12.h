@@ -129,6 +129,7 @@ protected:
 	void SetInlineConstantsImpl(uint32 bindSlot, uint32 constantCount, float* pConstants);
 
 	void DispatchImpl(uint32 X, uint32 Y, uint32 Z);
+	void DispatchIndirectImpl(const CDeviceBuffer* pBuffer, uint32 Offset);//TanGram: TiledBloom
 
 	void ClearUAVImpl(D3DUAV* pView, const FLOAT Values[4], UINT NumRects, const D3D11_RECT* pRects);
 	void ClearUAVImpl(D3DUAV* pView, const UINT Values[4], UINT NumRects, const D3D11_RECT* pRects);

@@ -794,6 +794,8 @@ void CDeviceComputeCommandInterfaceImpl::DispatchImpl(uint32 X, uint32 Y, uint32
 	}
 }
 
+
+
 void CDeviceComputeCommandInterfaceImpl::ClearUAVImpl(D3DUAV* pView, const FLOAT Values[4], UINT NumRects, const D3D11_RECT* pRects)
 {
 #if (CRY_RENDERER_DIRECT3D >= 111)

@@ -13,6 +13,11 @@ CComputeRenderPass::CComputeRenderPass(EPassFlags flags)
 	, m_dispatchSizeZ(1)
 	, m_resourceDesc()
 	, m_currentPsoUpdateCount(0)
+	//TanGram: TiledBloom:[BEGIN]
+	, m_bIndirectDispatch(false)
+	, m_pIndirectBuffer(nullptr)
+	, m_IndirectOffset(0)
+	//TanGram: TiledBloom:[END]
 	, m_bPendingConstantUpdate(false)
 	, m_bCompiled(false)
 {
@@ -32,6 +37,11 @@ CComputeRenderPass::CComputeRenderPass(CGraphicsPipeline* pGraphicsPipeline, EPa
 	, m_resourceDesc()
 	, m_currentPsoUpdateCount(0)
 	, m_pGraphicsPipeline(pGraphicsPipeline)
+	//TanGram: TiledBloom:[BEGIN]
+	, m_bIndirectDispatch(false)
+	, m_pIndirectBuffer(nullptr)
+	, m_IndirectOffset(0)
+	//TanGram: TiledBloom:[END]
 	, m_bPendingConstantUpdate(false)
 	, m_bCompiled(false)
 {
@@ -190,7 +200,7 @@ void CComputeRenderPass::EndRenderPass(CDeviceCommandListRef RESTRICT_REFERENCE 
 	// Nothing to cleanup at the moment
 }
 
-void CComputeRenderPass::Dispatch(CDeviceCommandListRef RESTRICT_REFERENCE commandList, ::EShaderStage srvUsage)
+void CComputeRenderPass::Dispatch(CDeviceCommandListRef RESTRICT_REFERENCE commandList, ::EShaderStage srvUsage, bool bDispatchIndirect)
 {
 	if (m_dirtyMask == eDirty_None)
 	{
@@ -206,14 +216,21 @@ void CComputeRenderPass::Dispatch(CDeviceCommandListRef RESTRICT_REFERENCE comma
 		for (auto& cb : inlineConstantBuffers)
 			pComputeInterface->SetInlineConstantBuffer(bindSlot++, cb.pBuffer, cb.shaderSlot);
 
-		pComputeInterface->Dispatch(m_dispatchSizeX, m_dispatchSizeY, m_dispatchSizeZ);
+		if (bDispatchIndirect)
+		{
+			pComputeInterface->DispatchIndirect(m_pIndirectBuffer->GetDevBuffer(), m_IndirectOffset);
+		}
+		else
+		{
+			pComputeInterface->Dispatch(m_dispatchSizeX, m_dispatchSizeY, m_dispatchSizeZ);
+		}
 	}
 }
 
 void CComputeRenderPass::Execute(CDeviceCommandListRef RESTRICT_REFERENCE commandList, ::EShaderStage srvUsage)
 {
 	BeginRenderPass(commandList);
-	Dispatch(commandList, srvUsage);
+	Dispatch(commandList, srvUsage, m_bIndirectDispatch/*TanGram:TIledBloom*/);
 	EndRenderPass(commandList);
 }
 

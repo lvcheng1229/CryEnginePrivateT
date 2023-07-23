@@ -744,6 +744,20 @@ void CDeviceComputeCommandInterfaceImpl::DispatchImpl(uint32 X, uint32 Y, uint32
 	GetVKCommandList()->m_nCommands += CLCOUNT_DISPATCH;
 }
 
+//TanGram:TiledBloom:[BEGIN]
+void CDeviceComputeCommandInterfaceImpl::DispatchIndirectImpl(const CDeviceBuffer* pBuffer, uint32 Offset)
+{
+	const CDeviceResourceLayout_Vulkan* pVkLayout = reinterpret_cast<const CDeviceResourceLayout_Vulkan*>(m_computeState.pResourceLayout.cachedValue);
+
+	ApplyPendingBindings(GetVKCommandList()->GetVkCommandList(), pVkLayout->GetVkPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE, m_computeState.custom.pendingBindings);
+	m_computeState.custom.pendingBindings.Reset();
+
+	GetVKCommandList()->PendingResourceBarriers();
+	vkCmdDispatchIndirect(GetVKCommandList()->GetVkCommandList(), pBuffer->GetBuffer()->GetHandle(), Offset);
+	GetVKCommandList()->m_nCommands += CLCOUNT_DISPATCH;
+}
+//TanGram:TiledBloom:[END]
+
 void CDeviceComputeCommandInterfaceImpl::ClearUAVImpl(D3DUAV* pView, const FLOAT Values[4], UINT NumRects, const D3D11_RECT* pRects)
 {
 	VK_ASSERT(NumRects == 0, "Clear area not supported (yet)");
