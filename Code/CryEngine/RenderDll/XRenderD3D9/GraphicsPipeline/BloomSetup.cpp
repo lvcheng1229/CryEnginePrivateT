@@ -25,7 +25,7 @@ void CBloomSetupStage::InitBuffer()
 	if (!m_tileBloomInfoGen_TileInfoBuffer.IsAvailable())
 	{
 		m_tileBloomInfoGen_TileInfoBuffer.Create(BufferSizeX * BufferSizeY, sizeof(uint32), DXGI_FORMAT_R32_UINT,
-			CDeviceObjectFactory::BIND_SHADER_RESOURCE| CDeviceObjectFactory::BIND_UNORDERED_ACCESS,
+			CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS,
 			NULL);
 		m_tileBloomInfoGen_TileInfoBuffer.SetDebugName("m_tileBloomInfoGen_TileInfoBuffer");
 	}
@@ -39,6 +39,26 @@ void CBloomSetupStage::InitBuffer()
 			NULL);
 		m_tileBloomInfoGen_DispatchThreadCount.SetDebugName("m_tileBloomInfoGen_DispatchThreadCount");
 	}
+}
+
+void CBloomSetupStage::Resize(int renderWidth, int renderHeight)
+{
+	if (m_tileBloomMaskBuffer.IsAvailable())
+	{
+		m_tileBloomMaskBuffer.Release();
+	}
+
+	if (m_tileBloomInfoGen_TileInfoBuffer.IsAvailable())
+	{
+		m_tileBloomInfoGen_TileInfoBuffer.Release();
+	}
+
+	if (m_tileBloomInfoGen_DispatchThreadCount.IsAvailable())
+	{
+		m_tileBloomInfoGen_DispatchThreadCount.Release();
+	}
+
+	bBufferInit = false;
 }
 
 void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CTexture* pTexBloomOutRT)
@@ -126,7 +146,9 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CT
 
 		m_pass1H.SetOutputUAV(0, pTexBloomOutRT);
 
-		m_pass1H.SetBuffer(0, &m_tileBloomInfoGen_TileInfoBuffer);
+		m_pass1H.SetOutputUAV(1, &m_tileBloomInfoGen_TileInfoBuffer);
+
+		//m_pass1H.SetBuffer(0, &m_tileBloomInfoGen_TileInfoBuffer);
 
 		m_pass1H.SetDispatchIndirectArgs(&m_tileBloomInfoGen_DispatchThreadCount, 0);
 

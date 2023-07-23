@@ -32,6 +32,8 @@ public:
 	{
 		return CRenderer::CV_r_PostProcess;
 	}
+	
+	void Resize(int renderWidth, int renderHeight) final;
 
 	void Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CTexture* pTexBloomOutRT);
 

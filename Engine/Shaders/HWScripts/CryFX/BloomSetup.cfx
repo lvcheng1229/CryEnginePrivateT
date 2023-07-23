@@ -172,10 +172,11 @@ void BloomSetupCS(
     }
 }
 
-RWBuffer<uint>		BloomTileInfoGen_TileInfoUAV 				: register(u0);
-RWByteAddressBuffer BloomTileInfoGen_DispatchThreadCount		: register(u1);
+RWStructuredBuffer<uint>		BloomTileInfoGen_TileInfoUAV 			: register(u0);
+RWByteAddressBuffer 			BloomTileInfoGen_DispatchThreadCount	: register(u1);
 
-Buffer<uint>		BloomTileInfoGen_Mask 						: register(t0); 
+
+Buffer<uint>					BloomTileInfoGen_Mask 					: register(t0); 
 
 cbuffer BloomTileInfoGen_CB : register(b0)
 {
@@ -239,21 +240,16 @@ void BloomTileInfoGenCS(
 			BloomTileInfoGen_DispatchThreadCount.InterlockedAdd(0, uint(1), PreCountOut);
 			const uint TileIndex = (DispatchThreadID.x & 0xFFFF) | ((DispatchThreadID.y & 0xFFFF) << 16);
 			BloomTileInfoGen_TileInfoUAV[PreCountOut] = TileIndex;
-			//BloomTileInfoGen_TileInfoUAV[PreCountOut] = 2;
 		}
 	}
 }
 
-//usage VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT
-//usage VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT
-
 
 RWTexture2D<float4>	BloomFinal_OutputUAV 				: register(u0);
+RWStructuredBuffer<uint>		BloomFinal_TileInfoUAV 			: register(u1);
 
 //Texture2D<float4> 	BloomFinal_Tx2Tx_Source  			: register(t0); 
 //SamplerState 		BloomFinal_Tx2Tx_Sampler			: register(s0);
-
-Buffer<uint>		BloomFinal_TileInfoUAV				: register(t0); 
 
 //cbuffer BloomFinal_CB : register(b0)
 //{
@@ -272,8 +268,8 @@ void BloomFinalCS(
     uint3 DispatchThreadID : SV_DispatchThreadID
 )
 {
-	uint TileIndex = BloomFinal_TileInfoUAV[GroupID.x].x;
-	uint2 TileIndexXY = uint2(TileIndex % 16,TileIndex / 16);
+	uint TileIndex = BloomFinal_TileInfoUAV.Load(GroupID.x).x;
+	uint2 TileIndexXY = uint2(TileIndex & 0xFFFF,(TileIndex >> 16) & 0xFFFF);
 	uint2 UVCoord = TileIndexXY * uint2(GROUP_SIZE_X ,GROUP_SIZE_Y) + uint2(GroupThreadIndex % GROUP_SIZE_Y , GroupThreadIndex / GROUP_SIZE_X);
 	BloomFinal_OutputUAV[UVCoord] = float4(1.0,0.0,0.0,1.0);
 }
