@@ -21,7 +21,8 @@ public:
 		: CGraphicsPipelineStage(graphicsPipeline)
 		, m_passBloomSetup(&graphicsPipeline)
 		, m_passBloomTileInfo1Gen(&graphicsPipeline)
-		, m_pass1H(&graphicsPipeline)
+		, m_pass1H(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
+		, m_pass2H(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
 	{
 
 	}
@@ -46,8 +47,10 @@ private:
 	CComputeRenderPass m_passBloomTileInfo1Gen;
 
 	CComputeRenderPass m_pass1H;
+	CComputeRenderPass m_pass2H;
 
 	CGpuBuffer m_tileBloomMaskBuffer;
+	CGpuBuffer m_tileBloomMaskBuffer2;
 
 	CGpuBuffer m_tileBloomInfoGen_TileInfoBuffer;
 	CGpuBuffer m_tileBloomInfoGen_DispatchThreadCount;

@@ -174,7 +174,7 @@ void BloomSetupCS(
 
 RWStructuredBuffer<uint>		BloomTileInfoGen_TileInfoUAV 			: register(u0);
 RWByteAddressBuffer 			BloomTileInfoGen_DispatchThreadCount	: register(u1);
-
+RWBuffer<uint> 					BloomTileInfoGen_MaskOutputUAV			: register(u2);
 
 Buffer<uint>					BloomTileInfoGen_Mask 					: register(t0); 
 
@@ -186,6 +186,8 @@ cbuffer BloomTileInfoGen_CB : register(b0)
 		int4 BufferSize;
 	} BloomTileInfoGen_CB;
 };
+
+groupshared uint BloomTileInfoGen_MaskInfo[GROUP_SIZE_X*GROUP_SIZE_Y*1];
 
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, 1)]
 void BloomTileInfoGenCS(
@@ -199,6 +201,10 @@ void BloomTileInfoGenCS(
 	{
 		BloomTileInfoGen_DispatchThreadCount.Store3(0,uint3(0,1,1));
 	}
+
+#if %_RT_SAMPLE0
+	BloomTileInfoGen_MaskInfo[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = 0;
+#endif
 
 	if(DispatchThreadID.y < (BloomTileInfoGen_CB.BufferSize.y - 1) &&
 		DispatchThreadID.x < (BloomTileInfoGen_CB.BufferSize.x - 1) &&
@@ -240,7 +246,27 @@ void BloomTileInfoGenCS(
 			BloomTileInfoGen_DispatchThreadCount.InterlockedAdd(0, uint(1), PreCountOut);
 			const uint TileIndex = (DispatchThreadID.x & 0xFFFF) | ((DispatchThreadID.y & 0xFFFF) << 16);
 			BloomTileInfoGen_TileInfoUAV[PreCountOut] = TileIndex;
+#if %_RT_SAMPLE0
+			BloomTileInfoGen_MaskInfo[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = 1;
+#endif
 		}
+
+#if %_RT_SAMPLE0
+		if(GroupThreadIndex % 4 == 0)
+		{
+			uint RawMask[4];
+			[unroll]
+			for (uint i = 0; i < 4; i++)
+			{
+				uint LDSIndex = GroupThreadIndex + i;
+				RawMask[i] = BloomTileInfoGen_MaskInfo[LDSIndex];
+			}
+			uint MaskCombine = RawMask[0] || RawMask[1] || RawMask[2] || RawMask[3];
+
+			//uint MaskCombine = 1;
+			BloomTileInfoGen_MaskOutputUAV[(DispatchThreadID.y / 2) * (BloomTileInfoGen_CB.BufferSize.x / 2) + DispatchThreadID.x / 2] = MaskCombine;
+		}
+#endif
 	}
 }
 
@@ -248,17 +274,21 @@ void BloomTileInfoGenCS(
 RWTexture2D<float4>	BloomFinal_OutputUAV 				: register(u0);
 RWStructuredBuffer<uint>		BloomFinal_TileInfoUAV 			: register(u1);
 
-//Texture2D<float4> 	BloomFinal_Tx2Tx_Source  			: register(t0); 
-//SamplerState 		BloomFinal_Tx2Tx_Sampler			: register(s0);
+Texture2D<float4> 	BloomFinal_Tx2Tx_Source  			: register(t0); 
+SamplerState 		BloomFinal_Tx2Tx_Sampler			: register(s0);
 
-//cbuffer BloomFinal_CB : register(b0)
-//{
-//	struct
-//	{
-//		float4 TexSize;
-//		int4 BufferSize;
-//	} BloomFinal_CB;
-//};
+float4 bloomParams0;
+
+cbuffer BloomFinal_CB : register(b1)
+{
+	struct
+	{
+		float4 TexSize;
+		int4 BufferSize;
+	} BloomFinal_CB;
+};
+
+
 
 [numthreads(GROUP_SIZE_X * GROUP_SIZE_Y, 1 , 1)]
 void BloomFinalCS(
@@ -271,7 +301,21 @@ void BloomFinalCS(
 	uint TileIndex = BloomFinal_TileInfoUAV.Load(GroupID.x).x;
 	uint2 TileIndexXY = uint2(TileIndex & 0xFFFF,(TileIndex >> 16) & 0xFFFF);
 	uint2 UVCoord = TileIndexXY * uint2(GROUP_SIZE_X ,GROUP_SIZE_Y) + uint2(GroupThreadIndex % GROUP_SIZE_Y , GroupThreadIndex / GROUP_SIZE_X);
-	BloomFinal_OutputUAV[UVCoord] = float4(1.0,0.0,0.0,1.0);
+	
+	const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
+	const float weightSum = 262106.0;
+	
+	float2 coords = float2(UVCoord) * BloomFinal_CB.TexSize.zw - bloomParams0.xy * 7.0;
+	half3 vColor = 0;
+
+	[unroll]
+	for (int i = 0; i < 15; ++i)
+	{
+		vColor += GetTexture2DLod(BloomFinal_Tx2Tx_Source, BloomFinal_Tx2Tx_Sampler, coords,0.0).rgb * (weights[i] / weightSum);
+		coords += bloomParams0.xy;
+	}
+
+	BloomFinal_OutputUAV[UVCoord] = float4(vColor,1.0);
 }
 
 technique BloomSetup
