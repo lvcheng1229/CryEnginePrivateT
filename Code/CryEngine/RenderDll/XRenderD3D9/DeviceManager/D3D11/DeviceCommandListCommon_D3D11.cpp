@@ -794,6 +794,26 @@ void CDeviceComputeCommandInterfaceImpl::DispatchImpl(uint32 X, uint32 Y, uint32
 	}
 }
 
+//TanGram: TiledBloom:[BEGIN]
+void CDeviceComputeCommandInterfaceImpl::DispatchIndirectImpl(const CDeviceBuffer* pBuffer, uint32 Offset)
+{
+	GetDX11CommandList()->GetD3D11DeviceContext()->DispatchIndirect(pBuffer->GetBuffer(), Offset);
+
+	if (m_computeState.custom.boundUAVs.any())
+	{
+		for (int i = 0; i < m_computeState.custom.boundUAVs.size(); ++i)
+		{
+			const uint32 count(-1);
+			ID3D11UnorderedAccessView* const nullView = nullptr;
+
+			GetDX11CommandList()->GetD3D11DeviceContext()->CSSetUnorderedAccessViews(i, 1, &nullView, &count);
+		}
+
+		m_computeState.custom.boundUAVs = 0;
+		memset(m_computeState.pResourceSets, 0x0, sizeof(m_computeState.pResourceSets));
+	}
+}
+//TanGram: TiledBloom:[END]
 
 
 void CDeviceComputeCommandInterfaceImpl::ClearUAVImpl(D3DUAV* pView, const FLOAT Values[4], UINT NumRects, const D3D11_RECT* pRects)

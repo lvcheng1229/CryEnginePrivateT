@@ -24,7 +24,7 @@ void CBloomSetupStage::InitBuffer()
 
 	if (!m_tileBloomInfoGen_TileInfoBuffer.IsAvailable())
 	{
-		m_tileBloomInfoGen_TileInfoBuffer.Create(BufferSizeX * BufferSizeY, sizeof(uint32), DXGI_FORMAT_R32_UINT,
+		m_tileBloomInfoGen_TileInfoBuffer.Create(BufferSizeX * BufferSizeY, sizeof(uint32), DXGI_FORMAT_UNKNOWN/*DXGI_FORMAT_R32_UINT*/,
 			CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS,
 			NULL);
 		m_tileBloomInfoGen_TileInfoBuffer.SetDebugName("m_tileBloomInfoGen_TileInfoBuffer");
@@ -34,8 +34,11 @@ void CBloomSetupStage::InitBuffer()
 	//TODO:FixMe
 	if (!m_tileBloomInfoGen_DispatchThreadCount.IsAvailable())
 	{
+		//D3D11 ERROR : ID3D11Device::CreateBuffer : A resource cannot created with both D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGSand D3D11_RESOURCE_MISC_BUFFER_STRUCTURED.[STATE_CREATION ERROR #68: CREATEBUFFER_INVALIDMISCFLAGS]
+		//D3D11 ERROR: ID3D11Device::CreateUnorderedAccessView: The Format (0, UNKNOWN) cannot be used when creating a typed View of a Buffer. [ STATE_CREATION ERROR #2097343: CREATEUNORDEREDACCESSVIEW_INVALIDFORMAT]
+
 		m_tileBloomInfoGen_DispatchThreadCount.Create(3, sizeof(uint32), DXGI_FORMAT_R32_UINT,
-			CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_INDIRECTARGS,//USAGE_RAW
+			CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_INDIRECTARGS,//USAGE_RAW
 			NULL);
 		m_tileBloomInfoGen_DispatchThreadCount.SetDebugName("m_tileBloomInfoGen_DispatchThreadCount");
 	}
@@ -81,6 +84,9 @@ void CBloomSetupStage::Execute(CTexture* pSrcRT, CTexture* pTiledBloomDestRT, CT
 		InitBuffer();
 		bBufferInit = true;
 	}
+
+	//D3D11 ERROR: ID3D11DeviceContext::Dispatch: The Unordered Access View in slot 1 of the Compute Shader unit was not created with the D3D11_BUFFER_UAV_FLAG_RAW flag, however the shader expects a RAW Buffer. 
+	//This mismatch is invalid if the shader actually uses the view (e.g. it is not skipped due to shader code branching). [ EXECUTION ERROR #2097380: DEVICE_UNORDEREDACCESSVIEW_RAW_UNSUPPORTED]
 
 	Vec4 screenSize(static_cast<float>(width), static_cast<float>(height), 1.0f / static_cast<float>(width), 1.0f / static_cast<float>(height));
 	const uint32 bloomSetUpDispatchSizeX = (width / groupSizeX) + (width % groupSizeX > 0 ? 1 : 0);
