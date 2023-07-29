@@ -16,11 +16,13 @@ void CToneMappingStage::Execute()
 
 	CSunShaftsStage* pSunShaftsStage = m_graphicsPipeline.GetStage<CSunShaftsStage>();
 	CBloomStage* pBloomStage = m_graphicsPipeline.GetStage<CBloomStage>();
+	CBloomSetupStage* pBloomTiledStage = m_graphicsPipeline.GetStage<CBloomSetupStage>();//TanGram:TiledBloom
 	CColorGradingStage* pColorGradingStage = m_graphicsPipeline.GetStage<CColorGradingStage>();
 
 	bool bColorGradingEnabled = pColorGradingStage->IsStageActive(EShaderRenderingFlags(0));
 	bool bSunShaftsEnabled = pSunShaftsStage->IsStageActive(EShaderRenderingFlags(0));
-	bool bBloomEnabled = pBloomStage->IsStageActive(EShaderRenderingFlags(0));
+	bool bBloomTiledEnabled = pBloomTiledStage->IsStageActive(EShaderRenderingFlags(0));//TanGram:TiledBloom
+	bool bBloomEnabled = pBloomStage->IsStageActive(EShaderRenderingFlags(0)) || bBloomTiledEnabled;
 	bool bApplyDithering = CRenderer::CV_r_HDRDithering && CRenderer::CV_r_PostProcess;
 	bool bVignettingEnabled = CRenderer::CV_r_HDRVignetting && CRenderer::CV_r_PostProcess;
 
@@ -66,7 +68,10 @@ void CToneMappingStage::Execute()
 		m_passToneMapping.SetFlags(CPrimitiveRenderPass::ePassFlags_RequireVrProjectionConstants);
 		m_passToneMapping.SetPrimitiveFlags(CRenderPrimitive::eFlags_ReflectShaderConstants);	// Enables reflection constants addition in the shader
 
-		CTexture* pBloomTex = bBloomEnabled ? m_graphicsPipelineResources.m_pTexHDRFinalBloom : CRendererResources::s_ptexBlack;
+		//TanGram: TiledBloom
+		CTexture* pBloomTex = bBloomEnabled ? (bBloomTiledEnabled ? m_graphicsPipelineResources.m_pTexTiledBloom[0] : m_graphicsPipelineResources.m_pTexHDRFinalBloom) : CRendererResources::s_ptexBlack;
+
+		//m_graphicsPipelineResources.m_pTexBloomOut
 
 		m_passToneMapping.SetSampler(0, EDefaultSamplerStates::LinearClamp);
 		m_passToneMapping.SetTexture(0, m_graphicsPipelineResources.m_pTexHDRTarget);

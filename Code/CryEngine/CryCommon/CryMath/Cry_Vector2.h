@@ -183,3 +183,8 @@ template<typename F> ILINE F sqr(const Vec2_tpl<F>& op)
 	return op | op;
 }
 
+ILINE Vec2i divideRoundUp(Vec2i val1, Vec2i val2)
+{
+	return Vec2i(val1.x / val2.x + (val1.x % val2.x > 0 ? 1 : 0), val1.y / val2.y + (val1.y % val2.y > 0 ? 1 : 0));
+}
+

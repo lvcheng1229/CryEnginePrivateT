@@ -266,7 +266,9 @@ half3 FilmMapping( in vert2frag IN, in half3 cScene, in half3 cBloom, in half3 v
 	fExposure = clamp(fSceneKey / vAdaptedLum.x, HDREyeAdaptation.y, HDREyeAdaptation.z);
 #endif
 
-	half3 cColor = fVignetting * fExposure * lerp(cScene, cBloom, saturate(HDRBloomColor));
+	//half3 cColor = fVignetting * fExposure * lerp(cScene, cBloom, saturate(HDRBloomColor));
+	half3 cColor = fVignetting * fExposure * (cScene + cBloom);//TanGram :TiledBloom
+
 
 	// hdr color grading
 	half fLuminance = GetLuminance(cColor);

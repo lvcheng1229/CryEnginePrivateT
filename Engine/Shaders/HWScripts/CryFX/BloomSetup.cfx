@@ -40,18 +40,8 @@ void BloomSetupCS(
 
     if(all(pixelUV)<=1.0)
     {
-        //TanGram :TiledBloom:BloomSetup:Copy From DownsampleStablePS:[BEGIN]
-    
-        //High quality downsampling filter to reduce bloom flickering
-    	// Filter combines five 4x4 blocks (sampled bilinearly)
-    	// Reduces fireflies by applying tonemapping before averaging samples for each block
-    
         float4 BloomOUT = (float4)0;
-    //#if %_RT_SAMPLE0	
     	const bool bKillFireflies = true;
-    //#else
-    	//const bool bKillFireflies = false;
-    //#endif
     
     	half3 blockTL = 0, blockTR = 0, blockBR = 0, blockBL = 0;
     	half3 tex;
@@ -110,7 +100,6 @@ void BloomSetupCS(
     
     	if (bKillFireflies) 
     	{
-    		// Convert back to uncompressed/linear range
     		blockTL /= (1 - GetLuminance(blockTL));
     		blockTR /= (1 - GetLuminance(blockTR));
     		blockBR /= (1 - GetLuminance(blockBR));
@@ -120,10 +109,7 @@ void BloomSetupCS(
     
     	BloomOUT.rgb = 0.5 * blockCC + 0.125 * (blockTL + blockTR + blockBR + blockBL);
     
-    	// Filter out NaNs
     	BloomOUT.rgb = all(isfinite(BloomOUT.rgb)) ? BloomOUT.rgb : float3(0, 0, 0);
-		
-        //TanGram :TiledBloom:BloomSetup:Copy From DownsampleStablePS:[END]
 
 		const float BloomThreshlod = 0.4f;
 		float Luminance = GetLuminance(BloomOUT.rgb);
@@ -172,25 +158,16 @@ void BloomSetupCS(
     }
 }
 
-RWStructuredBuffer<uint>		BloomTileInfoGen_TileInfoUAV 			: register(u0);
-RWByteAddressBuffer 			BloomTileInfoGen_DispatchThreadCount	: register(u1);
-RWBuffer<uint> 					BloomTileInfoGen_MaskOutputUAV			: register(u2);
+RWStructuredBuffer<uint>		IndexGen_TileIndexUAV 			: register(u0);
+RWByteAddressBuffer 			IndexGen_DispatchIndirectCount	: register(u1);
+RWBuffer<uint> 					IndexGen_MaskOutputUAV			: register(u2);
+Buffer<uint>					IndexGen_MaskBuffer				: register(t0); 
 
-Buffer<uint>					BloomTileInfoGen_Mask 					: register(t0); 
-
-cbuffer BloomTileInfoGen_CB : register(b0)
-{
-	struct
-	{
-		float4 TexSize;
-		int4 BufferSize;
-	} BloomTileInfoGen_CB;
-};
-
-groupshared uint BloomTileInfoGen_MaskInfo[GROUP_SIZE_X*GROUP_SIZE_Y*1];
+float4 MaskBufferSize;
+groupshared uint IndexGen_TileMask[GROUP_SIZE_X*GROUP_SIZE_Y*1];
 
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, 1)]
-void BloomTileInfoGenCS(
+void BloomTileIndexGenCS(
 	uint3 GroupID : SV_GroupID,
     uint3 GroupThreadID : SV_GroupThreadID,
 	uint GroupThreadIndex : SV_GroupIndex,
@@ -199,40 +176,40 @@ void BloomTileInfoGenCS(
 {
 	if(all(DispatchThreadID == 0))
 	{
-		BloomTileInfoGen_DispatchThreadCount.Store3(0,uint3(0,1,1));
+		IndexGen_DispatchIndirectCount.Store3(0,uint3(0,1,1));
 	}
 
 #if %_RT_SAMPLE0
-	BloomTileInfoGen_MaskInfo[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = 0;
+	IndexGen_TileMask[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = 0;
 #endif
 
-	if(DispatchThreadID.y < (BloomTileInfoGen_CB.BufferSize.y - 1) &&
-		DispatchThreadID.x < (BloomTileInfoGen_CB.BufferSize.x - 1) &&
+	if(DispatchThreadID.y < (MaskBufferSize.y - 1) &&
+		DispatchThreadID.x < (MaskBufferSize.x - 1) &&
 		DispatchThreadID.y > 0 && DispatchThreadID.x > 0)
 	{
-		uint CIndex = DispatchThreadID.y * BloomTileInfoGen_CB.BufferSize.x + DispatchThreadID.x;
+		uint CIndex = DispatchThreadID.y * MaskBufferSize.x + DispatchThreadID.x;
 		uint LCIndex = CIndex - 1;
 		uint RCIndex = CIndex + 1;
 		
-		uint TIndex = (DispatchThreadID.y - 1) * BloomTileInfoGen_CB.BufferSize.x + DispatchThreadID.x;
+		uint TIndex = (DispatchThreadID.y - 1) * MaskBufferSize.x + DispatchThreadID.x;
 		uint LTIndex = TIndex - 1;
 		uint RTIndex = TIndex + 1;
 
-		uint BIndex = (DispatchThreadID.y +1 ) * BloomTileInfoGen_CB.BufferSize.x + DispatchThreadID.x;
+		uint BIndex = (DispatchThreadID.y +1 ) * MaskBufferSize.x + DispatchThreadID.x;
 		uint LBIndex = BIndex - 1;
 		uint RBIndex = BIndex + 1;
 
-		uint CValue = BloomTileInfoGen_Mask[CIndex].x;
-		uint LCValue = BloomTileInfoGen_Mask[LCIndex].x;
-		uint RCValue = BloomTileInfoGen_Mask[RCIndex].x;
+		uint CValue = IndexGen_MaskBuffer[CIndex].x;
+		uint LCValue = IndexGen_MaskBuffer[LCIndex].x;
+		uint RCValue = IndexGen_MaskBuffer[RCIndex].x;
 
-		uint TValue = BloomTileInfoGen_Mask[TIndex].x;
-		uint LTValue = BloomTileInfoGen_Mask[LTIndex].x;
-		uint RTValue = BloomTileInfoGen_Mask[RTIndex].x;
+		uint TValue = IndexGen_MaskBuffer[TIndex].x;
+		uint LTValue = IndexGen_MaskBuffer[LTIndex].x;
+		uint RTValue = IndexGen_MaskBuffer[RTIndex].x;
 
-		uint BValue = BloomTileInfoGen_Mask[BIndex].x;
-		uint LBValue = BloomTileInfoGen_Mask[LBIndex].x;
-		uint RBValue = BloomTileInfoGen_Mask[RBIndex].x;
+		uint BValue = IndexGen_MaskBuffer[BIndex].x;
+		uint LBValue = IndexGen_MaskBuffer[LBIndex].x;
+		uint RBValue = IndexGen_MaskBuffer[RBIndex].x;
 
 		uint CMaskValue = CValue || LCValue || RCValue;
 		uint TMaskValue = TValue || LTValue || RTValue;
@@ -243,11 +220,11 @@ void BloomTileInfoGenCS(
 		if(MaskValue)
 		{
 			uint PreCountOut;
-			BloomTileInfoGen_DispatchThreadCount.InterlockedAdd(0, uint(1), PreCountOut);
+			IndexGen_DispatchIndirectCount.InterlockedAdd(0, uint(1), PreCountOut);
 			const uint TileIndex = (DispatchThreadID.x & 0xFFFF) | ((DispatchThreadID.y & 0xFFFF) << 16);
-			BloomTileInfoGen_TileInfoUAV[PreCountOut] = TileIndex;
+			IndexGen_TileIndexUAV[PreCountOut] = TileIndex;
 #if %_RT_SAMPLE0
-			BloomTileInfoGen_MaskInfo[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = 1;
+			IndexGen_TileMask[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = 1;
 #endif
 		}
 
@@ -259,12 +236,11 @@ void BloomTileInfoGenCS(
 			for (uint i = 0; i < 4; i++)
 			{
 				uint LDSIndex = GroupThreadIndex + i;
-				RawMask[i] = BloomTileInfoGen_MaskInfo[LDSIndex];
+				RawMask[i] = IndexGen_TileMask[LDSIndex];
 			}
 			uint MaskCombine = RawMask[0] || RawMask[1] || RawMask[2] || RawMask[3];
 
-			//uint MaskCombine = 1;
-			BloomTileInfoGen_MaskOutputUAV[(DispatchThreadID.y / 2) * (BloomTileInfoGen_CB.BufferSize.x / 2) + DispatchThreadID.x / 2] = MaskCombine;
+			IndexGen_MaskOutputUAV[(DispatchThreadID.y / 2) * (MaskBufferSize.x / 2) + DispatchThreadID.x / 2] = MaskCombine;
 		}
 #endif
 	}
@@ -277,18 +253,8 @@ RWStructuredBuffer<uint>		BloomFinal_TileInfoUAV 			: register(u1);
 Texture2D<float4> 	BloomFinal_Tx2Tx_Source  			: register(t0); 
 SamplerState 		BloomFinal_Tx2Tx_Sampler			: register(s0);
 
-float4 bloomParams0;
-
-cbuffer BloomFinal_CB : register(b1)
-{
-	struct
-	{
-		float4 TexSize;
-		int4 BufferSize;
-	} BloomFinal_CB;
-};
-
-
+float4 bloomParams;
+float4 bloomTexSize;
 
 [numthreads(GROUP_SIZE_X * GROUP_SIZE_Y, 1 , 1)]
 void BloomFinalCS(
@@ -305,14 +271,42 @@ void BloomFinalCS(
 	const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
 	const float weightSum = 262106.0;
 	
-	float2 coords = float2(UVCoord) * BloomFinal_CB.TexSize.zw - bloomParams0.xy * 7.0;
+	float2 coords = float2(UVCoord) * bloomTexSize.zw - bloomParams.xy * 7.0;
 	half3 vColor = 0;
 
 	[unroll]
 	for (int i = 0; i < 15; ++i)
 	{
 		vColor += GetTexture2DLod(BloomFinal_Tx2Tx_Source, BloomFinal_Tx2Tx_Sampler, coords,0.0).rgb * (weights[i] / weightSum);
-		coords += bloomParams0.xy;
+		coords += bloomParams.xy;
+	}
+
+	BloomFinal_OutputUAV[UVCoord] = float4(vColor,1.0);
+}
+
+[numthreads(GROUP_SIZE_X * GROUP_SIZE_Y * 2 * 2, 1 , 1)]
+void BloomCombine(
+	uint3 GroupID : SV_GroupID,
+    uint3 GroupThreadID : SV_GroupThreadID,
+	uint GroupThreadIndex : SV_GroupIndex,
+    uint3 DispatchThreadID : SV_DispatchThreadID
+)
+{
+	uint TileIndex = BloomFinal_TileInfoUAV.Load(GroupID.x).x;
+	uint2 TileIndexXY = uint2(TileIndex & 0xFFFF,(TileIndex >> 16) & 0xFFFF);
+	uint2 UVCoord = TileIndexXY * uint2(GROUP_SIZE_X * 2,GROUP_SIZE_Y * 2) + uint2(GroupThreadIndex % (GROUP_SIZE_Y * 2), GroupThreadIndex / (GROUP_SIZE_X * 2));
+	
+	const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
+	const float weightSum = 262106.0;
+	
+	float2 coords = float2(UVCoord) * bloomTexSize.zw - bloomParams.xy * 7.0;
+	half3 vColor = 0;
+
+	[unroll]
+	for (int i = 0; i < 15; ++i)
+	{
+		vColor += GetTexture2DLod(BloomFinal_Tx2Tx_Source, BloomFinal_Tx2Tx_Sampler, coords,0.0).rgb * (weights[i] / weightSum);
+		coords += bloomParams.xy;
 	}
 
 	BloomFinal_OutputUAV[UVCoord] = float4(vColor,1.0);
@@ -326,11 +320,11 @@ technique BloomSetup
 	}
 };
 
-technique BloomTileInfoGen
+technique BloomTileIndexGen
 {
 	pass p0
 	{
-		ComputeShader = BloomTileInfoGenCS();
+		ComputeShader = BloomTileIndexGenCS();
 	}
 };
 
@@ -339,5 +333,13 @@ technique BloomFinal
 	pass p0
 	{
 		ComputeShader = BloomFinalCS();
+	}
+};
+
+technique BloomCombine
+{
+	pass p0
+	{
+		ComputeShader = BloomCombine();
 	}
 };

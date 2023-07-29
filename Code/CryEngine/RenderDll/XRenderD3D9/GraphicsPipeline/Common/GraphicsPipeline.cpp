@@ -228,8 +228,8 @@ void CGraphicsPipelineResources::CreateHDRMaps(int resourceWidth, int resourceHe
 	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$HDRTarget 1/4b").c_str(), &m_pTexHDRTargetScaled[1][1], FT_DONT_RELEASE);
 
 	//TanGram: TiledBloom:[BEGIN]
-	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$BloomSetup").c_str(), &m_pTexBloomSetup, FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
-	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$BloomOut").c_str(), &m_pTexBloomOut, FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
+	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$BloomTiled0").c_str(), &m_pTexTiledBloom[0], FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
+	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$BloomTiled1").c_str(), &m_pTexTiledBloom[1], FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
 	//TanGram: TiledBloom:[END]
 
 	// Scaled versions of compositions of the HDR scene texture (with alpha)
@@ -526,8 +526,8 @@ void CGraphicsPipelineResources::Shutdown()
 		}
 	}
 
-	SAFE_RELEASE_FORCE(m_pTexBloomSetup);//TanGram:TiledBloom
-	SAFE_RELEASE_FORCE(m_pTexBloomOut);//TanGram:TiledBloom
+	SAFE_RELEASE_FORCE(m_pTexTiledBloom[0]);//TanGram:TiledBloom
+	SAFE_RELEASE_FORCE(m_pTexTiledBloom[1]);//TanGram:TiledBloom
 	
 	m_resourceWidth  = 0;
 	m_resourceHeight = 0;

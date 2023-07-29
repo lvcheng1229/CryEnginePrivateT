@@ -230,7 +230,7 @@ void CStandardGraphicsPipeline::ExecuteHDRPostProcessing()
 	{
 		PROFILE_LABEL_SCOPE("QUARTER_RES_DOWNSAMPLE_HDRTARGET_BLOOM_SETUP");
 
-		GetStage<CBloomSetupStage>()->Execute(m_pipelineResources.m_pTexHDRTargetScaled[0][0], m_pipelineResources.m_pTexBloomSetup, m_pipelineResources.m_pTexBloomOut);
+		GetStage<CBloomSetupStage>()->Execute(m_pipelineResources.m_pTexHDRTargetScaled[0][0], m_pipelineResources.m_pTexTiledBloom[0], m_pipelineResources.m_pTexTiledBloom[1]);
 	}
 	//TanGram :TiledBloom:[END]
 

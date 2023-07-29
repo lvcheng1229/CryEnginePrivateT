@@ -88,8 +88,7 @@ public:
 	                                          {nullptr, nullptr, nullptr, nullptr} };       // CAutoExposureStage, CBloomStage, CSunShaftsStage
 
 	//TanGram :TiledBloom:[BEGIN]
-	CTexture* m_pTexBloomSetup = nullptr;
-	CTexture* m_pTexBloomOut = nullptr;
+	CTexture* m_pTexTiledBloom[2] = {nullptr,nullptr};
 	//TanGram :TiledBloom:[END]
 
 	CTexture* m_pTexHDRTargetMaskedScaled[4][4] = { {nullptr, nullptr, nullptr, nullptr},
