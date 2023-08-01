@@ -73,15 +73,22 @@ static inline VkImageUsageFlagBits ConvertToVKImageUsageBits(const T& desc)
 template<typename T>
 static inline VkBufferUsageFlagBits ConvertToVKBufferUsageBits(const T& desc)
 {
+	//TanGram:VulkanRHI
+	VkBufferUsageFlagBits RetBit;
+
+
 	// *INDENT-OFF*
 	return VkBufferUsageFlagBits(
 		((desc & CDeviceObjectFactory::BIND_VERTEX_BUFFER   ) ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT           : 0) |
 		((desc & CDeviceObjectFactory::BIND_INDEX_BUFFER    ) ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT            : 0) |
 		((desc & CDeviceObjectFactory::BIND_CONSTANT_BUFFER ) ? VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT          : 0) |
+		
 		((desc & CDeviceObjectFactory::USAGE_STRUCTURED     ) ? // Constant buffer are structured buffers by definition
 		((desc & CDeviceObjectFactory::BIND_SHADER_RESOURCE ) ? VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT               |
 		                              /* Workaround for >64k */ VK_BUFFER_USAGE_STORAGE_BUFFER_BIT          : 0) |
-		((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT          : 0) : 0) |
+		((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT          : 0) : 0)
+		
+		|
 		((desc & CDeviceObjectFactory::BIND_SHADER_RESOURCE ) ? VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT         |
 		                              /* Workaround for >64k */ VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT    : 0) |
 		((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT    : 0) |
