@@ -325,6 +325,7 @@ public:
 	static CShader*              s_ShaderStars;
 	static CShader*              s_ShaderShadowBlur;
 	static CShader*              s_ShaderShadowMaskGen;
+	static CShader*				 s_ShaderVSM;//TanGram: VSM
 #if defined(FEATURE_SVO_GI)
 	static CShader*              s_ShaderSVOGI;
 #endif

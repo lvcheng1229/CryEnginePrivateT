@@ -7,6 +7,7 @@
 #include "XRenderD3D9/D3DPostProcess.h"
 #include "../PostAA.h"
 #include "../ShadowMap.h"
+#include "../VirtualShadowMap/VirtualShadowMap.h"//TanGram:VSM
 #include "../SceneGBuffer.h"
 #include "../SceneForward.h"
 #include "../SceneCustom.h"
@@ -656,6 +657,7 @@ void CGraphicsPipeline::Init()
 	RegisterStage<CSceneGBufferStage>();
 	RegisterStage<CSceneForwardStage>();
 	RegisterStage<CShadowMapStage>();
+	RegisterStage<CVirtualShadowMapStage>();//Speedengine: VSM
 
 	// Register all other stages that don't need the global PSO cache
 	RegisterStage<CTiledLightVolumesStage>();

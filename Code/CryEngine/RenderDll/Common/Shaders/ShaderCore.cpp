@@ -33,6 +33,8 @@ CShader* CShaderMan::s_ShaderFallback;
 CShader* CShaderMan::s_ShaderStars;
 CShader* CShaderMan::s_ShaderShadowBlur;
 CShader* CShaderMan::s_ShaderShadowMaskGen;
+
+CShader* CShaderMan::s_ShaderVSM;//TanGram: VSM
 #if defined(FEATURE_SVO_GI)
 CShader* CShaderMan::s_ShaderSVOGI;
 #endif
@@ -1418,6 +1420,7 @@ void CShaderMan::mfReleaseSystemShaders()
 	SAFE_RELEASE_FORCE(s_ShaderStars);
 	SAFE_RELEASE_FORCE(s_ShaderShadowBlur);
 	SAFE_RELEASE_FORCE(s_ShaderShadowMaskGen);
+	SAFE_RELEASE_FORCE(s_ShaderVSM);//SpeedEngine :VSM
 #if defined(FEATURE_SVO_GI)
 	SAFE_RELEASE_FORCE(s_ShaderSVOGI);
 #endif
@@ -1477,6 +1480,7 @@ void CShaderMan::mfLoadDefaultSystemShaders()
 		sLoadShader("FixedPipelineEmu", s_ShaderFPEmu);
 		sLoadShader("Light", s_ShaderLightStyles);
 		sLoadShader("ShadowMaskGen", s_ShaderShadowMaskGen);
+		sLoadShader("VSM", s_ShaderVSM);//TanGram:	VSM
 		sLoadShader("BloomSetup", s_shBloomSetup);
 		sLoadShader("HDRPostProcess", s_shHDRPostProcess);
 		sLoadShader("Hud3D", s_sh3DHUD);

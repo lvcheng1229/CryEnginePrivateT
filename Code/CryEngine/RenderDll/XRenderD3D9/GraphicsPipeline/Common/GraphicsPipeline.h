@@ -14,6 +14,7 @@ enum EGraphicsPipelineStage
 	eStage_SceneGBuffer,
 	eStage_SceneForward,
 	eStage_SceneCustom,
+	eStage_VSM,//SpeedEngine: VSM
 	eStage_SCENE_NUM,
 
 	// Regular stages supporting async compute

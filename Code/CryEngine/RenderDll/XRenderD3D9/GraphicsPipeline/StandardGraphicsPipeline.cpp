@@ -52,6 +52,8 @@
 #include "Common/ReverseDepth.h"
 #include "D3D_SVO.h"
 
+#include "VirtualShadowMap/VirtualShadowMap.h"//TanGram:VSM
+
 CStandardGraphicsPipeline::CStandardGraphicsPipeline(const IRenderer::SGraphicsPipelineDescription& desc, const std::string& uniqueIdentifier, const SGraphicsPipelineKey key)
 	: CGraphicsPipeline(desc, uniqueIdentifier, key)
 {
@@ -316,6 +318,13 @@ void CStandardGraphicsPipeline::Execute()
 		// Shadow maps
 		if (GetStage<CShadowMapStage>()->IsStageActive(m_renderingFlags))
 			GetStage<CShadowMapStage>()->Execute();
+
+		//Virtual Shadow Map
+		if (GetStage<CVirtualShadowMapStage>()->IsStageActive(m_renderingFlags))
+		{
+			GetStage<CVirtualShadowMapStage>()->Execute();
+		}
+			
 
 		// Wait for Shadow Map draw jobs to finish (also required for HeightMap AO and SVOGI)
 		renderItemDrawer.WaitForDrawSubmission();

@@ -32,8 +32,8 @@ void CBloomSetupStage::InitBuffer()
 		{
 			//USAGE_RAW	BIND_UNORDERED_ACCESS USAGE_INDIRECTARGS BIND_SHADER_RESOURCE No USAGE_STRUCTURED
 
-			//m_dispatchIndirectCount[Index].Create(3, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_INDIRECTARGS, NULL);
-			m_dispatchIndirectCount[Index].Create(3, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_INDIRECTARGS, NULL);
+			m_dispatchIndirectCount[Index].Create(3, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_INDIRECTARGS, NULL);
+			//m_dispatchIndirectCount[Index].Create(3, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_INDIRECTARGS, NULL);
 			m_dispatchIndirectCount[Index].SetDebugName("m_dispatchIndirectCount" + Index);
 		}
 	}

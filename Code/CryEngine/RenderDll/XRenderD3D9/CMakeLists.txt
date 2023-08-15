@@ -762,6 +762,11 @@ add_sources("CryRenderer_uber_6.cpp"
         "GraphicsPipeline/BloomSetup.cpp"
         #TanGram:TiledBasedBloom:[BEGIN]
 		
+		#TanGram:VSM:[BEGIN]
+		"GraphicsPipeline/VirtualShadowMap/VirtualShadowMap.h"
+        "GraphicsPipeline/VirtualShadowMap/VirtualShadowMap.cpp"
+        #TanGram:VSM:[BEGIN]
+
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.h"
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.cpp"
 		"GraphicsPipeline/ClipVolumes.h"

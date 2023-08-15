@@ -74,7 +74,7 @@ template<typename T>
 static inline VkBufferUsageFlagBits ConvertToVKBufferUsageBits(const T& desc)
 {
 	//TanGram:VulkanRHI
-	VkBufferUsageFlagBits RetBit;
+	//VkBufferUsageFlagBits RetBit;
 
 
 	// *INDENT-OFF*
