@@ -18,7 +18,8 @@ public:
 
 	bool IsStageActive(EShaderRenderingFlags flags) const final
 	{
-		return CRenderer::CV_r_HDRBloom == 0 && CRenderer::CV_r_PostProcess && CRenderer::CV_r_HDRTiledBloom == 1;
+		//return CRenderer::CV_r_HDRBloom == 0 && CRenderer::CV_r_PostProcess && CRenderer::CV_r_HDRTiledBloom == 1;
+		return false;
 	}
 
 	void Execute();

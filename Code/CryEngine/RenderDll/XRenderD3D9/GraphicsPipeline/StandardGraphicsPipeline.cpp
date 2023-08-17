@@ -227,8 +227,10 @@ void CStandardGraphicsPipeline::ExecuteHDRPostProcessing()
 	}
 
 	//TanGram :TiledBloom:[BEGIN]
-	if (GetStage<CAutoExposureStage>()->IsStageActive(m_renderingFlags) ||
-		GetStage<CBloomStage>()->IsStageActive(m_renderingFlags))
+	if ((GetStage<CAutoExposureStage>()->IsStageActive(m_renderingFlags) ||
+		GetStage<CBloomStage>()->IsStageActive(m_renderingFlags)) &&
+		GetStage<CBloomSetupStage>()->IsStageActive(m_renderingFlags)
+		)
 	{
 		PROFILE_LABEL_SCOPE("QUARTER_RES_DOWNSAMPLE_HDRTARGET_BLOOM_SETUP");
 
@@ -320,9 +322,11 @@ void CStandardGraphicsPipeline::Execute()
 			GetStage<CShadowMapStage>()->Execute();
 
 		//Virtual Shadow Map
+		CVSMParameters VSMParameters;
+		VSMParameters.DepthTexIn = pZTexture;
 		if (GetStage<CVirtualShadowMapStage>()->IsStageActive(m_renderingFlags))
 		{
-			GetStage<CVirtualShadowMapStage>()->Execute();
+			GetStage<CVirtualShadowMapStage>()->Execute(&VSMParameters);
 		}
 			
 

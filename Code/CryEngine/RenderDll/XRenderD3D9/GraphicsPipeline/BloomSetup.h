@@ -40,7 +40,8 @@ public:
 
 	bool IsStageActive(EShaderRenderingFlags flags) const final
 	{
-		return CRenderer::CV_r_PostProcess;
+		//return CRenderer::CV_r_PostProcess;
+		return false;
 	}
 	
 	void Resize(int renderWidth, int renderHeight) final;

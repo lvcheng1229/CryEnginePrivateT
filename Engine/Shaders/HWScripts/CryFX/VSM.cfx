@@ -1,8 +1,8 @@
-Texture2D           SceneDepthTexture : register(t0); 
-RWTexture2D<uint>   VSMTileFlags    : register(u0);
+Texture2D           SceneDepthTexture   : register(t0); 
+RWBuffer<uint>      VSMTileFlags        : register(u0);
 
 float4 View_BufferSizeAndInvSize;
-float4 VirtualTileNum;
+//float4 VirtualTileNum;
 
 [numthreads(16, 16, 1)]
 void VSMTileMaskCS(uint2 DispatchThreadID :SV_DispatchThreadID)
@@ -15,5 +15,13 @@ void VSMTileMaskCS(uint2 DispatchThreadID :SV_DispatchThreadID)
         return;
     }
 
-    VSMTileFlags[uint2(0,0)] = 1.0;
+    VSMTileFlags[uint(0)] = DeviceZ;
 }
+
+technique VSMTileMask
+{
+	pass p0
+	{
+		ComputeShader = VSMTileMaskCS();
+	}
+};

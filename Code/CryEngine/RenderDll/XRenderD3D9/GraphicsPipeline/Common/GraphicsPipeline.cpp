@@ -18,6 +18,8 @@
 #include "../VolumetricFog.h"
 #include "../DebugRenderTargets.h"
 
+#include "../VirtualShadowMap/VirtualShadowMap.h"
+
 void CGraphicsPipelineResources::Init()
 {
 	// Default Template textures
