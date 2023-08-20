@@ -43,6 +43,7 @@ void VSMTileMaskCS(uint2 DispatchThreadID :SV_DispatchThreadID)
     uint2 uvBuffer = uvVSM * vsmTileNum.xy;
     uint bufferIndex = uvBuffer.y * vsmTileNum.x + vsmTileNum.x;
 
+    //clamp uv
     InterlockedCompareStore(vsmTileFlags[bufferIndex],0,1);
 }
 
