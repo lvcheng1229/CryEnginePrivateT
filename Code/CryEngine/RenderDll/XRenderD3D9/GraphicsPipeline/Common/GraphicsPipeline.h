@@ -92,6 +92,10 @@ public:
 	CTexture* m_pTexTiledBloom[2] = {nullptr,nullptr};
 	//TanGram :TiledBloom:[END]
 
+	//TanGram:VSM:[BEGIN]
+	CTexture* m_pTexVSMVisualize = nullptr;
+	//TanGram:VSM:[END]
+
 	CTexture* m_pTexHDRTargetMaskedScaled[4][4] = { {nullptr, nullptr, nullptr, nullptr},
 													{nullptr, nullptr, nullptr, nullptr},
 													{nullptr, nullptr, nullptr, nullptr},

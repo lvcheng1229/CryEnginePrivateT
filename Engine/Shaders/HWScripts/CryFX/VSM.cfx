@@ -1,21 +1,75 @@
-Texture2D           SceneDepthTexture   : register(t0); 
-RWBuffer<uint>      VSMTileFlags        : register(u0);
+#include "Common.cfi"
+#include "ShadeLib.cfi"
 
-float4 View_BufferSizeAndInvSize;
-//float4 VirtualTileNum;
+Texture2D           sceneDepthTex   : register(t0); 
+RWBuffer<uint>      vsmTileFlags        : register(u0);
+
+float4 sceneDepthTexSize;
+float4 vsmTileNum;
+
+//https://zhuanlan.zhihu.com/p/102758967 homogeneous space
+//https://blog.csdn.net/dengyibing/article/details/80793209 reconstruct worldpos from scene depth
+//https://blog.csdn.net/yinfourever/article/details/120935179 cryengine's reconstruct function
+//sceneDepthTex is linearize depth,not device z, see LinearizeDepthPS shader
+
+//https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
 
 [numthreads(16, 16, 1)]
 void VSMTileMaskCS(uint2 DispatchThreadID :SV_DispatchThreadID)
 {
-    float DeviceZ = SceneDepthTexture.Load(int3(DispatchThreadID,0));
-    float2 UV = DispatchThreadID * View_BufferSizeAndInvSize.zw;
+    
+    float linearDepth = sceneDepthTex.Load(int3(DispatchThreadID,0));
 
-    if(DeviceZ == 0.0 || UV.x > 1.0f || UV.y > 1.0f)
+    float2 uvScebeDepth = DispatchThreadID * sceneDepthTexSize.zw;
+
+    if(linearDepth == 0.0 || uvScebeDepth.x > 1.0f || uvScebeDepth.y > 1.0f)
     {
         return;
     }
 
-    VSMTileFlags[uint(0)] = DeviceZ;
+    float2 screenPos = uvScebeDepth * 2.0f - 1.0f; 
+    screenPos.y *= -1.0f;
+
+    float4 wposScaled = float4(WPos * linearDepth, linearDepth, 1.0);
+    float3 worldPosition = mul(CV_ScreenToWorldBasis, wposScaled); //cbuffer CBPerViewGlobal : register(b6)
+
+    float4 shadowScreenPOS = mul(float4(worldPosition,1.0),LightViewProjectMatrix);
+    shadowScreenPOS.xyz /= shadowScreenPOS.w;
+
+    float2 uvVSM = shadowScreenPOS.xy; 
+    uvVSM.y *= -1.0;
+    uvVSM = uvVSM * 0.5 + 0.5f;
+
+    uint2 uvBuffer = uvVSM * vsmTileNum.xy;
+    uint bufferIndex = uvBuffer.y * vsmTileNum.x + vsmTileNum.x;
+
+    InterlockedCompareStore(vsmTileFlags[bufferIndex],0,1);
+}
+
+
+struct vtxOut
+{
+  OUT_HPOS_IN_WPOS
+  float4 baseTC     : TEXCOORD0;
+};
+
+vtxOut FullscreenTriVS(uint VertexID : SV_VertexID)
+{
+	vtxOut OUT = (vtxOut)0;
+	OUT.HPosition = GetHPos_FromTriVertexID(VertexID);
+	OUT.baseTC.xy = GetBaseTC_FromTriVertexID(VertexID);
+	return OUT;
+}
+
+Buffer<uint>    visualizeBuffer    : register(t0);
+float4 visualizeBufferSize;
+
+pixout VisualizeBufferPS(vtxOut IN)
+{
+    pixout OUT;
+    uint2 uvCoord = IN.baseTC.xy * visualizeBufferSize.xy;
+    OUT.Color = float4(visualizeBuffer[uvCoord.y * visualizeBufferSize.x + uvCoord.x],0.0,0.0,1.0);
+    return OUT;
 }
 
 technique VSMTileMask
@@ -23,5 +77,15 @@ technique VSMTileMask
 	pass p0
 	{
 		ComputeShader = VSMTileMaskCS();
+	}
+};
+
+
+technique VSMVisualizeBuffer
+{
+	pass p0
+	{
+		VertexShader = FullscreenTriVS();
+		PixelShader = VisualizeBufferPS();
 	}
 };

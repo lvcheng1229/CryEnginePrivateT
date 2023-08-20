@@ -5,15 +5,19 @@
 #include "../Common/ComputeRenderPass.h"
 #include "../Common/GraphicsPipeline.h"
 
-static const int32 VSMTexSizeX = 2048;
-static const int32 VSMTexSizeY = 2048;
+#define PHYSICAL_VSM_TEX_SIZE 2048
+#define VIRTUAL_VSM_TEX_SIZE 8192
+
+#define VSM_TILE_SIZE 256
+#define VSM_TILE_NUM_WIDTH (PHYSICAL_VSM_TEX_SIZE / VSM_TILE_SIZE)//8 
+
 
 #define TILE_MASK_CS_GROUP_SIZE 16
-#define VIRTUAL_TILE_NUM_WIDTH 8
+
 
 struct CVSMParameters
 {
-	CTexture* DepthTexIn;
+	CTexture* m_texDepth;
 };
 
 class CVirtualShadowMapStage : public CGraphicsPipelineStage
@@ -24,6 +28,7 @@ public:
 	CVirtualShadowMapStage(CGraphicsPipeline& graphicsPipeline)
 		: CGraphicsPipelineStage(graphicsPipeline)
 		, m_passVSMTileMask(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
+		, m_passBufferVisualize(&graphicsPipeline)
 	{
 
 	}
@@ -38,11 +43,19 @@ public:
 
 	void PrePareShadowMap();
 
+
 	void Execute(CVSMParameters* vsmParameters);
+
+	void MaskVSMTile();
+	void VisualizeBuffer();
+
 private:
 	CComputeRenderPass	m_passVSMTileMask;
-
 	CGpuBuffer m_vsmTileMaskBuffer;
-
 	_smart_ptr<CTexture>	m_pShadowDepthTarget;
+
+	CVSMParameters m_vsmParameters;
+
+	CFullscreenPass m_passBufferVisualize;
+	CTexture* m_pVisualizeTarget;
 };
