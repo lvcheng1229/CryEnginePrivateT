@@ -1,50 +1,55 @@
 #include "Common.cfi"
 #include "ShadeLib.cfi"
 
-Texture2D           sceneDepthTex   : register(t0); 
+Texture2D           deviceZTex          : register(t0); 
 RWBuffer<uint>      vsmTileFlags        : register(u0);
 
-float4 sceneDepthTexSize;
-float4 vsmTileNum;
+cbuffer CBTileFlagGen : register(b0)
+{
+	struct 
+	{
+		float4x4 invViewProj;
+        float4x4 lightViewProj;
 
-//https://zhuanlan.zhihu.com/p/102758967 homogeneous space
-//https://blog.csdn.net/dengyibing/article/details/80793209 reconstruct worldpos from scene depth
-//https://blog.csdn.net/yinfourever/article/details/120935179 cryengine's reconstruct function
-//sceneDepthTex is linearize depth,not device z, see LinearizeDepthPS shader
-
-//https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
+        float4 deviceZTexSize;
+        int4 vsmTileNum;
+	} c_TileFlagGenConstants;
+};
 
 [numthreads(16, 16, 1)]
-void VSMTileMaskCS(uint2 DispatchThreadID :SV_DispatchThreadID)
+void VSMTileFlagGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
 {
-    
-    float linearDepth = sceneDepthTex.Load(int3(DispatchThreadID,0));
+    float2 uvdeviceZ = DispatchThreadID * c_TileFlagGenConstants.deviceZTexSize.zw;
 
-    float2 uvScebeDepth = DispatchThreadID * sceneDepthTexSize.zw;
-
-    if(linearDepth == 0.0 || uvScebeDepth.x > 1.0f || uvScebeDepth.y > 1.0f)
+    if(uvdeviceZ.x > 1.0f || uvdeviceZ.y > 1.0f)
     {
         return;
     }
 
-    float2 screenPos = uvScebeDepth * 2.0f - 1.0f; 
+    float deviceZ = deviceZTex.Load(int3(DispatchThreadID,0));
+
+    float2 screenPos = uvdeviceZ * 2.0f - 1.0f; 
     screenPos.y *= -1.0f;
 
-    float4 wposScaled = float4(WPos * linearDepth, linearDepth, 1.0);
-    float3 worldPosition = mul(CV_ScreenToWorldBasis, wposScaled); //cbuffer CBPerViewGlobal : register(b6)
+    float4 ndcPos = float4(screenPos, deviceZ, 1.0);
+    
+    float4 worldPosition = mul(c_TileFlagGenConstants.invViewProj, ndcPos);
+    worldPosition.xyz /= worldPosition.w;
 
-    float4 shadowScreenPOS = mul(float4(worldPosition,1.0),LightViewProjectMatrix);
+    float4 shadowScreenPOS = mul(float4(worldPosition,1.0),c_TileFlagGenConstants.lightViewProj);
     shadowScreenPOS.xyz /= shadowScreenPOS.w;
 
     float2 uvVSM = shadowScreenPOS.xy; 
     uvVSM.y *= -1.0;
     uvVSM = uvVSM * 0.5 + 0.5f;
 
-    uint2 uvBuffer = uvVSM * vsmTileNum.xy;
-    uint bufferIndex = uvBuffer.y * vsmTileNum.x + vsmTileNum.x;
+    if(all(abs(uvVSM) < 1.0f))
+    {
+        uint2 uvBuffer = uvVSM * c_TileFlagGenConstants.vsmTileNum.xy;
+        uint bufferIndex = uvBuffer.y * c_TileFlagGenConstants.vsmTileNum.x + uvBuffer.x;
 
-    //clamp uv
-    InterlockedCompareStore(vsmTileFlags[bufferIndex],0,1);
+        vsmTileFlags[bufferIndex] = 1;
+    }
 }
 
 
@@ -73,11 +78,11 @@ pixout VisualizeBufferPS(vtxOut IN)
     return OUT;
 }
 
-technique VSMTileMask
+technique VSMTileFlagGen
 {
 	pass p0
 	{
-		ComputeShader = VSMTileMaskCS();
+		ComputeShader = VSMTileFlagGenCS();
 	}
 };
 

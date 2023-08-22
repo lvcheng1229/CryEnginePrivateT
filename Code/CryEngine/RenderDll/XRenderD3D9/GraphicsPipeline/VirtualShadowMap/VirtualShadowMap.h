@@ -17,7 +17,56 @@
 
 struct CVSMParameters
 {
-	CTexture* m_texDepth;
+	
+};
+
+struct CTileFlagGenParameter
+{
+	Matrix44 invViewProj;
+	Matrix44 lightViewProj;
+	Vec4 deviceZTexSize;
+	Vec4i vsmTileNum;
+};
+
+class CVirtualShadowMapManager
+{
+public:
+	CVirtualShadowMapManager()
+	{
+
+	}
+
+	CRenderView* m_pRenderView;
+	CTexture* m_texDeviceZ;
+};
+
+class CTileFlagGenState
+{
+public:
+	CTileFlagGenState(CVirtualShadowMapManager* vsmManager, CComputeRenderPass* compRenderPass)
+		:m_vsmManager(vsmManager),
+		m_compPass(compRenderPass) {};
+
+	void Init();
+	void Update();
+	void Execute();
+
+	CGpuBuffer* GetVsmTileFlagBuffer()
+	{
+		return &m_vsmTileFlagBuffer;
+	}
+private:
+	Vec2i m_texDeviceZWH;
+
+	CVirtualShadowMapManager* m_vsmManager;
+
+	CComputeRenderPass* m_compPass;
+
+	CGpuBuffer m_vsmTileFlagBuffer;
+
+	CConstantBufferPtr  m_tileFlagGenConstantBuffer;
+
+	CTileFlagGenParameter m_tileFlagGenParameters;
 };
 
 class CVirtualShadowMapStage : public CGraphicsPipelineStage
@@ -27,10 +76,11 @@ public:
 
 	CVirtualShadowMapStage(CGraphicsPipeline& graphicsPipeline)
 		: CGraphicsPipelineStage(graphicsPipeline)
-		, m_passVSMTileMask(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
+		, m_passVSMTileFlagGen(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
 		, m_passBufferVisualize(&graphicsPipeline)
+		, tileFlagGenStage(&m_vsmManager, &m_passVSMTileFlagGen)
 	{
-
+		
 	}
 
 	bool IsStageActive(EShaderRenderingFlags flags) const final
@@ -46,16 +96,20 @@ public:
 
 	void Execute(CVSMParameters* vsmParameters);
 
-	void MaskVSMTile();
+
 	void VisualizeBuffer();
 
 private:
-	CComputeRenderPass	m_passVSMTileMask;
-	CGpuBuffer m_vsmTileMaskBuffer;
+	CVirtualShadowMapManager m_vsmManager;
+
+	
+
+	CComputeRenderPass	m_passVSMTileFlagGen;
+	CTileFlagGenState tileFlagGenStage;
+	
+
 	_smart_ptr<CTexture>	m_pShadowDepthTarget;
-
-	CVSMParameters m_vsmParameters;
-
+	
 	CFullscreenPass m_passBufferVisualize;
 	CTexture* m_pVisualizeTarget;
 };

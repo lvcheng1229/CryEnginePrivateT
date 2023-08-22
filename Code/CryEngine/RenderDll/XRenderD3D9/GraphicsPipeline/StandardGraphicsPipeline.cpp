@@ -323,7 +323,7 @@ void CStandardGraphicsPipeline::Execute()
 
 		//Virtual Shadow Map
 		CVSMParameters vsmParameters;
-		vsmParameters.m_texDepth = pZTexture;
+		vsmParameters.m_texDeviceZ = pZTexture;
 		if (GetStage<CVirtualShadowMapStage>()->IsStageActive(m_renderingFlags))
 		{
 			GetStage<CVirtualShadowMapStage>()->Execute(&vsmParameters);
