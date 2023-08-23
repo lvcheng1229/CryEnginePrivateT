@@ -15,19 +15,7 @@ void CTileFlagGenState::Init()
 
 void CTileFlagGenState::Update()
 {
-	//const Vec3 camPos = pMainView->GetCamera(CCamera::eEye_Left).GetPosition();
-	//AABB aabb = frustum.aabbCasters;
-	//aabb.Move(camPos);
-	//
-	//Matrix44A view, proj;
-	//CShadowUtils::GetShadowMatrixForObject(proj, view, frustumInfo, frustum.vLightSrcRelPos, aabb);
-	//
-	//viewProj = view * proj;
-
-	//targetPass.m_ViewProjMatrix = viewProj;
-	//targetFrustum.mLightViewMatrix = sourcePass.m_ViewProjMatrix;
-	//lightViewProj = pFr->mLightViewMatrix;
-	m_tileFlagGenParameters.lightViewProj;
+	m_tileFlagGenParameters.lightViewProj = m_vsmManager->m_lightViewProjMatrix.GetTransposed();
 
 	const SRenderViewInfo& viewInfo = m_vsmManager->m_pRenderView->GetViewInfo(CCamera::eEye_Left);
 	m_tileFlagGenParameters.invViewProj = viewInfo.invCameraProjMatrix.GetTransposed();
@@ -41,25 +29,23 @@ void CTileFlagGenState::Update()
 
 void CTileFlagGenState::Execute()
 {
-	Vec4i DispatchSize = Vec4i(divideRoundUp(m_texDeviceZWH, Vec2i(TILE_MASK_CS_GROUP_SIZE, TILE_MASK_CS_GROUP_SIZE)), 0, 0);
-	
-	m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileFlagGen"), 0);
-	m_compPass->SetOutputUAV(0, &m_vsmTileFlagBuffer);
-	m_compPass->SetTexture(0, m_vsmManager->m_texDeviceZ);
-	m_compPass->SetConstantBuffer(0, m_tileFlagGenConstantBuffer);
-	m_compPass->SetDispatchSize(DispatchSize.x, DispatchSize.y, 1);
-	m_compPass->PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
+	if (m_vsmManager->m_frustumValid)
+	{
+		Vec4i DispatchSize = Vec4i(divideRoundUp(m_texDeviceZWH, Vec2i(TILE_MASK_CS_GROUP_SIZE, TILE_MASK_CS_GROUP_SIZE)), 0, 0);
 
-	const bool bAsynchronousCompute = false;
-	SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
-	m_compPass->Execute(computeCommandList);
+		m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileFlagGen"), 0);
+		m_compPass->SetOutputUAV(0, &m_vsmTileFlagBuffer);
+		m_compPass->SetTexture(0, m_vsmManager->m_texDeviceZ);
+		m_compPass->SetConstantBuffer(0, m_tileFlagGenConstantBuffer);
+		m_compPass->SetDispatchSize(DispatchSize.x, DispatchSize.y, 1);
+		m_compPass->PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
+
+		const bool bAsynchronousCompute = false;
+		SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
+		m_compPass->Execute(computeCommandList);
+	}
+
 }
-
-
-
-
-
-
 
 void CVirtualShadowMapStage::Init()
 {
@@ -68,8 +54,34 @@ void CVirtualShadowMapStage::Init()
 
 void CVirtualShadowMapStage::Update()
 {
-	m_vsmManager.m_pRenderView = RenderView();
-	m_vsmManager.m_texDeviceZ = RenderView()->GetDepthTarget();;
+	CRenderView* pRenderView = RenderView();
+	pRenderView->PrepareShadowViews();//TODO:!!
+
+
+	m_vsmManager.m_pRenderView = pRenderView;
+	m_vsmManager.m_texDeviceZ = pRenderView->GetDepthTarget();;
+
+	SShadowFrustumToRender* pNearestFrustum = nullptr;
+	for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
+	{
+		if (fr.pFrustum->m_eFrustumType == ShadowMapFrustum::e_Nearest)
+		{
+			pNearestFrustum = &fr;
+			break;
+		}
+	}
+	
+	Matrix44A viewMatrix, projMatrix; Vec4 frustumInfo;
+
+	if (pNearestFrustum)
+	{
+		const Vec3 camPos = RenderView()->GetCamera(CCamera::eEye_Left).GetPosition();
+		AABB aabb = pNearestFrustum->pFrustum->aabbCasters;//aabb.Move(camPos);
+		CShadowUtils::GetShadowMatrixForObject(projMatrix, viewMatrix, frustumInfo, pNearestFrustum->pFrustum->vLightSrcRelPos, aabb);
+		m_vsmManager.m_lightViewProjMatrix = viewMatrix * projMatrix;
+		m_vsmManager.m_frustumValid = true;
+	}
+
 	tileFlagGenStage.Update();
 }
 
@@ -89,7 +101,7 @@ void CVirtualShadowMapStage::PrePareShadowMap()
 	//m_pShadowDepthTarget = pDepthTarget;
 }
 
-void CVirtualShadowMapStage::Execute(CVSMParameters* vsmParameters)
+void CVirtualShadowMapStage::Execute()
 {
 	tileFlagGenStage.Execute();
 

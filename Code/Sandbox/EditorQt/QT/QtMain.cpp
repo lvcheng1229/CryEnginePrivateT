@@ -62,6 +62,7 @@ static void QtLogToDebug(QtMsgType Type, const QMessageLogContext& Context, cons
 void EnableXTDarkSkin()
 {
 	// Enable dark theme in XT Toolikit
+	return;//TanGram:
 	{
 		XTPOffice2007Images()->SetHandle(PathUtil::Make(PathUtil::GetEnginePath(), "Editor\\Styles\\Office2007Black.dll").c_str());
 
@@ -80,6 +81,7 @@ void EnableXTDarkSkin()
 
 		//bool test = XTPSkinManager()->IsColorFilterExists();
 		// Redraw everything
+
 
 		//m_bSkinLoaded = true;
 	}

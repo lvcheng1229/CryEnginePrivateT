@@ -15,9 +15,9 @@
 #define TILE_MASK_CS_GROUP_SIZE 16
 
 
-struct CVSMParameters
+struct VSMpFrustum : public CMultiThreadRefCount
 {
-	
+
 };
 
 struct CTileFlagGenParameter
@@ -32,12 +32,16 @@ class CVirtualShadowMapManager
 {
 public:
 	CVirtualShadowMapManager()
+		:m_frustumValid(false)
 	{
 
 	}
 
+	bool m_frustumValid;
 	CRenderView* m_pRenderView;
 	CTexture* m_texDeviceZ;
+
+	Matrix44A m_lightViewProjMatrix;
 };
 
 class CTileFlagGenState
@@ -45,7 +49,7 @@ class CTileFlagGenState
 public:
 	CTileFlagGenState(CVirtualShadowMapManager* vsmManager, CComputeRenderPass* compRenderPass)
 		:m_vsmManager(vsmManager),
-		m_compPass(compRenderPass) {};
+		m_compPass(compRenderPass){};
 
 	void Init();
 	void Update();
@@ -67,6 +71,8 @@ private:
 	CConstantBufferPtr  m_tileFlagGenConstantBuffer;
 
 	CTileFlagGenParameter m_tileFlagGenParameters;
+
+	
 };
 
 class CVirtualShadowMapStage : public CGraphicsPipelineStage
@@ -76,7 +82,7 @@ public:
 
 	CVirtualShadowMapStage(CGraphicsPipeline& graphicsPipeline)
 		: CGraphicsPipelineStage(graphicsPipeline)
-		, m_passVSMTileFlagGen(&graphicsPipeline, CComputeRenderPass::eFlags_ReflectConstantBuffersFromShader)
+		, m_passVSMTileFlagGen(&graphicsPipeline)
 		, m_passBufferVisualize(&graphicsPipeline)
 		, tileFlagGenStage(&m_vsmManager, &m_passVSMTileFlagGen)
 	{
@@ -85,6 +91,7 @@ public:
 
 	bool IsStageActive(EShaderRenderingFlags flags) const final
 	{
+		//return false;
 		return CRenderer::CV_r_VirtualShadowMap;
 	}
 
@@ -93,9 +100,9 @@ public:
 
 	void PrePareShadowMap();
 
+	void Execute();
 
-	void Execute(CVSMParameters* vsmParameters);
-
+	void PrepareShadowPassForFrustum();
 
 	void VisualizeBuffer();
 
