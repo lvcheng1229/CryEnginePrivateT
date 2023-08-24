@@ -44,10 +44,10 @@ public:
 	Matrix44A m_lightViewProjMatrix;
 };
 
-class CTileFlagGenState
+class CTileFlagGenStage
 {
 public:
-	CTileFlagGenState(CVirtualShadowMapManager* vsmManager, CComputeRenderPass* compRenderPass)
+	CTileFlagGenStage(CVirtualShadowMapManager* vsmManager, CComputeRenderPass* compRenderPass)
 		:m_vsmManager(vsmManager),
 		m_compPass(compRenderPass){};
 
@@ -71,9 +71,14 @@ private:
 	CConstantBufferPtr  m_tileFlagGenConstantBuffer;
 
 	CTileFlagGenParameter m_tileFlagGenParameters;
-
-	
 };
+
+
+class CTileTableGenStage
+{
+
+};
+
 
 class CVirtualShadowMapStage : public CGraphicsPipelineStage
 {
@@ -112,7 +117,7 @@ private:
 	
 
 	CComputeRenderPass	m_passVSMTileFlagGen;
-	CTileFlagGenState tileFlagGenStage;
+	CTileFlagGenStage tileFlagGenStage;
 	
 
 	_smart_ptr<CTexture>	m_pShadowDepthTarget;

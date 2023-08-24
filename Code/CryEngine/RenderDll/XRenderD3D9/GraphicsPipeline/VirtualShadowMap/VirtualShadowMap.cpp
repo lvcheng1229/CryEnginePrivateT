@@ -2,7 +2,7 @@
 
 
 
-void CTileFlagGenState::Init()
+void CTileFlagGenStage::Init()
 {
 	if (!m_vsmTileFlagBuffer.IsAvailable())
 	{
@@ -13,7 +13,7 @@ void CTileFlagGenState::Init()
 	m_tileFlagGenConstantBuffer = gcpRendD3D->m_DevBufMan.CreateConstantBuffer(sizeof(CTileFlagGenParameter));
 }
 
-void CTileFlagGenState::Update()
+void CTileFlagGenStage::Update()
 {
 	m_tileFlagGenParameters.lightViewProj = m_vsmManager->m_lightViewProjMatrix.GetTransposed();
 
@@ -27,8 +27,10 @@ void CTileFlagGenState::Update()
 	m_tileFlagGenConstantBuffer->UpdateBuffer(&m_tileFlagGenParameters, sizeof(CTileFlagGenParameter), 0, 1);
 }
 
-void CTileFlagGenState::Execute()
+void CTileFlagGenStage::Execute()
 {
+	PROFILE_LABEL_SCOPE("VSM_TILE_FLAG_GEN");
+
 	if (m_vsmManager->m_frustumValid)
 	{
 		Vec4i DispatchSize = Vec4i(divideRoundUp(m_texDeviceZWH, Vec2i(TILE_MASK_CS_GROUP_SIZE, TILE_MASK_CS_GROUP_SIZE)), 0, 0);
@@ -55,7 +57,17 @@ void CVirtualShadowMapStage::Init()
 void CVirtualShadowMapStage::Update()
 {
 	CRenderView* pRenderView = RenderView();
-	pRenderView->PrepareShadowViews();//TODO:!!
+	//pRenderView->PrepareShadowViews();//TODO:!!
+
+	for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
+	{
+		if (fr.pFrustum->m_eFrustumType != ShadowMapFrustum::e_Nearest)
+		{
+			fr.pShadowsView->SwitchUsageMode(CRenderView::eUsageModeReading);
+		}
+	}
+
+	pRenderView->m_shadows.PrepareNearestShadows();
 
 
 	m_vsmManager.m_pRenderView = pRenderView;
@@ -109,8 +121,6 @@ void CVirtualShadowMapStage::Execute()
 
 	return;
 }
-
-
 
 void CVirtualShadowMapStage::VisualizeBuffer()
 {

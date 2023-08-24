@@ -35,7 +35,7 @@ void VSMTileFlagGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
     float4 worldPosition = mul(c_TileFlagGenConstants.invViewProj, ndcPos);
     worldPosition.xyz /= worldPosition.w;
 
-    float4 shadowScreenPOS = mul(float4(worldPosition,1.0),c_TileFlagGenConstants.lightViewProj);
+    float4 shadowScreenPOS = mul(worldPosition,c_TileFlagGenConstants.lightViewProj);
     shadowScreenPOS.xyz /= shadowScreenPOS.w;
 
     float2 uvVSM = shadowScreenPOS.xy; 
