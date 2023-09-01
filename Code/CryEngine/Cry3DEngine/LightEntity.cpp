@@ -262,6 +262,13 @@ void CLightEntity::UpdateGSMLightSourceShadowFrustum(const SRenderingPassInfo& p
 		nNextLod += UpdateGSMLightSourceNearestShadowFrustum(nNextLod, passInfo);
 	}
 
+	//TanGram:VSM:[BEGIN]
+	if (m_light.m_Flags & DLF_SUN)
+	{
+		nNextLod += UpdateGSMLightSourceVSMFrustum(nNextLod, passInfo);
+	}
+	//TanGram:VSM:[END]
+
 	// free not used frustums
 	for (int nLod = nNextLod; nLod < MAX_GSM_LODS_NUM; nLod++)
 	{
@@ -467,6 +474,34 @@ int CLightEntity::UpdateGSMLightSourceNearestShadowFrustum(int nFrustumIndex, co
 
 	return 0;
 }
+
+//TanGram:VSM:[BEGIN]
+int CLightEntity::UpdateGSMLightSourceVSMFrustum(int nFrustumIndex, const SRenderingPassInfo& passInfo)
+{
+	CRY_ASSERT(nFrustumIndex >= 0 && nFrustumIndex < MAX_GSM_LODS_NUM);
+	static ICVar* pDrawVSMCVar = GetConsole()->GetCVar("r_VirtualShadowMap");
+	if (pDrawVSMCVar && pDrawVSMCVar->GetIVal() > 0 && nFrustumIndex < CRY_ARRAY_COUNT(m_pShadowMapInfo->pGSM))
+	{
+		if (m_light.m_Flags & DLF_SUN)
+		{
+			ShadowMapFrustumPtr& pFr = m_pShadowMapInfo->pGSM[nFrustumIndex];
+			if (!pFr) pFr = new ShadowMapFrustum;
+
+			*pFr = *m_pShadowMapInfo->pGSM[0];        // copy first cascade
+			pFr->m_eFrustumType = ShadowMapFrustum::e_VSM;
+			pFr->bUseShadowsPool = false;
+			pFr->fShadowFadingDist = 1.0f;
+			pFr->fDepthConstBias = 0.0001f;//TODO:VSM
+			assert(!pFr->pOnePassShadowView);
+
+			pFr->vLightSrcRelPos = m_light.m_Origin - passInfo.GetCamera().GetPosition();
+			return 1;
+		}
+	}
+
+	return 0;
+}
+//TanGram:VSM:[END]
 
 bool CLightEntity::IsOnePassTraversalFrustum(const ShadowMapFrustum* pFr)
 {

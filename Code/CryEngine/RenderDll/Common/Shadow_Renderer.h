@@ -39,6 +39,7 @@ struct ShadowMapFrustum : public CMultiThreadRefCount
 		e_HeightMapAO        = 3,
 		e_Nearest            = 4,
 		e_PerObject          = 5,
+		e_VSM				 = 6,//TanGram:VSM
 
 		e_NumTypes
 	};

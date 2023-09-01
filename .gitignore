@@ -51,3 +51,4 @@ __pycache__/*
 /CryTestProj/Breeze/Breeze_package/*
 /CryTestProj/Breeze/rc_out_PC_pure/*
 CRYENGINE_v5.7.0_SDKs.zip
+/cbuild/*

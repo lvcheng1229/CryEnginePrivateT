@@ -74,6 +74,7 @@ public:
 	int                                  UpdateGSMLightSourceDynamicShadowFrustum(int nDynamicLodCount, int nDistanceLodCount, float& fDistanceFromViewLastDynamicLod, float& fGSMBoxSizeLastDynamicLod, bool bFadeLastCascade, const SRenderingPassInfo& passInfo);
 	int                                  UpdateGSMLightSourceCachedShadowFrustum(int nFirstLod, int nLodCount, bool isHeightMapAOEnabled, float& fDistFromViewDynamicLod, float fRadiusDynamicLod, const SRenderingPassInfo& passInfo);
 	int                                  UpdateGSMLightSourceNearestShadowFrustum(int nFrustumIndex, const SRenderingPassInfo& passInfo);
+	int									 UpdateGSMLightSourceVSMFrustum(int nFrustumIndex, const SRenderingPassInfo& passInfo);//TanGram:VSM
 	bool                                 ProcessFrustum(int nLod, float fCamBoxSize, float fDistanceFromView, PodArray<struct SPlaneObject>& lstCastersHull, const SRenderingPassInfo& passInfo);
 	void                                 CollectShadowCascadeForOnePassTraversal(ShadowMapFrustum* pFr);
 	static bool                          IsOnePassTraversalFrustum(const ShadowMapFrustum* pFr);

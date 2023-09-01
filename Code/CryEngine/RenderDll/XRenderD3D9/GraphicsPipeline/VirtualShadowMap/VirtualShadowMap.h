@@ -96,8 +96,8 @@ public:
 
 	bool IsStageActive(EShaderRenderingFlags flags) const final
 	{
-		//return false;
-		return CRenderer::CV_r_VirtualShadowMap;
+		return false;
+		//return CRenderer::CV_r_VirtualShadowMap;
 	}
 
 	void  Init()   final;

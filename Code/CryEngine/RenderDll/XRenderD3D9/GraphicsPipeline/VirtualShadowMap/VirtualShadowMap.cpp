@@ -56,44 +56,73 @@ void CVirtualShadowMapStage::Init()
 
 void CVirtualShadowMapStage::Update()
 {
-	CRenderView* pRenderView = RenderView();
+	//CRenderView* pRenderView = RenderView();
 	//pRenderView->PrepareShadowViews();//TODO:!!
 
-	for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
-	{
-		if (fr.pFrustum->m_eFrustumType != ShadowMapFrustum::e_Nearest)
-		{
-			fr.pShadowsView->SwitchUsageMode(CRenderView::eUsageModeReading);
-		}
-	}
-
-	pRenderView->m_shadows.PrepareNearestShadows();
-
-
-	m_vsmManager.m_pRenderView = pRenderView;
-	m_vsmManager.m_texDeviceZ = pRenderView->GetDepthTarget();;
-
-	SShadowFrustumToRender* pNearestFrustum = nullptr;
-	for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
-	{
-		if (fr.pFrustum->m_eFrustumType == ShadowMapFrustum::e_Nearest)
-		{
-			pNearestFrustum = &fr;
-			break;
-		}
-	}
+	//Ortho
+	//f32 yScale = aabb.GetRadius() * 1.11f;///1.1f; //2.0f*
+	//f32 xScale = yScale;
+	//f32 fNear = vLightSrcRelPos.GetLength();
+	//f32 fFar = fNear;
+	//fNear -= aabb.GetRadius();
+	//fFar += aabb.GetRadius();
+	//
+	//mathMatrixOrtho(&mLightProj, yScale, xScale, fNear, fFar);
 	
-	Matrix44A viewMatrix, projMatrix; Vec4 frustumInfo;
+	//
+	//const Vec3 zAxis(0.f, 0.f, 1.f);
+	//const Vec3 yAxis(0.f, 1.f, 0.f);
+	//Vec3 Up;
+	//Vec3 At = aabb.GetCenter();
+	//Vec3 vLightDir = -vLightSrcRelPos;
+	//vLightDir.Normalize();
+	//
+	//Vec3 Eye = At - vLightSrcRelPos.len() * vLightDir;
+	//
+	//if (fabsf(vLightDir.Dot(zAxis)) > 0.9995f)
+	//	Up = yAxis;
+	//else
+	//	Up = zAxis;
+	//
+	//mathMatrixLookAt(&mLightView, Eye, At, Up);
 
-	if (pNearestFrustum)
-	{
-		const Vec3 camPos = RenderView()->GetCamera(CCamera::eEye_Left).GetPosition();
-		AABB aabb = pNearestFrustum->pFrustum->aabbCasters;//aabb.Move(camPos);
-		CShadowUtils::GetShadowMatrixForObject(projMatrix, viewMatrix, frustumInfo, pNearestFrustum->pFrustum->vLightSrcRelPos, aabb);
-		m_vsmManager.m_lightViewProjMatrix = viewMatrix * projMatrix;
-		m_vsmManager.m_frustumValid = true;
-	}
+	//for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
+	//{
+	//	if (fr.pFrustum->m_eFrustumType != ShadowMapFrustum::e_Nearest)
+	//	{
+	//		fr.pShadowsView->SwitchUsageMode(CRenderView::eUsageModeReading);
+	//	}
+	//}
+	//
+	//pRenderView->m_shadows.PrepareNearestShadows();
+	//
+	//
+	//m_vsmManager.m_pRenderView = pRenderView;
+	//m_vsmManager.m_texDeviceZ = pRenderView->GetDepthTarget();;
+	//
+	//SShadowFrustumToRender* pNearestFrustum = nullptr;
+	//for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
+	//{
+	//	if (fr.pFrustum->m_eFrustumType == ShadowMapFrustum::e_Nearest)
+	//	{
+	//		pNearestFrustum = &fr;
+	//		break;
+	//	}
+	//}
+	//
+	//Matrix44A viewMatrix, projMatrix; Vec4 frustumInfo;
+	//
+	//if (pNearestFrustum)
+	//{
+	//	const Vec3 camPos = RenderView()->GetCamera(CCamera::eEye_Left).GetPosition();
+	//	AABB aabb = pNearestFrustum->pFrustum->aabbCasters;//aabb.Move(camPos);
+	//	CShadowUtils::GetShadowMatrixForObject(projMatrix, viewMatrix, frustumInfo, pNearestFrustum->pFrustum->vLightSrcRelPos, aabb);
+	//	m_vsmManager.m_lightViewProjMatrix = viewMatrix * projMatrix;
+	//	m_vsmManager.m_frustumValid = true;
+	//}
 
+	//m_vsmManager.m_lightViewProjMatrix = viewMatrix * projMatrix;
+	//m_vsmManager.m_frustumValid = true;
 	tileFlagGenStage.Update();
 }
 
