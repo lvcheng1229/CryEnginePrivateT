@@ -7,6 +7,7 @@
 #include "RenderPipeline.h"
 #include "../XRenderD3D9/GraphicsPipeline/Common/GraphicsPipelineStage.h"
 
+
 class CRenderItemDrawer
 {
 public:

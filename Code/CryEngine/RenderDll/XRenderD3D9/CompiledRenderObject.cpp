@@ -16,6 +16,8 @@ CRenderObjectsPools* CPermanentRenderObject::s_pPools;
 CRenderObjectsPools* CCompiledRenderObject::s_pPools = 0;
 CryCriticalSectionNonRecursive CCompiledRenderObject::m_drawCallInfoLock;
 
+
+// 
 //////////////////////////////////////////////////////////////////////////
 CRenderObjectsPools::CRenderObjectsPools()
 {

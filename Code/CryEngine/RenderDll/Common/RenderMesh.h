@@ -114,6 +114,15 @@ struct SSetMeshIntData
 	uint32 m_flags;
  	Vec3 *m_pNormalsBuff;
 };
+//TanGram:VSM
+class CRenderMeshInfo
+{
+public:
+	//The index of the render mesh in the cpu object manager
+	int32 m_renderMeshIndex;//TanGram:VSM
+private:
+};
+//TanGram:VSM
 
 class CRenderMesh : public IRenderMesh
 {
@@ -124,7 +133,7 @@ public:
 	static void ClearJobResources();
 
 private:
-  friend class CD3D9Renderer;
+	friend class CD3D9Renderer;
 
 	SMeshStream  m_IBStream;
 	SMeshStream* m_VBStream[VSF_NUM];
@@ -238,7 +247,7 @@ public:
 	//! constructor
 	//! /param szSource this pointer is stored - make sure the memory stays
 	CRenderMesh(const char *szType, const char *szSourceName, bool bLock=false);
-  CRenderMesh();
+	CRenderMesh();
 
 	//! destructor
 	~CRenderMesh();

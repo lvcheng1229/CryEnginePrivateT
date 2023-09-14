@@ -1,41 +1,44 @@
 #include "Common.cfi"
 #include "ShadeLib.cfi"
 
-Texture2D           deviceZTex          : register(t0); 
-RWBuffer<uint>      vsmTileFlags        : register(u0);
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm tile flag generation technique /////////////////////////////////////////////////////////////
 
-cbuffer CBTileFlagGen : register(b0)
+Texture2D           p1_deviceZTex          : register(t0); 
+RWBuffer<uint>      p1_vsmTileFlags        : register(u0);
+
+cbuffer cbTileFlagGen : register(b0)
 {
 	struct 
 	{
 		float4x4 invViewProj;
         float4x4 lightViewProj;
         float4 deviceZTexSize;
-        int4 vsmTileNum;
-	} c_TileFlagGenConstants;
+        int4 vsmVirtualTileNum;
+	} c_tileFlagGenConstants;
 };
 
 [numthreads(16, 16, 1)]
 void VSMTileFlagGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
 {
-    float2 uvdeviceZ = DispatchThreadID * c_TileFlagGenConstants.deviceZTexSize.zw;
+    float2 uvdeviceZ = DispatchThreadID * c_tileFlagGenConstants.deviceZTexSize.zw;
 
     if(uvdeviceZ.x > 1.0f || uvdeviceZ.y > 1.0f)
     {
         return;
     }
 
-    float deviceZ = deviceZTex.Load(int3(DispatchThreadID,0));
+    float deviceZ = p1_deviceZTex.Load(int3(DispatchThreadID,0));
 
     float2 screenPos = uvdeviceZ * 2.0f - 1.0f; 
     screenPos.y *= -1.0f;
 
     float4 ndcPos = float4(screenPos, deviceZ, 1.0);
     
-    float4 worldPosition = mul(c_TileFlagGenConstants.invViewProj, ndcPos);
+    float4 worldPosition = mul(c_tileFlagGenConstants.invViewProj, ndcPos);
     worldPosition.xyz /= worldPosition.w;
 
-    float4 shadowScreenPOS = mul(worldPosition,c_TileFlagGenConstants.lightViewProj);
+    float4 shadowScreenPOS = mul(worldPosition,c_tileFlagGenConstants.lightViewProj);
     shadowScreenPOS.xyz /= shadowScreenPOS.w;
 
     float2 uvVSM = shadowScreenPOS.xy; 
@@ -44,13 +47,59 @@ void VSMTileFlagGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
 
     if(all(abs(uvVSM) < 1.0f))
     {
-        uint2 uvBuffer = uvVSM * c_TileFlagGenConstants.vsmTileNum.xy;
-        uint bufferIndex = uvBuffer.y * c_TileFlagGenConstants.vsmTileNum.x + uvBuffer.x;
+        uint2 uvBuffer = uvVSM * c_tileFlagGenConstants.vsmVirtualTileNum.xy;
+        uint bufferIndex = uvBuffer.y * c_tileFlagGenConstants.vsmVirtualTileNum.x + uvBuffer.x;
 
-        vsmTileFlags[bufferIndex] = 1;
+        p1_vsmTileFlags[bufferIndex] = 1;
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm tile table generation technique /////////////////////////////////////////////////////////////
+
+RWBuffer<uint>              p2_vsmTileFlags     : register(u0);//todo: use buffer type instead of rwbuffer type
+RWStructuredBuffer<uint>    p2_vsmTileTable     : register(u1);
+RWByteAddressBuffer 		p2_validTileCount	: register(u2);
+
+cbuffer cbTileTableGen : register(b0)
+{
+	struct 
+	{
+        int4 vsmVirtualTileNum;
+        int4 vsmPhyTileSizeWH;
+	} c_tileTableGenConstants;
+};
+
+[numthreads(16, 16, 1)]
+void VSMTileTableGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
+{
+    if(DispatchThreadID.x == 0 && DispatchThreadID.y == 0)
+    {
+        p2_validTileCount.Store(0,uint(0));
+    }
+
+    if( c_tileTableGenConstants.vsmVirtualTileNum.x < DispatchThreadID.x || c_tileTableGenConstants.vsmVirtualTileNum.y < DispatchThreadID.y)
+    {
+        return;
+    }
+
+    uint tileIndex = 0xffffffff;
+    uint bufferIndex = DispatchThreadID.y * c_tileTableGenConstants.vsmVirtualTileNum.x + DispatchThreadID.x;
+
+    if(p2_vsmTileFlags[bufferIndex] == 1)
+    {
+        p2_validTileCount.InterlockedAdd(0,uint(1),tileIndex);
+    }
+
+    if(tileIndex < (c_tileTableGenConstants.vsmPhyTileSizeWH.x * c_tileTableGenConstants.vsmPhyTileSizeWH.y))
+    {
+        p2_vsmTileTable[bufferIndex] = tileIndex;
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm visualize technique ////////////////////////////////////////////////////////////////////////
 
 struct vtxOut
 {
@@ -77,6 +126,9 @@ pixout VisualizeBufferPS(vtxOut IN)
     return OUT;
 }
 
+
+
+
 technique VSMTileFlagGen
 {
 	pass p0
@@ -85,6 +137,13 @@ technique VSMTileFlagGen
 	}
 };
 
+technique VSMTileTableGen
+{
+	pass p0
+	{
+		ComputeShader = VSMTileTableGenCS();
+	}
+};
 
 technique VSMVisualizeBuffer
 {

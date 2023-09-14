@@ -16,6 +16,8 @@ static NCryVulkan::CCommandScheduler* GetScheduler()
 	return GetDeviceObjectFactory().GetVKScheduler();
 }
 
+
+
 class CDeviceResourceSet_Vulkan : public CDeviceResourceSet
 {
 public:
@@ -111,6 +113,20 @@ protected:
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//TanGram:VSM:BEGIN
+class CDeviceResourceIndirectLayout_Vulkan : public CDeviceResourceIndirectLayout
+{
+public:
+	CDeviceResourceIndirectLayout_Vulkan()
+	{
+
+	}
+
+	void Init(const SDeviceResourceIndirectLayoutDesc& desc);
+protected:
+};
+//TanGram:VSM:END
 
 class CDeviceResourceLayout_Vulkan : public CDeviceResourceLayout
 {

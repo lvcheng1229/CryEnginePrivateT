@@ -1,13 +1,22 @@
 #include "VirtualShadowMap.h"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm tile flag generation stage ////////////////////////////////////////////////////////////////////////
 
+CTileFlagGenStage::~CTileFlagGenStage()
+{
+	m_vsmTileFlagBuffer.Release();
+	m_tileFlagGenConstantBuffer.reset();
+}
 
 void CTileFlagGenStage::Init()
 {
 	if (!m_vsmTileFlagBuffer.IsAvailable())
 	{
-		m_vsmTileFlagBuffer.Create(VSM_TILE_NUM_WIDTH * VSM_TILE_NUM_WIDTH, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+		m_vsmTileFlagBuffer.Create(VSM_VIRTUAL_TILE_SIZE_WH * VSM_VIRTUAL_TILE_SIZE_WH, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
 		m_vsmTileFlagBuffer.SetDebugName("m_vsmTileFlagBuffer");
+
+		m_vsmGlobalInfo->m_vsmTileFlagBuffer = &m_vsmTileFlagBuffer;
 	}
 
 	m_tileFlagGenConstantBuffer = gcpRendD3D->m_DevBufMan.CreateConstantBuffer(sizeof(CTileFlagGenParameter));
@@ -15,15 +24,15 @@ void CTileFlagGenStage::Init()
 
 void CTileFlagGenStage::Update()
 {
-	m_tileFlagGenParameters.lightViewProj = m_vsmManager->m_lightViewProjMatrix.GetTransposed();
+	m_tileFlagGenParameters.lightViewProj = m_vsmGlobalInfo->m_lightViewProjMatrix.GetTransposed();
 
-	const SRenderViewInfo& viewInfo = m_vsmManager->m_pRenderView->GetViewInfo(CCamera::eEye_Left);
+	const SRenderViewInfo& viewInfo = m_vsmGlobalInfo->m_pRenderView->GetViewInfo(CCamera::eEye_Left);
 	m_tileFlagGenParameters.invViewProj = viewInfo.invCameraProjMatrix.GetTransposed();
 
-	m_texDeviceZWH = Vec2i(m_vsmManager->m_texDeviceZ->GetWidth(), m_vsmManager->m_texDeviceZ->GetHeight());
+	m_texDeviceZWH = Vec2i(m_vsmGlobalInfo->m_texDeviceZ->GetWidth(), m_vsmGlobalInfo->m_texDeviceZ->GetHeight());
 	m_tileFlagGenParameters.deviceZTexSize = Vec4(m_texDeviceZWH, 1.0f / m_texDeviceZWH.x, 1.0f / m_texDeviceZWH.y);
 
-	m_tileFlagGenParameters.vsmTileNum = Vec4i(TILE_MASK_CS_GROUP_SIZE, TILE_MASK_CS_GROUP_SIZE, 0, 0);
+	m_tileFlagGenParameters.vsmVirtualTileSizeWH = Vec4i(VSM_VIRTUAL_TILE_SIZE_WH, VSM_VIRTUAL_TILE_SIZE_WH, 0, 0);
 	m_tileFlagGenConstantBuffer->UpdateBuffer(&m_tileFlagGenParameters, sizeof(CTileFlagGenParameter), 0, 1);
 }
 
@@ -31,35 +40,93 @@ void CTileFlagGenStage::Execute()
 {
 	PROFILE_LABEL_SCOPE("VSM_TILE_FLAG_GEN");
 
-	if (m_vsmManager->m_frustumValid)
+	CClearSurfacePass::Execute(&m_vsmTileFlagBuffer, ColorI(0, 0, 0, 0));
+
+	Vec4i DispatchSize = Vec4i(divideRoundUp(m_texDeviceZWH, Vec2i(TILE_MASK_CS_GROUP_SIZE, TILE_MASK_CS_GROUP_SIZE)), 0, 0);
+
+	m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileFlagGen"), 0);
+	m_compPass->SetOutputUAV(0, &m_vsmTileFlagBuffer);
+	m_compPass->SetTexture(0, m_vsmGlobalInfo->m_texDeviceZ);
+	m_compPass->SetConstantBuffer(0, m_tileFlagGenConstantBuffer);
+	m_compPass->SetDispatchSize(DispatchSize.x, DispatchSize.y, 1);
+	m_compPass->PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
+
+	const bool bAsynchronousCompute = false;
+	SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
+	m_compPass->Execute(computeCommandList);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm tile table generation stage ////////////////////////////////////////////////////////////////////////
+
+void CTileTableGenStage::Init()
+{
+	if (!m_vsmTileTableBuffer.IsAvailable())
 	{
-		Vec4i DispatchSize = Vec4i(divideRoundUp(m_texDeviceZWH, Vec2i(TILE_MASK_CS_GROUP_SIZE, TILE_MASK_CS_GROUP_SIZE)), 0, 0);
-
-		m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileFlagGen"), 0);
-		m_compPass->SetOutputUAV(0, &m_vsmTileFlagBuffer);
-		m_compPass->SetTexture(0, m_vsmManager->m_texDeviceZ);
-		m_compPass->SetConstantBuffer(0, m_tileFlagGenConstantBuffer);
-		m_compPass->SetDispatchSize(DispatchSize.x, DispatchSize.y, 1);
-		m_compPass->PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
-
-		const bool bAsynchronousCompute = false;
-		SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
-		m_compPass->Execute(computeCommandList);
+		m_vsmTileTableBuffer.Create(VSM_PHYSICAL_TILE_SIZE_WH * VSM_PHYSICAL_TILE_SIZE_WH, sizeof(uint32), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+		m_vsmTileTableBuffer.SetDebugName("m_vsmTileTableBuffer");
 	}
 
+	if (!m_vsmValidTileCountBuffer.IsAvailable())
+	{
+		m_vsmValidTileCountBuffer.Create(1, sizeof(uint32), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+		m_vsmValidTileCountBuffer.SetDebugName("m_vsmValidTileCountBuffer");
+	}
+
+	m_tileTableGenConstantBuffer = gcpRendD3D->m_DevBufMan.CreateConstantBuffer(sizeof(CTileTableGenParameter));
 }
+
+void CTileTableGenStage::Update()
+{
+	m_tileTableGenParameters.vsmVirtualTileSizeWH = Vec4i(VSM_VIRTUAL_TILE_SIZE_WH, VSM_VIRTUAL_TILE_SIZE_WH, 0, 0);
+	m_tileTableGenParameters.vsmPhyTileSizeWH = Vec4i(VSM_PHYSICAL_TILE_SIZE_WH, VSM_PHYSICAL_TILE_SIZE_WH, 0, 0);
+	m_tileTableGenConstantBuffer->UpdateBuffer(&m_tileTableGenParameters, sizeof(CTileTableGenParameter), 0, 1);
+}
+
+void CTileTableGenStage::Execute()
+{
+	PROFILE_LABEL_SCOPE("VSM_TILE_TABLE_GEN");
+
+	Vec4i DispatchSize = Vec4i(divideRoundUp(Vec2i(VSM_VIRTUAL_TILE_SIZE_WH, VSM_VIRTUAL_TILE_SIZE_WH), Vec2i(TILE_TABLE_GEN_CS_GROUP_SIZE, TILE_TABLE_GEN_CS_GROUP_SIZE)), 0, 0);
+
+	m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileTableGen"), 0);
+	m_compPass->SetOutputUAV(0, m_vsmGlobalInfo->m_vsmTileFlagBuffer);
+	m_compPass->SetOutputUAV(1, &m_vsmTileTableBuffer);
+	m_compPass->SetOutputUAV(2, &m_vsmValidTileCountBuffer);
+	m_compPass->SetConstantBuffer(0, m_tileTableGenConstantBuffer);
+	m_compPass->SetDispatchSize(DispatchSize.x, DispatchSize.y, 1);
+	m_compPass->PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
+	
+	const bool bAsynchronousCompute = false;
+	SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
+	m_compPass->Execute(computeCommandList);
+}
+
+
+void CShadowProjectStage::InitIndirectLayout()
+{
+	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_ConstantBuffer });
+	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_VertexBuffer });
+	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_IndexBuffer });
+	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_DrawIndexd });
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm tile flag generation stage ////////////////////////////////////////////////////////////////////////
 
 void CVirtualShadowMapStage::Init()
 {
-	tileFlagGenStage.Init();
+	m_tileFlagGenStage.Init();
+	m_tileTableGenStage.Init();
 }
 
 void CVirtualShadowMapStage::Update()
 {
 	Matrix44A viewMatrix, projMatrix;
 	CRenderView* pRenderView = RenderView();
-	m_vsmManager.m_pRenderView = pRenderView;
-	m_vsmManager.m_texDeviceZ = pRenderView->GetDepthTarget();
+	m_vsmGlobalInfo.m_pRenderView = pRenderView;
+	m_vsmGlobalInfo.m_texDeviceZ = pRenderView->GetDepthTarget();
 
 	SShadowFrustumToRender* pVSMFrustum = nullptr;
 	for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
@@ -73,7 +140,7 @@ void CVirtualShadowMapStage::Update()
 
 	if (!pVSMFrustum)
 	{
-		m_vsmManager.m_frustumValid = false;
+		m_vsmGlobalInfo.m_frustumValid = false;
 		return;
 	}
 
@@ -105,9 +172,17 @@ void CVirtualShadowMapStage::Update()
 	
 	mathMatrixLookAt(&viewMatrix, eye, at, up);
 
-	m_vsmManager.m_lightViewProjMatrix = viewMatrix * projMatrix;
-	m_vsmManager.m_frustumValid = true;
-	tileFlagGenStage.Update();
+	m_vsmGlobalInfo.m_lightViewProjMatrix = viewMatrix * projMatrix;
+	m_vsmGlobalInfo.m_frustumValid = true;
+
+	for (auto& fr : pRenderView->m_shadows.m_renderFrustums)
+	{
+		auto pShadowView = reinterpret_cast<CRenderView*>(fr.pShadowsView.get());
+		pShadowView->SwitchUsageMode(IRenderView::eUsageModeReading);
+	}
+
+	m_tileFlagGenStage.Update();
+	m_tileTableGenStage.Update();
 }
 
 
@@ -128,7 +203,11 @@ void CVirtualShadowMapStage::PrePareShadowMap()
 
 void CVirtualShadowMapStage::Execute()
 {
-	tileFlagGenStage.Execute();
+	if (m_vsmGlobalInfo.m_frustumValid)
+	{
+		m_tileFlagGenStage.Execute();
+		m_tileTableGenStage.Execute();
+	}
 
 	VisualizeBuffer();
 
@@ -146,11 +225,11 @@ void CVirtualShadowMapStage::VisualizeBuffer()
 		m_passBufferVisualize.SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMVisualizeBuffer"), 0);
 		m_passBufferVisualize.SetRenderTarget(0, m_graphicsPipelineResources.m_pTexVSMVisualize);
 		m_passBufferVisualize.SetState(GS_NODEPTHTEST | GS_NOCOLMASK_A);
-		m_passBufferVisualize.SetBuffer(0, tileFlagGenStage.GetVsmTileFlagBuffer());
+		m_passBufferVisualize.SetBuffer(0, m_tileFlagGenStage.GetVsmTileFlagBuffer());
 	}
 
 	m_passBufferVisualize.BeginConstantUpdate();
-	m_passBufferVisualize.SetConstant(CCryNameR("visualizeBufferSize"), Vec4(VSM_TILE_NUM_WIDTH, VSM_TILE_NUM_WIDTH, 1.0, 1.0), eHWSC_Pixel);
+	m_passBufferVisualize.SetConstant(CCryNameR("visualizeBufferSize"), Vec4(VSM_VIRTUAL_TILE_SIZE_WH, VSM_VIRTUAL_TILE_SIZE_WH, 1.0, 1.0), eHWSC_Pixel);
 	m_passBufferVisualize.Execute();
 }
 

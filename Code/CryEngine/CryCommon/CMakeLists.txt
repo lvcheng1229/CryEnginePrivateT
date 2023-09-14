@@ -594,6 +594,7 @@ add_sources("NoUberFile"
 		"CryPhysics/IntersectionTestQueue.h"
 	SOURCE_GROUP "CryRenderer"
 		"CryRenderer/IRenderer.h"
+		"CryRenderer/IObjGPUMan.h"#TanGram::VSM
 		"CryRenderer/IRenderMesh.h"
 		"CryRenderer/IRenderAuxGeom.h"
 		"CryRenderer/IStereoRenderer.h"

@@ -84,6 +84,65 @@ struct SRenderViewInfo
 };
 DEFINE_ENUM_FLAG_OPERATORS(SRenderViewInfo::EFlags);
 
+//TanGram:VSM:[BEGIN]
+struct SRenderItemInfo
+{
+public:
+	//point to the index of m_renderItems
+	int32 m_renderItemIndex;
+	
+	//CCompiledRenderObject
+	Matrix44 m_Matrix;
+
+	//CCompiledRenderObject
+	AABB m_aabb;
+};
+
+
+struct SRenderItemsGPUData
+{
+public:
+	//CCompiledRenderObject
+	Matrix44 m_Matrix;
+
+	//CCompiledRenderObject
+	AABB m_aabb;
+};
+
+struct SGPUDrawCommand
+{
+	//CB
+	CConstantBufferPtr m_perDrawCB;
+
+	//CB
+	CConstantBufferPtr m_perViewCB;
+
+	//VB/IB
+	const CDeviceInputStream* m_vertexStreamSet;
+	const CDeviceInputStream* m_indexStreamSet;
+
+	int32 IndexCountPerInstance;
+	int32 InstanceCount;
+	int32 StartIndexLocation;
+	int32  BaseVertexLocation;
+	uint32 StartInstanceLocation;
+};
+
+
+
+class CRenerItemGPUManager
+{
+public:
+	void UpdateRenderItemGPUManager(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem);
+private:
+
+	// Should only be used for primitive types, without constructors and destructors.
+	std::vector<SRenderItemsGPUData> m_renderItemsGPUData; //TanGram:VSM
+
+	std::vector<SGPUDrawCommand> m_gpuDrawCommands;
+};
+//TanGram:VSM:[END]
+
 // This class encapsulate all information required to render a camera view.
 // It stores list of render items added by 3D engine
 class CRenderView : public IRenderView
@@ -426,6 +485,8 @@ private:
 	std::atomic<size_t> m_addedItems [EFSLIST_NUM];
 	RenderItems         m_renderItems[EFSLIST_NUM];
 	volatile uint32     m_batchFlags [EFSLIST_NUM];
+
+	
 
 	// Resolve passes information
 	STransparentSegments m_transparentSegments[3];

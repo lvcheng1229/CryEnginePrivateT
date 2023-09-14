@@ -402,13 +402,14 @@ CRenderMesh::CRenderMesh()
 #if defined(USE_VBIB_PUSH_DOWN)
 	m_VBIBFramePushID = 0;
 #endif
-  memset(m_VBStream, 0x0, sizeof(m_VBStream));
 
-  SMeshStream *streams = (SMeshStream*)AllocateMeshInstanceData(sizeof(SMeshStream)*VSF_NUM, 64u);
-  for (signed i=0; i<VSF_NUM; ++i) 
-    new (m_VBStream[i] = &streams[i]) SMeshStream();
+	memset(m_VBStream, 0x0, sizeof(m_VBStream));
 
-  m_keepSysMesh = false; 
+	 SMeshStream *streams = (SMeshStream*)AllocateMeshInstanceData(sizeof(SMeshStream)*VSF_NUM, 64u);
+	for (signed i=0; i<VSF_NUM; ++i) 
+		new (m_VBStream[i] = &streams[i]) SMeshStream();
+
+	m_keepSysMesh = false; 
 	m_nLastRenderFrameID = 0;
 	m_nLastSubsetGCRenderFrameID = 0;
 	m_nThreadAccessCounter = 0;

@@ -191,6 +191,29 @@ enum EObjectCompilationOptions : uint8
 };
 DEFINE_ENUM_FLAG_OPERATORS(EObjectCompilationOptions);
 
+
+//TanGram:VSM:BEGIN
+enum EDrawParams
+{
+	eDrawParam_Shadow,
+	eDrawParam_General,
+	eDrawParam_Count,
+};
+
+struct SDrawParams
+{
+	int32 m_nVerticesCount;
+	int32 m_nStartIndex;
+	int32 m_nNumIndices;
+
+	SDrawParams()
+		: m_nVerticesCount(0)
+		, m_nStartIndex(0)
+		, m_nNumIndices(0)
+	{}
+};
+//TanGram:VSM:END
+
 // Used by Graphics Pass pipeline
 class CCompiledRenderObject
 {
@@ -212,25 +235,9 @@ public:
 	{
 	};
 
-	struct SDrawParams
-	{
-		int32 m_nVerticesCount;
-		int32 m_nStartIndex;
-		int32 m_nNumIndices;
 
-		SDrawParams()
-			: m_nVerticesCount(0)
-			, m_nStartIndex(0)
-			, m_nNumIndices(0)
-		{}
-	};
 
-	enum EDrawParams
-	{
-		eDrawParam_Shadow,
-		eDrawParam_General,
-		eDrawParam_Count,
-	};
+
 
 public:
 	/////////////////////////////////////////////////////////////////////////////

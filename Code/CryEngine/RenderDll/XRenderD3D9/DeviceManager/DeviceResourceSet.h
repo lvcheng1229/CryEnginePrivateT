@@ -260,6 +260,38 @@ typedef std::shared_ptr<CDeviceResourceSet> CDeviceResourceSetPtr;
 
 typedef std::bitset<EResourceLayoutSlot_Num> UsedBindSlotSet;
 
+//TanGram:VSM:BEGIN
+
+struct TMP_RENDER_API SDeviceResourceIndirectLayoutToken
+{
+	enum  class ETokenType : uint8
+	{
+		TT_ConstantBuffer,
+		TT_VertexBuffer,
+		TT_IndexBuffer,
+		TT_DrawIndexd,
+	};
+
+	ETokenType m_tokenType;
+};
+
+struct TMP_RENDER_API SDeviceResourceIndirectLayoutDesc
+{
+	
+	std::vector<SDeviceResourceIndirectLayoutToken>m_indirectLayoutTokens;
+};
+
+class CDeviceResourceIndirectLayout
+{
+public:
+	CDeviceResourceIndirectLayout()
+	{}
+
+protected:
+};
+//TanGram:VSM:END
+
+
 struct TMP_RENDER_API SDeviceResourceLayoutDesc
 {
 	enum class ELayoutSlotType : uint8

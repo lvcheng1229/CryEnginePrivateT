@@ -112,7 +112,9 @@ CComputeRenderPass::EDirtyFlags CComputeRenderPass::Compile()
 			m_pPipelineState = GetDeviceObjectFactory().CreateComputePSO(psoDesc);
 
 			if (!m_pPipelineState || !m_pPipelineState->IsValid())
+			{
 				return (EDirtyFlags)(m_dirtyMask |= revertMask);
+			}
 
 			m_currentPsoUpdateCount = m_pPipelineState->GetUpdateCount();
 

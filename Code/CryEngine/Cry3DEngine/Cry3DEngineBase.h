@@ -6,6 +6,7 @@
 
 struct ISystem;
 struct IRenderer;
+struct IObjGPUManager;
 struct ILog;
 struct IPhysicalWorld;
 struct ITimer;
@@ -94,6 +95,8 @@ struct Cry3DEngineBase
 	ILINE static IRenderer*          GetRenderer()               { return m_pRenderer; }
 	ILINE static ITimer*             GetTimer()                  { return m_pTimer; }
 	ILINE static ILog*               GetLog()                    { return m_pLog; }
+
+	static IObjGPUManager*	 GetObjGPUManager();//TanGram::VSM
 
 	inline static IPhysicalWorld*    GetPhysicalWorld()          { return m_pPhysicalWorld; }
 	inline static IConsole*          GetConsole()                { return m_pConsole; }

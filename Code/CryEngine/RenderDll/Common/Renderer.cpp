@@ -3045,6 +3045,7 @@ static float LinearToGamma(float x)
 #include <squish-ccr/squish.h>
 #include <squish-ccr/squish.inl>
 #include <CryCore/Assert/CryAssert.h> // Ensure assert is redefined as CRY_ASSERT
+#include "Renderer.h"
 
 #if defined(CRY_COMPILER_GCC)
     #pragma GCC diagnostic pop
@@ -5312,6 +5313,13 @@ void CRenderer::EF_FreeObject(CRenderObject* pObj)
 
 	m_tempRenderObjects.m_persistentRenderObjectsToDelete[gRenDev->GetMainThreadID()].push_back(static_cast<CPermanentRenderObject*>(pObj));
 }
+
+//TanGram::VSM::BEGIN
+IObjGPUManager* CRenderer::GetObjGPUManager()
+{
+	return nullptr;
+}
+//TanGram::VSM:END
 
 ///////////////////////////////////////////////////////////////////////////////
 CRenderObject* CRenderer::EF_DuplicateRO(CRenderObject* pSrc, const SRenderingPassInfo& passInfo)

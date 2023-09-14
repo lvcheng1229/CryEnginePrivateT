@@ -15,6 +15,49 @@
 
 #define PREFETCH_STRIDE	512
 
+//TanGram:VSM:BEGIN
+void CRenerItemGPUManager::UpdateRenderItemGPUManager(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem)
+{
+	const SGraphicsPipelinePassContext& passContext = *pInputPassContext;
+
+	// Allow only compiled objects to actually draw
+	const uint32 batchExcludeFilter = passContext.batchExcludeFilter;
+	const uint32 batchIncludeFilter = passContext.batchIncludeFilter | FB_COMPILED_OBJECT;
+
+	for (int32 i = startRenderItem, e = endRenderItem - 1; i <= e; ++i)
+	{
+		{
+			const SRendItem& rif = (*renderItems)[std::min<int32>(i + PREFETCH_STRIDE / sizeof(SRendItem), e)];
+			PrefetchLine(rif.pCompiledObject, 128);
+
+			const SRendItem& ri = (*renderItems)[i];
+
+			const SDrawParams& drawParams = ri.pCompiledObject->m_drawParams[passContext.stageID != eStage_ShadowMap ? eDrawParam_General : eDrawParam_Shadow];
+
+			//TODO:instance
+
+			m_renderItemsGPUData.clear();;
+			m_renderItemsGPUData.push_back(SRenderItemsGPUData{ ri.pCompiledObject->GetInstancingData().matrix,ri.pCompiledObject->m_aabb });
+			m_gpuDrawCommands.push_back(
+				SGPUDrawCommand
+				{
+					ri.pCompiledObject->m_perDrawCB,
+					ri.pCompiledObject->m_perDrawCB,//TODO:PerViewCB
+					ri.pCompiledObject->m_vertexStreamSet,
+					ri.pCompiledObject->m_indexStreamSet,
+
+					drawParams.m_nNumIndices, 
+					0,//dynamicInstancingCount, 
+					drawParams.m_nStartIndex, 
+					0,
+					0
+				}
+			);
+		}
+	}
+}
+//TanGram:VSM:END
+
 void DrawCompiledRenderItemsToCommandList(
 	const SGraphicsPipelinePassContext* pInputPassContext,
 	const CRenderView::RenderItems* renderItems,
@@ -264,6 +307,8 @@ void CRenderItemDrawer::JobifyDrawSubmission(bool bForceImmediateExecution)
 
 	if (!CRenderer::CV_r_multithreadedDrawing)
 		bForceImmediateExecution = true;
+
+	bForceImmediateExecution = true;//TanGram:VSM:DisableMultiThreadDraw
 
 	if (!bForceImmediateExecution)
 	{

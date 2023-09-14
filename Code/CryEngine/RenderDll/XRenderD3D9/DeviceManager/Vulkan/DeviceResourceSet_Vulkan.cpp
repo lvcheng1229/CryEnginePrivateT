@@ -262,6 +262,43 @@ void CDeviceResourceSet_Vulkan::ReleaseDescriptors()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//TanGram:VSM:BEGIN
+
+VkIndirectCommandsTokenTypeNVX ConvertToVKIndirectCmdType(SDeviceResourceIndirectLayoutToken::ETokenType tokenType)
+{
+	switch (tokenType)
+	{
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_ConstantBuffer:
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX;//TODO:FixMe
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_VertexBuffer:
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX;
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_IndexBuffer:
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX;
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_DrawIndexd:
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX;
+		break;
+	default:
+		CRY_ASSERT(false, "Unkown indirect layout type");
+		break;
+	}
+}
+
+void CDeviceResourceIndirectLayout_Vulkan::Init(const SDeviceResourceIndirectLayoutDesc& desc)
+{
+	std::vector<VkIndirectCommandsLayoutTokenNVX> inputInfos;
+	std::vector<uint32_t>                        inputStrides;
+
+	uint32_t numInputs = 0;
+
+	for (auto iter = desc.m_indirectLayoutTokens.begin(); iter != desc.m_indirectLayoutTokens.end(); iter++)
+	{
+
+	}
+}
+//TanGram:VSM:END
 
 
 CDeviceResourceLayout_Vulkan::~CDeviceResourceLayout_Vulkan()
