@@ -3506,6 +3506,7 @@ bool CShaderManBin::ParseBinFX_Technique_Annotations_String(CParserBin& Parser, 
 		FX_TOKEN(TechniqueZ)
 		FX_TOKEN(TechniqueZPrepass)
 		FX_TOKEN(TechniqueShadowGen)
+		FX_TOKEN(TechniqueVSMShadowGen)//TanGram:VSM
 		FX_TOKEN(TechniqueMotionBlur)
 		FX_TOKEN(TechniqueCustomRender)
 		FX_TOKEN(TechniqueEffectLayer)
@@ -3553,6 +3554,7 @@ bool CShaderManBin::ParseBinFX_Technique_Annotations_String(CParserBin& Parser, 
 		case eT_TechniqueZ:
 		case eT_TechniqueZPrepass:
 		case eT_TechniqueShadowGen:
+		case eT_TechniqueVSMShadowGen://TanGram:VSM
 		case eT_TechniqueMotionBlur:
 		case eT_TechniqueCustomRender:
 		case eT_TechniqueEffectLayer:
@@ -3567,6 +3569,7 @@ bool CShaderManBin::ParseBinFX_Technique_Annotations_String(CParserBin& Parser, 
 				{
 					TTYPE_Z,                    //eT_TechniqueZ
 					TTYPE_SHADOWGEN,            //eT_TechniqueShadowGen
+					TTYPE_VSMSHADOWGEN,			//eT_TechniqueVSMShadowGen TanGram:VSM
 					TTYPE_MOTIONBLURPASS,       //eT_TechniqueMotionBlur
 					TTYPE_CUSTOMRENDERPASS,     //eT_TechniqueCustomRender
 					TTYPE_EFFECTLAYER,          //eT_TechniqueEffectLayer

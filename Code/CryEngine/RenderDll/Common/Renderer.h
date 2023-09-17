@@ -1110,8 +1110,6 @@ public:
 	virtual CRenderObject* EF_GetObject() final;
 	virtual void           EF_FreeObject(CRenderObject* pObj) final;
 
-	virtual IObjGPUManager* GetObjGPUManager()final;//TanGram::VSM
-
 	// Draw all shaded REs in the list
 	virtual void         EF_EndEf3D(const int nPrecacheUpdateId, const int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo, const int nRenderFlags) override = 0;
 

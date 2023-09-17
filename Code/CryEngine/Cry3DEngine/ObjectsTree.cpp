@@ -2541,8 +2541,6 @@ void COctreeNode::RenderContentJobEntry(int nRenderMask, Vec3 vAmbColor, Frustum
 		}
 	}
 
-	//GetObjGPUManager()->
-
 	if (m_arrObjects[eRNListType_Vegetation].m_pFirstNode && m_arrObjects[eRNListType_Vegetation].m_pFirstNode->IsRenderable() && passInfo.RenderVegetation())
 		this->RenderVegetations(&m_arrObjects[eRNListType_Vegetation], passCullMask, nRenderMask, m_bNodeCompletelyInFrustum != 0, pTerrainTexInfo, passInfo);
 

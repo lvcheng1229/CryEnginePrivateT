@@ -16,7 +16,8 @@
 #define PREFETCH_STRIDE	512
 
 //TanGram:VSM:BEGIN
-void CRenerItemGPUManager::UpdateRenderItemGPUManager(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem)
+//see DrawCompiledRenderItemsToCommandList
+void CRenerItemGPUDrawer::UpdateGPURenderItems(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem)
 {
 	const SGraphicsPipelinePassContext& passContext = *pInputPassContext;
 

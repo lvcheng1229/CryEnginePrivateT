@@ -155,6 +155,9 @@ void CParserBin::Init()
 	fxTokenKey("max", eT_max_math);
 	fxTokenKey("length", eT_length_math);
 
+	fxTokenKey("#vkextbegin", et_vkExtBegin);//TanGram::VSM
+	fxTokenKey("#vkextend", et_vkExtEnd);//TanGram::VSM
+
 	fxTokenKey("%_LT_LIGHTS", eT__LT_LIGHTS);
 	fxTokenKey("%_LT_NUM", eT__LT_NUM);
 	fxTokenKey("%_LT_HASPROJ", eT__LT_HASPROJ);
@@ -951,7 +954,7 @@ uint32 CParserBin::NextToken(const char*& buf, char* com, bool& bKey)
 		}
 	}
 	com[n] = 0;
-	uint32 dwToken = fxToken(com, &bKey);
+	uint32 dwToken = fxToken(com, &bKey);//TanGram:GetToken
 	return dwToken;
 }
 uint32 CParserBin::NextToken(char*& buf, char* com, bool& bKey)
@@ -976,7 +979,7 @@ uint32 CParserBin::NextToken(char*& buf, char* com, bool& bKey)
 		}
 	}
 	com[n] = 0;
-	uint32 dwToken = fxToken(com, &bKey);
+	uint32 dwToken = fxToken(com, &bKey);//TanGram:GetToken
 	return dwToken;
 }
 
@@ -2123,6 +2126,21 @@ int CParserBin::GetNextToken(uint32& nStart, ETokenStorageClass& nTokenStorageCl
 				nToken = pTokens[m_CurFrame.m_nCurToken++];
 				if (nToken == eT_skip_2)
 					break;
+			}
+			continue;
+		}
+		
+		//TanGram:VSM
+		//hlsl skip vulkan extension
+		if (nToken == et_vkExtBegin)
+		{
+			while (m_CurFrame.m_nCurToken <= m_CurFrame.m_nLastToken)
+			{
+				if (pTokens[m_CurFrame.m_nCurToken++] == et_vkExtEnd)
+				{
+					nToken = pTokens[m_CurFrame.m_nCurToken];
+					break;
+				}
 			}
 			continue;
 		}

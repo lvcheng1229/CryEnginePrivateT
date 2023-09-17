@@ -130,10 +130,10 @@ struct SGPUDrawCommand
 
 
 
-class CRenerItemGPUManager
+class CRenerItemGPUDrawer
 {
 public:
-	void UpdateRenderItemGPUManager(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem);
+	void UpdateGPURenderItems(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem);
 private:
 
 	// Should only be used for primitive types, without constructors and destructors.
@@ -674,9 +674,12 @@ public:// temp
 
 private:
 	CRenderItemDrawer m_RenderItemDrawer;
+	CRenerItemGPUDrawer m_RenderItemGPUDrawer;
 
 public:
 	void                                                  DrawCompiledRenderItems(const SGraphicsPipelinePassContext& passContext) const;
+
+	CRenerItemGPUDrawer&								  GetGPUDrawer()														 { return m_RenderItemGPUDrawer; }
 
 	CRenderItemDrawer&                                    GetDrawer()                                                            { return m_RenderItemDrawer; }
 	const CRenderItemDrawer&                              GetDrawer() const                                                      { return m_RenderItemDrawer; }

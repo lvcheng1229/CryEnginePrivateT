@@ -496,6 +496,7 @@ enum EToken
 	eT_PositionInvariant,
 	eT_TechniqueZ,  // Has to be first Technique
 	eT_TechniqueShadowGen,
+	eT_TechniqueVSMShadowGen,//TanGram::VSM
 	eT_TechniqueMotionBlur,
 	eT_TechniqueCustomRender,
 	eT_TechniqueEffectLayer,
@@ -689,6 +690,11 @@ enum EToken
 	eT_$AutoGS_MultiRes,
 	eT_Billboard,
 	eT_DebugHelper,
+
+	//TanGram:VSM:BEGIN
+	et_vkExtBegin,
+	et_vkExtEnd,
+	//TanGram:VSM:END
 
 	eT_max,
 	eT_user_first = eT_max + 1

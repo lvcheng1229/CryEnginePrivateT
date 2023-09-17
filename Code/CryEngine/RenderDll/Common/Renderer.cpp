@@ -5314,13 +5314,6 @@ void CRenderer::EF_FreeObject(CRenderObject* pObj)
 	m_tempRenderObjects.m_persistentRenderObjectsToDelete[gRenDev->GetMainThreadID()].push_back(static_cast<CPermanentRenderObject*>(pObj));
 }
 
-//TanGram::VSM::BEGIN
-IObjGPUManager* CRenderer::GetObjGPUManager()
-{
-	return nullptr;
-}
-//TanGram::VSM:END
-
 ///////////////////////////////////////////////////////////////////////////////
 CRenderObject* CRenderer::EF_DuplicateRO(CRenderObject* pSrc, const SRenderingPassInfo& passInfo)
 {

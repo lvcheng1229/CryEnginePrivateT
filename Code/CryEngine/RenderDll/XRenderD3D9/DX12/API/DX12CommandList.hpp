@@ -702,20 +702,6 @@ public:
 		m_nCommands += CLCOUNT_DISPATCH;
 	}
 
-	//TanGram: TiledBloom:[BEGIN]
-	ILINE void Dispatch(UINT ThreadGroupCountX, UINT ThreadGroupCountY, UINT ThreadGroupCountZ)
-	{
-		PendingResourceBarriers();
-
-#ifdef DX12_STATS
-		m_NumDraws++;
-#endif // DX12_STATS
-
-		m_pCmdList->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
-		m_nCommands += CLCOUNT_DISPATCH;
-	}
-	//TanGram: TiledBloom:[END]
-
 	void         ClearDepthStencilView(const CView& view, D3D12_CLEAR_FLAGS clearFlags, float depthValue, UINT stencilValue, UINT NumRects = 0U, const D3D12_RECT* pRect = nullptr);
 	void         ClearRenderTargetView(const CView& view, const FLOAT rgba[4], UINT NumRects = 0U, const D3D12_RECT* pRect = nullptr);
 	void         ClearUnorderedAccessView(const CView& view, const UINT rgba[4], UINT NumRects = 0U, const D3D12_RECT* pRect = nullptr);

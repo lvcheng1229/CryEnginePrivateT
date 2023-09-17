@@ -720,6 +720,7 @@ technique General
         "TechniqueCustomRender=CustomRenderPass;"
         "TechniqueEffectLayer=EffectLayerPass;"
         "TechniqueShadowGen=ShadowGen;"
+		"TechniqueVSMShadowGen=VSMProjecttion;"//TanGram:VSM
         "TechniqueDebug=DebugPass;"
 >
 {

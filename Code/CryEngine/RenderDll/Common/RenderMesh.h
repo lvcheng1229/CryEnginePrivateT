@@ -114,15 +114,6 @@ struct SSetMeshIntData
 	uint32 m_flags;
  	Vec3 *m_pNormalsBuff;
 };
-//TanGram:VSM
-class CRenderMeshInfo
-{
-public:
-	//The index of the render mesh in the cpu object manager
-	int32 m_renderMeshIndex;//TanGram:VSM
-private:
-};
-//TanGram:VSM
 
 class CRenderMesh : public IRenderMesh
 {

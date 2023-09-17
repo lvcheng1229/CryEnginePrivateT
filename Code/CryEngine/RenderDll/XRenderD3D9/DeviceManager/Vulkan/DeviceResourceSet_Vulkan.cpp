@@ -284,19 +284,20 @@ VkIndirectCommandsTokenTypeNVX ConvertToVKIndirectCmdType(SDeviceResourceIndirec
 		CRY_ASSERT(false, "Unkown indirect layout type");
 		break;
 	}
+	return VK_INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX;
 }
 
 void CDeviceResourceIndirectLayout_Vulkan::Init(const SDeviceResourceIndirectLayoutDesc& desc)
 {
-	std::vector<VkIndirectCommandsLayoutTokenNVX> inputInfos;
-	std::vector<uint32_t>                        inputStrides;
-
-	uint32_t numInputs = 0;
-
-	for (auto iter = desc.m_indirectLayoutTokens.begin(); iter != desc.m_indirectLayoutTokens.end(); iter++)
-	{
-
-	}
+	//std::vector<VkIndirectCommandsLayoutTokenNVX> inputInfos;
+	//std::vector<uint32_t>                        inputStrides;
+	//
+	//uint32_t numInputs = 0;
+	//
+	//for (auto iter = desc.m_indirectLayoutTokens.begin(); iter != desc.m_indirectLayoutTokens.end(); iter++)
+	//{
+	//
+	//}
 }
 //TanGram:VSM:END
 

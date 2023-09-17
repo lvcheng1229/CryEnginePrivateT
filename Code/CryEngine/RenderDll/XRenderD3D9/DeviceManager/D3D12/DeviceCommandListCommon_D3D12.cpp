@@ -987,9 +987,9 @@ void CDeviceComputeCommandInterfaceImpl::DispatchImpl(uint32 X, uint32 Y, uint32
 //TanGram:TiledBloom:[BEGIN]
 void CDeviceComputeCommandInterfaceImpl::DispatchIndirectImpl(const CDeviceBuffer* pBuffer, uint32 Offset)
 {
-	NCryDX12::CResource& Resource = GET_DX12_RAWBUFFER_RESOURCE(pBuffer)->GetDX12Resource();
+	//NCryDX12::CResource& Resource = GET_DX12_RAWBUFFER_RESOURCE(pBuffer)->GetDX12Resource();
 
-	GetDX12CommandList()->DispatchIn(X, Y, Z);
+	return;
 }
 //TanGram:TiledBloom:[END]
 

@@ -4,7 +4,6 @@
 
 #include <memory>
 #include "ITexture.h"
-#include "IObjGPUMan.h"
 #include <CryMath/Cry_Geo.h>
 #include <CryExtension/ClassWeaver.h>
 #include <CrySystem/IEngineModule.h>
@@ -1347,8 +1346,6 @@ struct IRenderer//: public IRendererCallbackServer
 
 	//Get permanent RenderObject
 	virtual CRenderObject* EF_DuplicateRO(CRenderObject* pObj, const SRenderingPassInfo& passInfo) = 0;
-
-	virtual IObjGPUManager* GetObjGPUManager() = 0;//TanGram::VSM
 
 	//! Draw all shaded REs in the list
 	virtual void         EF_EndEf3D(const int nPrecacheUpdateId, const int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo, const int nRenderFlags) = 0;

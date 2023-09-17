@@ -629,10 +629,6 @@ add_sources("CryRenderer_uber_3.cpp"
 		"../Common/RenderPipeline.h"
 		"../Common/DeferredRenderUtils.h"
 		"../Common/RenderFrameProfiler.h"
-		#TanGram::VSM
-		"../Common/ObjGPUMan.cpp"
-		"../Common/ObjGPUMan.h"
-		#TanGram::VSM
 		"../Common/OcclQuery.h"
 		"../Common/RenderAuxGeom.h"
 		"../Common/Renderer.h"

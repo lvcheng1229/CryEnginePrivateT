@@ -102,6 +102,8 @@ void CTileTableGenStage::Execute()
 	m_compPass->Execute(computeCommandList);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm projection stage ////////////////////////////////////////////////////////////////////////
 
 void CShadowProjectStage::InitIndirectLayout()
 {
@@ -109,6 +111,22 @@ void CShadowProjectStage::InitIndirectLayout()
 	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_VertexBuffer });
 	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_IndexBuffer });
 	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_DrawIndexd });
+}
+
+void CShadowProjectStage::Execute()
+{
+	//CRenderView* pRenderView = m_vsmGlobalInfo->m_pRenderView;
+	//CRenerItemGPUDrawer& renderItemGPUDrawer = pRenderView->GetGPUDrawer();
+
+	m_vsmShadowProjectPass.BeginExecution(m_graphicsPipeline);
+	//m_vsmShadowProjectPass.SetupDrawContext(StageID, curPass.m_eShadowPassID, TTYPE_SHADOWGEN, 0);
+	//m_vsmShadowProjectPass.DrawRenderItems(pShadowsView, (ERenderListID)curPass.m_nShadowFrustumSide);
+	//m_vsmShadowProjectPass.EndExecution();
+
+	//CRenderItemDrawer& rendItemDrawer = pRenderView->GetDrawer();
+	//rendItemDrawer.InitDrawSubmission();
+	//rendItemDrawer.JobifyDrawSubmission();
+	//rendItemDrawer.WaitForDrawSubmission(); disable multi thread
 }
 
 
@@ -212,6 +230,165 @@ void CVirtualShadowMapStage::Execute()
 	VisualizeBuffer();
 
 	return;
+}
+
+bool CVirtualShadowMapStage::CreatePipelineStateInner(const SGraphicsPipelineStateDescription& description, CDeviceGraphicsPSOPtr& outPSO)
+{
+//	outPSO = NULL;
+//
+//	CShader* pShader = static_cast<CShader*>(description.shaderItem.m_pShader);
+//	SShaderTechnique* pTechnique = pShader->GetTechnique(description.shaderItem.m_nTechnique, description.technique, true);
+//	if (!pTechnique)
+//		return true;
+//
+//	CShaderResources* pRes = static_cast<CShaderResources*>(description.shaderItem.m_pShaderResources);
+//	if (pRes->m_ResFlags & MTL_FLAG_NOSHADOW)
+//		return true;
+//
+//	SShaderPass* pShaderPass = &pTechnique->m_Passes[0];
+//	uint64 objectFlags = description.objectFlags;
+//
+//	CDeviceGraphicsPSODesc psoDesc(m_pResourceLayout, description);
+//	psoDesc.m_bDynamicDepthBias = true;
+//
+//	// Handle quality flags
+//	CGraphicsPipeline::ApplyShaderQuality(psoDesc, gcpRendD3D->GetShaderProfile(pShader->m_eShaderType));
+//
+//
+//	// Set resource states
+//	bool bTwoSided = false;
+//	{
+//		if (pRes->m_ResFlags & MTL_FLAG_2SIDED)
+//			bTwoSided = true;
+//
+//		if (pRes->IsAlphaTested())
+//			psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_ALPHATEST];
+//
+//		if (passID == ePass_DirectionalLightRSM || passID == ePass_LocalLightRSM)
+//		{
+//			if (pRes->m_Textures[EFTT_DIFFUSE] && pRes->m_Textures[EFTT_DIFFUSE]->m_Ext.m_pTexModifier)
+//				psoDesc.m_ShaderFlags_MD |= pRes->m_Textures[EFTT_DIFFUSE]->m_Ext.m_nUpdateFlags;
+//		}
+//
+//		// Merge EDeformType into EVertexModifier to save space/parameters
+//		if (pRes->m_pDeformInfo)
+//			psoDesc.m_ShaderFlags_MDV |= EVertexModifier(pRes->m_pDeformInfo->m_eType);
+//	}
+//
+//	if (m_shadowsLocalLightsLinearizeDepth == 1)
+//	{
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SHADOW_DEPTH_OUTPUT_LINEAR];
+//	}
+//
+//	//tessellation
+//	psoDesc.m_bAllowTesselation = false;
+//	psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_NO_TESSELLATION];
+//
+//#ifdef TESSELLATION_RENDERER
+//	const bool bHasTesselationShaders = pShaderPass && pShaderPass->m_HShader && pShaderPass->m_DShader;
+//	if (bHasTesselationShaders && (!(objectFlags & FOB_NEAREST) && (objectFlags & FOB_ALLOW_TESSELLATION)))
+//	{
+//		psoDesc.m_ShaderFlags_RT &= ~g_HWSR_MaskBit[HWSR_NO_TESSELLATION];
+//		psoDesc.m_bAllowTesselation = true;
+//	}
+//#endif
+//
+//	psoDesc.m_CullMode = bTwoSided ? eCULL_None : ((pShaderPass && pShaderPass->m_eCull != -1) ? (ECull)pShaderPass->m_eCull : eCULL_Back);
+//	if (pShader->m_eSHDType == eSHDT_Terrain)
+//	{
+//		//Flipped matrix for point light sources
+//		if (passID == ePass_DirectionalLight || passID == ePass_DirectionalLightCached)
+//			psoDesc.m_CullMode = eCULL_None;
+//		else
+//			psoDesc.m_CullMode = eCULL_Front; //front faces culling by default for terrain
+//	}
+//
+//	if (passID == ePass_DirectionalLight || passID == ePass_DirectionalLightCached || passID == ePass_DirectionalLightRSM)
+//	{
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_HW_PCF_COMPARE];
+//	}
+//	else if (passID == ePass_LocalLight || passID == ePass_LocalLightRSM)
+//	{
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_HW_PCF_COMPARE];
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_CUBEMAP0];
+//
+//		// RBPF_MIRRORCULL
+//		if (psoDesc.m_CullMode != eCULL_None)
+//		{
+//			psoDesc.m_CullMode = (psoDesc.m_CullMode == eCULL_Front) ? eCULL_Back : eCULL_Front;
+//		}
+//	}
+//
+//	if (passID == ePass_DirectionalLightRSM || passID == ePass_LocalLightRSM)
+//	{
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SAMPLE4];
+//
+//		if (!bTwoSided && psoDesc.m_CullMode == eCULL_Front)
+//			psoDesc.m_CullMode = eCULL_Back;
+//
+//		if (objectFlags & FOB_DECAL_TEXGEN_2D)
+//			psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_DECAL_TEXGEN_2D];
+//
+//		if ((objectFlags & FOB_BLEND_WITH_TERRAIN_COLOR)) // && rRP.m_pCurObject->m_nTextureID > 0
+//			psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_BLEND_WITH_TERRAIN_COLOR];
+//	}
+//
+//	psoDesc.m_ShaderFlags_MDV |= pShader->m_nMDV;
+//	if (objectFlags & FOB_OWNER_GEOMETRY)
+//		psoDesc.m_ShaderFlags_MDV &= ~MDV_DEPTH_OFFSET;
+//	if (objectFlags & FOB_BENDED)
+//		psoDesc.m_ShaderFlags_MDV |= MDV_BENDING;
+//
+//	if (!(objectFlags & FOB_TRANS_MASK))  //&& gRenDev->m_RP.m_RIs[0].Num() <= 1
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_OBJ_IDENTITY];
+//
+//	if (objectFlags & FOB_NEAREST)
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_NEAREST];
+//	if (objectFlags & FOB_DISSOLVE)
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_DISSOLVE];
+//	if (psoDesc.m_RenderState & GS_ALPHATEST)
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_ALPHATEST];
+//
+//	if (psoDesc.m_bAllowTesselation && (psoDesc.m_PrimitiveType < ept1ControlPointPatchList || psoDesc.m_PrimitiveType > ept4ControlPointPatchList))
+//	{
+//		psoDesc.m_PrimitiveType = ept3ControlPointPatchList;
+//		psoDesc.m_ObjectStreamMask |= VSM_NORMALS;
+//	}
+//
+//	// rendertarget and depth stencil format
+//	psoDesc.m_pRenderPass = m_ShadowMapPasses[passID][0].GetRenderPass();
+//
+//#if (CRY_RENDERER_DIRECT3D >= 120)
+//	// emulate slope scaled bias in shader
+//	if (passID == ePass_DirectionalLight || passID == ePass_DirectionalLightCached || passID == ePass_DirectionalLightRSM)
+//	{
+//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SAMPLE0];
+//	}
+//#endif
+//
+//	// Create PSO
+//	outPSO = GetDeviceObjectFactory().CreateGraphicsPSO(psoDesc);
+//	return outPSO != nullptr;
+	return false;
+}
+
+
+bool CVirtualShadowMapStage::CreatePipelineStates(DevicePipelineStatesArray* pStateArray, const SGraphicsPipelineStateDescription& stateDesc, CGraphicsPipelineStateLocalCache* pStateCache)
+{
+	return true;//TEMP!
+
+	DevicePipelineStatesArray& stageStates = pStateArray[StageID];
+
+	if (pStateCache->Find(stateDesc, stageStates))
+		return true;
+
+	bool bFullyCompiled = CreatePipelineStateInner(stateDesc, stageStates[0]);
+	if (bFullyCompiled)
+	{
+		pStateCache->Put(stateDesc, stageStates);
+	}
+
+	return bFullyCompiled;
 }
 
 void CVirtualShadowMapStage::VisualizeBuffer()

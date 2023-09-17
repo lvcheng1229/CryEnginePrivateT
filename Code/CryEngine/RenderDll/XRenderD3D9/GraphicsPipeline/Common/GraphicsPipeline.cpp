@@ -722,6 +722,12 @@ bool CGraphicsPipeline::CreatePipelineStates(DevicePipelineStatesArray* pStateAr
 		bFullyCompiled &= GetStage<CShadowMapStage>()->CreatePipelineStates(pStateArray, stateDesc, pStateCache);
 	}
 
+	// VSM Project
+	{
+		stateDesc.technique = TTYPE_VSMSHADOWGEN;
+		bFullyCompiled &= GetStage<CVirtualShadowMapStage>()->CreatePipelineStates(pStateArray, stateDesc, pStateCache);
+	}
+
 	// Forward
 	{
 		stateDesc.technique = TTYPE_GENERAL;

@@ -176,13 +176,6 @@ void Cry3DEngineBase::PrintMessagePlus(const char* szText, ...)
 	GetLog()->UpdateLoadingScreen(0);
 }
 
-//TanGram::VSM:[BEGIN]
-IObjGPUManager* Cry3DEngineBase::GetObjGPUManager()
-{
-	return m_pRenderer->GetObjGPUManager();
-}
-//TanGram::VSM:[END]
-
 float Cry3DEngineBase::GetCurTimeSec()
 { return (gEnv->pTimer->GetCurrTime()); }
 
