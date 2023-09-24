@@ -93,8 +93,14 @@ bool CDeviceGraphicsPSODesc::operator==(const CDeviceGraphicsPSODesc& other) con
 	return memcmp(this, &other, sizeof(CDeviceGraphicsPSODesc)) == 0;
 }
 
-uint64 CDeviceGraphicsPSODesc::GetHash() const
+uint64 CDeviceGraphicsPSODesc::GetHash(bool bIndirectPSODesc) const
 {
+	//TanGram:VSM:BEGIN
+	if (bIndirectPSODesc)
+	{
+		return bIndirectPSODescHash;
+	}
+	//TanGram:VSM:END
 	uint64 key = XXH64(this, sizeof(CDeviceGraphicsPSODesc), 0);
 	return key;
 }
@@ -297,6 +303,9 @@ EStreamMasks CDeviceGraphicsPSODesc::CombineVertexStreamMasks(EStreamMasks fromS
 	return result;
 }
 
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CDeviceComputePSODesc::CDeviceComputePSODesc(CDeviceResourceLayoutPtr pResourceLayout, ::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags)
@@ -362,4 +371,3 @@ bool CDeviceGraphicsPSO::ValidateShadersAndTopologyCombination(const CDeviceGrap
 
 	return bShadersAndTopologyCombination;
 }
-

@@ -341,12 +341,47 @@ bool CDeviceResourceSet::UpdateWithReevaluation(CDeviceResourceSetPtr& pSet, CDe
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//TanGram:VSM:BEGIN
+void SDeviceResourceIndirectLayoutDesc::AddShaderGroupToken()
+{
+	m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_ShaderGroup ,nullptr,EShaderStage::EShaderStage_None,0,0 });
+}
+
+void SDeviceResourceIndirectLayoutDesc::AddIBToken()
+{	
+	m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_IndexBuffer ,nullptr,EShaderStage::EShaderStage_None,0,0 });
+}										
+
+void SDeviceResourceIndirectLayoutDesc::AddVBToken()
+{	
+	m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_VertexBuffer ,nullptr,EShaderStage::EShaderStage_None,0,0 });
+}
+
+void SDeviceResourceIndirectLayoutDesc::AddPushConstant(CDeviceResourceLayoutPtr pushconstandLayout, EShaderStage shaderStageFlags, uint32 pushconstantOfsset, uint32 pushconstantSize)
+{
+	m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_PushConstant ,pushconstandLayout,shaderStageFlags,pushconstantOfsset,pushconstantSize });
+}
+									
+void SDeviceResourceIndirectLayoutDesc::AddDrawIndexed()
+{
+	m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_DrawIndexd ,nullptr,EShaderStage::EShaderStage_None,0,0 });
+}
+//TanGram:VSM:END
+// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void SDeviceResourceLayoutDesc::SetResourceSet(uint32 bindSlot, const CDeviceResourceSetDesc& resourceSet)
 {
 	SLayoutBindPoint bindPoint = { SDeviceResourceLayoutDesc::ELayoutSlotType::ResourceSet, static_cast<uint8>(bindSlot) };
 	m_resourceBindings[bindPoint] = resourceSet.GetResources();
 }
+
+//TanGram:VSM:BEGIN
+void SDeviceResourceLayoutDesc::AddPushConstant(EShaderStage shaderStage, uint32 offset, uint32 size)
+{
+	m_pushconstantrages.push_back(SPushConstantRange{ shaderStage,offset,size });
+}
+//TanGram:VSM:END
 
 void SDeviceResourceLayoutDesc::SetConstantBuffer(uint32 bindSlot, EConstantBufferShaderSlot shaderSlot, ::EShaderStage shaderStages)
 {
@@ -370,6 +405,33 @@ void SDeviceResourceLayoutDesc::SetShaderResource(uint32 bindSlot, EShaderResour
 
 bool SDeviceResourceLayoutDesc::operator<(const SDeviceResourceLayoutDesc& other) const
 {
+	//TanGram:VSM:BEGIN
+	if (m_pushconstantrages.size() != other.m_pushconstantrages.size())
+	{
+		return m_pushconstantrages.size() < other.m_pushconstantrages.size();
+	}
+	else
+	{
+		for (auto iter0 = m_pushconstantrages.begin(), iter1 = other.m_pushconstantrages.begin(); iter0 != m_pushconstantrages.end(); iter0++, iter1++)
+		{
+			if (iter0->shaderStage != iter1->shaderStage)
+			{
+				return iter0->shaderStage < iter1->shaderStage;
+			}
+
+			if (iter0->offset != iter1->offset)
+			{
+				return iter0->offset < iter1->offset;
+			}
+
+			if (iter0->size != iter1->size)
+			{
+				return iter0->size < iter1->size;
+			}
+		}
+	}
+	//TanGram:VSM:END
+
 	if (m_resourceBindings.size() != other.m_resourceBindings.size())
 		return m_resourceBindings.size() < other.m_resourceBindings.size();
 
@@ -445,3 +507,5 @@ uint64 SDeviceResourceLayoutDesc::GetHash() const
 
 	return XXH64_digest(&hashState);
 }
+
+

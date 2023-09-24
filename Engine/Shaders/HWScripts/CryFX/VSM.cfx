@@ -117,6 +117,9 @@ struct perdrawCbPointer
    uint64_t Address;
 };
 
+//https://community.khronos.org/t/hlsl-push-constant-offset/106971
+//https://vkguide.dev/docs/chapter-3/push_constants/
+
 #vkextbegin
 [[vk::push_constant]]
 perdrawCbPointer cbPointer;

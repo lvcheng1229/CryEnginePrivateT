@@ -88,6 +88,78 @@ CDeviceComputePSOPtr CDeviceObjectFactory::CreateComputePSOImpl(const CDeviceCom
 	return pResult;
 }
 
+//TanGram:VSM:BEGIN
+template <typename T>
+inline constexpr T AlignArbitrary(T val, uint64 alignment)
+{
+	static_assert(std::is_integral_v<T> || std::is_pointer_v<T>, "AlignArbitrary expects an integer or pointer type");
+	return (T)((((uint64)val + alignment - 1) / alignment) * alignment);
+}
+
+std::vector<uint8>& CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize)
+{
+	outCmdDataSize = 0;
+	uint32 cbSize = deviceGpuDrawCmds[0].m_constBuffers.size();
+	outCmdDataSize += cbSize * sizeof(VkDeviceAddress);
+	outCmdDataSize += sizeof(VkBindShaderGroupIndirectCommandNV);
+	outCmdDataSize += sizeof(VkBindIndexBufferIndirectCommandNV);
+	outCmdDataSize += sizeof(VkBindVertexBufferIndirectCommandNV);
+	outCmdDataSize += sizeof(VkDrawIndexedIndirectCommand);
+	outCmdDataSize = AlignArbitrary(outCmdDataSize, sizeof(uint64));
+
+	std::vector<uint8> retData;
+	retData.resize(outCmdDataSize * deviceGpuDrawCmds.size());
+	uint8* rawData = retData.data();
+	
+	for (uint32 index = 0; index < deviceGpuDrawCmds.size(); index++)
+	{
+		uint32 offset = 0;
+		
+		VkBindShaderGroupIndirectCommandNV* shader = (VkBindShaderGroupIndirectCommandNV*)(rawData + uint64(index) * uint64(outCmdDataSize) + offset);
+		shader->groupIndex = deviceGpuDrawCmds[index].m_shaderGroupIndex;
+		offset += sizeof(VkBindShaderGroupIndirectCommandNV);
+
+		VkBufferDeviceAddressInfo addressInfo = { VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
+		
+		//cb
+		for (uint32 cbIndex = 0; cbIndex < deviceGpuDrawCmds[index].m_constBuffers.size(); cbIndex++)
+		{
+			CDeviceBuffer* deviceBuffer = deviceGpuDrawCmds[index].m_constBuffers[cbIndex];
+			addressInfo.buffer = deviceBuffer->GetBuffer()->GetHandle();
+
+			VkDeviceAddress* deviceAddress = (VkDeviceAddress*)(rawData + uint64(index) * uint64(outCmdDataSize) + offset);
+			*deviceAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &addressInfo);;
+
+			offset += sizeof(VkDeviceAddress);//todo@
+		}
+
+		//ibo
+		{
+			buffer_size_t iboOffset;
+			buffer_size_t iboSize;
+			const CDeviceInputStream* indexStream = deviceGpuDrawCmds[index].m_indexStreamSet;
+			auto* pBuffer = gcpRendD3D.m_DevBufMan.GetD3D(indexStream->hStream, &iboSize);
+			addressInfo.buffer = pBuffer->GetHandle();
+			
+			VkBindIndexBufferIndirectCommandNV* indirectIndexBuffer = (VkBindIndexBufferIndirectCommandNV*)(rawData + uint64(index) * uint64(outCmdDataSize) + offset);
+			indirectIndexBuffer->bufferAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &addressInfo);
+			indirectIndexBuffer->indexType = indexStream->nStride == DXGI_FORMAT_R16_UINT ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
+			indirectIndexBuffer->size = iboSize;
+
+			offset += sizeof(VkBindIndexBufferIndirectCommandNV);
+		}
+
+		//vbo
+		{
+
+		}
+
+	}
+
+	return retData;
+}
+//TanGram:VSM:BEGIN
+
 CDeviceResourceSetPtr CDeviceObjectFactory::CreateResourceSet(CDeviceResourceSet::EFlags flags) const
 {
 	return std::make_shared<CDeviceResourceSet_Vulkan>(GetDevice(), flags);
@@ -101,6 +173,17 @@ CDeviceResourceLayoutPtr CDeviceObjectFactory::CreateResourceLayoutImpl(const SD
 
 	return nullptr;
 }
+
+//TanGram:VSM:BEGIN
+CDeviceResourceIndirectLayoutPtr CDeviceObjectFactory::CreateResourceIndirectLayoutImpl(const SDeviceResourceIndirectLayoutDesc& resourceIndirectLayoutDesc) const
+{
+	auto pResult = std::make_shared<CDeviceResourceIndirectLayout_Vulkan>(GetDevice());
+	if (pResult->Init(resourceIndirectLayoutDesc))
+		return pResult;
+
+	return nullptr;
+}
+//TanGram:VSM:END
 
 const std::vector<uint8>* CDeviceObjectFactory::LookupResourceLayoutEncoding(uint64 layoutHash)
 {

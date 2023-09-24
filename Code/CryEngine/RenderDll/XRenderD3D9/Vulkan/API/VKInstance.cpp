@@ -379,7 +379,7 @@ VkResult CInstance::InitializePhysicalDeviceInfos()
 		vkGetPhysicalDeviceFeatures(info.device, &info.deviceFeatures);
 
 		// Fetch physical device format support
-		for (VkFormat format = VK_FORMAT_BEGIN_RANGE; format != VK_FORMAT_END_RANGE; format = VkFormat(format + 1))
+		for (VkFormat format = VK_FORMAT_UNDEFINED; format != VK_FORMAT_ASTC_12x12_SRGB_BLOCK; format = VkFormat(format + 1))//TanGram:VSM
 			vkGetPhysicalDeviceFormatProperties(info.device, format, &info.formatProperties[format]);
 
 		//fetch device layers & extensions
@@ -548,6 +548,8 @@ void CInstance::GatherPhysicalDeviceExtensionsToEnable()
 #if !defined(_RELEASE) && VK_EXT_debug_marker
 	m_enabledPhysicalDeviceExtensions.emplace_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
 #endif
+
+	m_enabledPhysicalDeviceExtensions.emplace_back(VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME, true);//TanGram:VSM
 }
 
 const char* DebugLevelToString(VkDebugReportFlagsEXT flags)

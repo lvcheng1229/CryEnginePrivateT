@@ -17,39 +17,46 @@
 
 //TanGram:VSM:BEGIN
 //see DrawCompiledRenderItemsToCommandList
-void CRenerItemGPUDrawer::UpdateGPURenderItems(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem)
+void CRenerItemGPUDrawer::SetPassContext(uint32 batchIncludeFilter, uint32 batchExcludeFilter, uint32 stageID, uint32 passID)
 {
-	const SGraphicsPipelinePassContext& passContext = *pInputPassContext;
+	m_batchIncludeFilter = batchIncludeFilter;
+	m_batchExcludeFilter = batchExcludeFilter;
+	m_stageID = stageID;
+	m_passID = passID;
+}
 
-	// Allow only compiled objects to actually draw
-	const uint32 batchExcludeFilter = passContext.batchExcludeFilter;
-	const uint32 batchIncludeFilter = passContext.batchIncludeFilter | FB_COMPILED_OBJECT;
-
+void CRenerItemGPUDrawer::UpdateGPURenderItems(const RenderItems* renderItems, int startRenderItem, int endRenderItem)
+{
+	bPSOGroupChanged = true;
 	for (int32 i = startRenderItem, e = endRenderItem - 1; i <= e; ++i)
 	{
+		const SRendItem& rif = (*renderItems)[std::min<int32>(i + PREFETCH_STRIDE / sizeof(SRendItem), e)];
+		PrefetchLine(rif.pCompiledObject, 128);
+
+		const SRendItem& ri = (*renderItems)[i];
+
+		if (SRendItem::TestIndividualBatchFlags(ri.nBatchFlags, m_batchExcludeFilter, m_batchIncludeFilter))
 		{
-			const SRendItem& rif = (*renderItems)[std::min<int32>(i + PREFETCH_STRIDE / sizeof(SRendItem), e)];
-			PrefetchLine(rif.pCompiledObject, 128);
-
-			const SRendItem& ri = (*renderItems)[i];
-
-			const SDrawParams& drawParams = ri.pCompiledObject->m_drawParams[passContext.stageID != eStage_ShadowMap ? eDrawParam_General : eDrawParam_Shadow];
-
 			//TODO:instance
+			const SDrawParams& drawParams = ri.pCompiledObject->m_drawParams[m_stageID];
+			m_riGpuCullingData.clear();;
+			m_riGpuCullingData.push_back(SRenderItemGPUData{ ri.pCompiledObject->GetInstancingData().matrix,ri.pCompiledObject->m_aabb });
+			m_renderItemsPSO.push_back(ri.pCompiledObject->m_pso[m_stageID][m_passID].get());
 
-			m_renderItemsGPUData.clear();;
-			m_renderItemsGPUData.push_back(SRenderItemsGPUData{ ri.pCompiledObject->GetInstancingData().matrix,ri.pCompiledObject->m_aabb });
+			std::vector<CDeviceBuffer*>constBuffers;
+			constBuffers.push_back(ri.pCompiledObject->m_perDrawCB->m_buffer);
+			constBuffers.push_back(ri.pCompiledObject->m_perDrawCB->m_buffer);//TODO:PerViewCB
 			m_gpuDrawCommands.push_back(
-				SGPUDrawCommand
+				CDeviceGPUDrawCmd
 				{
-					ri.pCompiledObject->m_perDrawCB,
-					ri.pCompiledObject->m_perDrawCB,//TODO:PerViewCB
+					0,
+					constBuffers,
 					ri.pCompiledObject->m_vertexStreamSet,
 					ri.pCompiledObject->m_indexStreamSet,
 
-					drawParams.m_nNumIndices, 
+					drawParams.m_nNumIndices,
 					0,//dynamicInstancingCount, 
-					drawParams.m_nStartIndex, 
+					drawParams.m_nStartIndex,
 					0,
 					0
 				}
@@ -57,11 +64,12 @@ void CRenerItemGPUDrawer::UpdateGPURenderItems(const SGraphicsPipelinePassContex
 		}
 	}
 }
+
 //TanGram:VSM:END
 
 void DrawCompiledRenderItemsToCommandList(
 	const SGraphicsPipelinePassContext* pInputPassContext,
-	const CRenderView::RenderItems* renderItems,
+	const RenderItems* renderItems,
 	CDeviceCommandList* commandList,
 	int startRenderItem,
 	int endRenderItem)

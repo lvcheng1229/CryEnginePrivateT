@@ -260,38 +260,6 @@ typedef std::shared_ptr<CDeviceResourceSet> CDeviceResourceSetPtr;
 
 typedef std::bitset<EResourceLayoutSlot_Num> UsedBindSlotSet;
 
-//TanGram:VSM:BEGIN
-
-struct TMP_RENDER_API SDeviceResourceIndirectLayoutToken
-{
-	enum  class ETokenType : uint8
-	{
-		TT_ConstantBuffer,
-		TT_VertexBuffer,
-		TT_IndexBuffer,
-		TT_DrawIndexd,
-	};
-
-	ETokenType m_tokenType;
-};
-
-struct TMP_RENDER_API SDeviceResourceIndirectLayoutDesc
-{
-	
-	std::vector<SDeviceResourceIndirectLayoutToken>m_indirectLayoutTokens;
-};
-
-class CDeviceResourceIndirectLayout
-{
-public:
-	CDeviceResourceIndirectLayout()
-	{}
-
-protected:
-};
-//TanGram:VSM:END
-
-
 struct TMP_RENDER_API SDeviceResourceLayoutDesc
 {
 	enum class ELayoutSlotType : uint8
@@ -301,6 +269,20 @@ struct TMP_RENDER_API SDeviceResourceLayoutDesc
 		ResourceSet
 	};
 
+	//TanGram:VSM:BEGIN
+	struct SPushConstantRange
+	{
+		EShaderStage shaderStage;
+		uint32 offset;
+		uint32 size;
+
+		bool operator==(const SPushConstantRange& other) const;
+		bool operator< (const SPushConstantRange& other) const;
+	};
+
+	std::vector<SPushConstantRange>m_pushconstantrages;
+	//TanGram:VSM:END
+
 	struct SLayoutBindPoint
 	{
 		ELayoutSlotType slotType;
@@ -309,6 +291,8 @@ struct TMP_RENDER_API SDeviceResourceLayoutDesc
 		bool operator==(const SLayoutBindPoint& other) const;
 		bool operator< (const SLayoutBindPoint& other) const;
 	};
+
+	void			AddPushConstant(EShaderStage shaderStage, uint32 offset, uint32 size);//TanGram:VSM
 
 	void            SetConstantBuffer(uint32 bindSlot, EConstantBufferShaderSlot shaderSlot, EShaderStage shaderStages);
 	void            SetShaderResource(uint32 bindSlot, EShaderResourceShaderSlot shaderSlot, EShaderStage shaderStages);
@@ -325,7 +309,6 @@ struct TMP_RENDER_API SDeviceResourceLayoutDesc
 
 static_assert(sizeof(SDeviceResourceLayoutDesc::SLayoutBindPoint) == sizeof(uint8) + sizeof(SDeviceResourceLayoutDesc::ELayoutSlotType),
 	"SDeviceResourceLayoutDesc::SLayoutBindPoint must not have padding since we directly calculate hashes based on the struct data");
-
 
 class CDeviceResourceLayout
 {
@@ -345,4 +328,48 @@ typedef std::weak_ptr<const CDeviceResourceLayout>   CDeviceResourceLayoutConstW
 
 typedef std::shared_ptr<CDeviceResourceLayout>       CDeviceResourceLayoutPtr;
 typedef std::weak_ptr<CDeviceResourceLayout>         CDeviceResourceLayoutWPtr;
+
+//TanGram:VSM:BEGIN
+struct TMP_RENDER_API SDeviceResourceIndirectLayoutToken
+{
+	enum  class ETokenType : uint8
+	{
+		TT_ShaderGroup,
+		TT_IndexBuffer,
+		TT_VertexBuffer,
+		TT_PushConstant,
+		TT_DrawIndexd,
+	};
+
+	ETokenType m_tokenType;
+
+	//push constant
+	CDeviceResourceLayoutPtr m_pDeviceResourceLayout;
+	EShaderStage m_pcShaderStage;
+	uint32 m_pcOffset;
+	uint32 m_pcSize;
+};
+
+struct TMP_RENDER_API SDeviceResourceIndirectLayoutDesc
+{
+	std::vector<SDeviceResourceIndirectLayoutToken>m_indirectLayoutTokens;
+
+	void AddShaderGroupToken();
+	void AddIBToken();
+	void AddVBToken();
+	void AddPushConstant(CDeviceResourceLayoutPtr pushconstandLayout, EShaderStage shaderStageFlags, uint32 pushconstantOfsset, uint32 pushconstantSize);
+	void AddDrawIndexed();
+};
+
+class CDeviceResourceIndirectLayout
+{
+public:
+	CDeviceResourceIndirectLayout()
+	{}
+
+protected:
+};
+//TanGram:VSM:END
+
+typedef std::shared_ptr<CDeviceResourceIndirectLayout>       CDeviceResourceIndirectLayoutPtr;
 

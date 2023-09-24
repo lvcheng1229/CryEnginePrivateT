@@ -2,6 +2,7 @@
 
 #pragma once
 
+class CDeviceGraphicsPSO;
 ////////////////////////////////////////////////////////////////////////////
 class TMP_RENDER_API CDeviceGraphicsPSODesc
 {
@@ -13,7 +14,7 @@ public:
 	CDeviceGraphicsPSODesc& operator=(const CDeviceGraphicsPSODesc& other);
 	bool                    operator==(const CDeviceGraphicsPSODesc& other) const;
 
-	uint64                  GetHash() const;
+	uint64                  GetHash(bool bIndirectPSODesc = false) const;
 
 public:
 	void  InitWithDefaults();
@@ -43,7 +44,12 @@ public:
 	bool                       m_bDepthBoundsTest : 1;
 	bool                       m_bRelaxedRasterizationOrder : 1;
 	bool                       m_bDynamicDepthBias : 1; // When clear, SetDepthBias() may be ignored by the PSO. This may be faster on PS4 and VK. It has no effect on DX11 (always on) and DX12 (always off).
+
+	std::vector<CDeviceGraphicsPSO*>indirectPso;//TanGram:VSM
+	uint64 bIndirectPSODescHash;
 };
+
+
 
 class CDeviceComputePSODesc
 {
@@ -147,6 +153,8 @@ public:
 	virtual EInitResult Init(const CDeviceGraphicsPSODesc& psoDesc) = 0;
 
 	std::array<void*, eHWSC_Num>          m_pHwShaderInstances;
+
+	uint64 m_psoDescHash;//TanGram:VSM
 
 #if defined(ENABLE_PROFILING_CODE)
 	ERenderPrimitiveType m_PrimitiveTypeForProfiling;

@@ -1716,6 +1716,7 @@ enum ERenderListID : uint8
 	EFSLIST_GENERAL,                 //!< Opaque ambient_light+shadow passes.
 	EFSLIST_TERRAINLAYER,            //!< Unsorted terrain layers.
 	EFSLIST_SHADOW_GEN,              //!< Shadow map generation.
+	EFSLIST_VSM_SHADOW_GEN,			 //!< Virtual Shadow map generation //TanGram:VSM
 	EFSLIST_DECAL,                   //!< Opaque or transparent decals.
 	EFSLIST_WATER_VOLUMES,           //!< After decals.
 	EFSLIST_TRANSP_BW,               //!< Sorted by distance under-water render items.

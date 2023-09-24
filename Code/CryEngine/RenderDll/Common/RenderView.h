@@ -99,7 +99,7 @@ public:
 };
 
 
-struct SRenderItemsGPUData
+struct SRenderItemGPUData
 {
 public:
 	//CCompiledRenderObject
@@ -109,37 +109,38 @@ public:
 	AABB m_aabb;
 };
 
-struct SGPUDrawCommand
-{
-	//CB
-	CConstantBufferPtr m_perDrawCB;
-
-	//CB
-	CConstantBufferPtr m_perViewCB;
-
-	//VB/IB
-	const CDeviceInputStream* m_vertexStreamSet;
-	const CDeviceInputStream* m_indexStreamSet;
-
-	int32 IndexCountPerInstance;
-	int32 InstanceCount;
-	int32 StartIndexLocation;
-	int32  BaseVertexLocation;
-	uint32 StartInstanceLocation;
-};
 
 
+typedef lockfree_add_vector<SRendItem>       RenderItems;
 
 class CRenerItemGPUDrawer
 {
 public:
-	void UpdateGPURenderItems(const SGraphicsPipelinePassContext* pInputPassContext, const lockfree_add_vector<SRendItem>* renderItems, int startRenderItem, int endRenderItem);
+	CRenerItemGPUDrawer()
+		:bPSOGroupChanged(false)
+	{
+
+	}
+	void SetPassContext(uint32 batchIncludeFilter, uint32 batchExcludeFilter, uint32 stageID, uint32 passID);
+	void UpdateGPURenderItems(const RenderItems* renderItems, int startRenderItem, int endRenderItem);
+
+	bool IsPSOGroupChanged() { return bPSOGroupChanged; }
+	std::vector<CDeviceGraphicsPSO*>& GetRenderItemPSO() { return m_renderItemsPSO; }
 private:
 
 	// Should only be used for primitive types, without constructors and destructors.
-	std::vector<SRenderItemsGPUData> m_renderItemsGPUData; //TanGram:VSM
+	std::vector<SRenderItemGPUData> m_riGpuCullingData; 
+	std::vector<CDeviceGraphicsPSO*>m_renderItemsPSO;
+	std::vector<CDeviceGPUDrawCmd> m_gpuDrawCommands;
 
-	std::vector<SGPUDrawCommand> m_gpuDrawCommands;
+	uint32 m_batchIncludeFilter;
+	uint32 m_batchExcludeFilter;
+	uint32 m_stageID;
+	uint32 m_passID;
+
+	CGpuBuffer m_unCulledGPUCmdBuffer;
+
+	bool bPSOGroupChanged;
 };
 //TanGram:VSM:[END]
 
@@ -171,7 +172,7 @@ public:
 	};
 	using STransparentSegments = std::vector<STransparentSegment>;
 
-	typedef lockfree_add_vector<SRendItem>       RenderItems;
+	
 	typedef std::vector<SShadowFrustumToRender>  ShadowFrustums;
 	typedef std::vector<SShadowFrustumToRender*> ShadowFrustumsPtr;
 

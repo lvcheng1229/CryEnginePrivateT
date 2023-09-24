@@ -89,7 +89,7 @@ CImageView::CImageView(CImageResource* pImage, VkFormat format, VkImageViewType 
 {
 	const uint32_t actualNumMips = (numMips == VK_REMAINING_MIP_LEVELS) ? pImage->GetMipCount() - firstMip : numMips;
 	const uint32_t actualNumSlices = (numSlices == VK_REMAINING_ARRAY_LAYERS) ? pImage->GetSliceCount() - firstSlice : numSlices;
-	if (viewType == VK_IMAGE_VIEW_TYPE_RANGE_SIZE) // Handle "default" view
+	if (viewType == (VK_IMAGE_VIEW_TYPE_CUBE_ARRAY - VK_IMAGE_VIEW_TYPE_1D + 1)) // Handle "default" view//TanGram:VSM
 	{
 		switch (pImage->GetDimensionality())
 		{

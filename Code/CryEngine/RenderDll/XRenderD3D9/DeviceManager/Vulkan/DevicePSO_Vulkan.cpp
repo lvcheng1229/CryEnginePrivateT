@@ -45,6 +45,8 @@ topologyTypes[] =
 
 CDeviceGraphicsPSO::EInitResult CDeviceGraphicsPSO_Vulkan::Init(const CDeviceGraphicsPSODesc& psoDesc)
 {
+	bool indirectPSO = psoDesc.indirectPso.size() > 0;//TanGram:VSM
+
 	m_isValid = false;
 	m_updateCount++;
 
@@ -487,10 +489,12 @@ CDeviceGraphicsPSO::EInitResult CDeviceGraphicsPSO_Vulkan::Init(const CDeviceGra
 	dynamicStateCreateInfo.dynamicStateCount = dynamicStateCount;
 	dynamicStateCreateInfo.pDynamicStates = dynamicStates;
 
+
+
 	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
 	graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	graphicsPipelineCreateInfo.pNext = nullptr;
-	graphicsPipelineCreateInfo.flags = 0;
+	graphicsPipelineCreateInfo.flags = indirectPSO ? VK_PIPELINE_CREATE_INDIRECT_BINDABLE_BIT_NV : 0;//TanGram:VSM
 	graphicsPipelineCreateInfo.stageCount = validShaderCount;
 	graphicsPipelineCreateInfo.pStages = shaderStageCreateInfos;
 	graphicsPipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
@@ -507,6 +511,34 @@ CDeviceGraphicsPSO::EInitResult CDeviceGraphicsPSO_Vulkan::Init(const CDeviceGra
 	graphicsPipelineCreateInfo.subpass = 0;
 	graphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 	graphicsPipelineCreateInfo.basePipelineIndex = 0;
+
+	//TanGram:VSM:BEGIN
+	VkGraphicsPipelineShaderGroupsCreateInfoNV groupsCreateInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV };
+	{
+		if (indirectPSO)
+		{
+			std::vector<VkPipeline> referencedPipelines;
+			for (uint32_t m = 1; m < psoDesc.indirectPso.size(); m++)
+			{
+				referencedPipelines.push_back(static_cast<CDeviceGraphicsPSO_Vulkan*>(psoDesc.indirectPso[m])->GetVkPipeline());
+			}
+			groupsCreateInfo.pPipelines = referencedPipelines.data();
+			groupsCreateInfo.pipelineCount = (uint32_t)referencedPipelines.size();
+
+			//m = 0;
+			VkGraphicsShaderGroupCreateInfoNV shaderGroup = { VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV };
+			shaderGroup.stageCount = validShaderCount;
+			shaderGroup.pStages = shaderStageCreateInfos;
+			shaderGroup.pVertexInputState = graphicsPipelineCreateInfo.pVertexInputState;
+			shaderGroup.pTessellationState = graphicsPipelineCreateInfo.pTessellationState;
+
+
+			groupsCreateInfo.groupCount = 1u;
+			groupsCreateInfo.pGroups = &shaderGroup;
+			graphicsPipelineCreateInfo.pNext = &groupsCreateInfo;
+		}
+	}
+	//TanGram:VSM:END
 
 	VkResult result = vkCreateGraphicsPipelines(m_pDevice->GetVkDevice(), m_pDevice->GetVkPipelineCache(), 1, &graphicsPipelineCreateInfo, nullptr, &m_pipeline);
 

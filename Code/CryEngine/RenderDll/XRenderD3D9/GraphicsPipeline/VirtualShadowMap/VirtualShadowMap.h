@@ -17,8 +17,6 @@
 #define TILE_TABLE_GEN_CS_GROUP_SIZE 16
 
 
-
-
 class CVSMGlobalInfo
 {
 public:
@@ -114,27 +112,47 @@ class CShadowProjectStage
 {
 public:
 	CShadowProjectStage(CVSMGlobalInfo* vsmGlobalInfo, CGraphicsPipeline& graphicsPipeline)
-		:m_vsmGlobalInfo(vsmGlobalInfo)
+		: m_vsmGlobalInfo(vsmGlobalInfo)
 		, m_graphicsPipeline(graphicsPipeline)
+		, m_pShadowDepthRT(nullptr)
 	{
 
 	}
 
-	void InitIndirectLayout();
+	void Init();
+	void Update();
 	void Execute();
+
+	void PrepareShadowPasses();
+	bool CreatePipelineStateInner(const SGraphicsPipelineStateDescription& description, CDeviceGraphicsPSOPtr& outPSO);
 
 	class CVSMShadowProjectPass : public CSceneRenderPass
 	{
+	public:
+		void Init(CShadowProjectStage* Stage);
+		bool PrepareResources(const CRenderView* pMainView);
 
+		CDeviceResourceSetDesc*   m_perPassResources;
 	};
+
 private:
-	SDeviceResourceIndirectLayoutDesc m_deviceResourceIndirectLayoutDesc;
-
-	CVSMShadowProjectPass m_vsmShadowProjectPass;
-
+	CVSMShadowProjectPass m_pRenderPass;
 	CVSMGlobalInfo* m_vsmGlobalInfo;
-
 	CGraphicsPipeline& m_graphicsPipeline;
+
+	CDeviceResourceLayoutPtr m_pResourceLayout;
+	CDeviceResourceSetDesc   m_perPassResources;
+
+	CDeviceResourceIndirectLayoutPtr m_pResourceIndirectLayout;
+
+	CDeviceGraphicsPSOPtr m_pIndirectGraphicsPSO;
+
+	_smart_ptr<CTexture> m_pShadowDepthRT;
+
+
+	CGpuBuffer CulledCmdBuffer;
+	CGpuBuffer UnCulledCmdBuffer;
+	
 };
 
 class CVirtualShadowMapStage : public CGraphicsPipelineStage
@@ -162,16 +180,15 @@ public:
 
 	void  Init()   final;
 	void  Update() final;
-
 	void Execute();
 	
+	void ShadowViewUpdate();
+
 	void PrePareShadowMap();
 	void VisualizeBuffer();
 
-	bool CreatePipelineStates(DevicePipelineStatesArray* pStateArray, const SGraphicsPipelineStateDescription& stateDesc, CGraphicsPipelineStateLocalCache* pStateCache);
 private:
-	bool CreatePipelineStateInner(const SGraphicsPipelineStateDescription& description, CDeviceGraphicsPSOPtr& outPSO);
-private:
+
 	CVSMGlobalInfo m_vsmGlobalInfo;
 
 	//tile flag generation stage
@@ -182,11 +199,18 @@ private:
 	CComputeRenderPass m_passVSMTileTableGen;
 	CTileTableGenStage m_tileTableGenStage;
 
-	//vsm shadow project stage
-	CShadowProjectStage m_vsmShadowProjectStage;
 
 	_smart_ptr<CTexture>	m_pShadowDepthTarget;
-	
+
 	CFullscreenPass m_passBufferVisualize;
 	CTexture* m_pVisualizeTarget;
+
+	//shadow project stage
+public:
+
+	bool CreatePipelineStates(DevicePipelineStatesArray* pStateArray, const SGraphicsPipelineStateDescription& stateDesc, CGraphicsPipelineStateLocalCache* pStateCache);
+
+	CShadowProjectStage m_vsmShadowProjectStage;
+	
+
 };

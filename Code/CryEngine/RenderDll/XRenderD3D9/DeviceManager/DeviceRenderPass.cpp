@@ -311,19 +311,31 @@ CDeviceGraphicsPSOPtr CDeviceObjectFactory::CreateGraphicsPSO(const CDeviceGraph
 
 	CDeviceGraphicsPSOPtr pPso;
 
-	auto it = m_GraphicsPsoCache.find(psoDesc);
-	if (it != m_GraphicsPsoCache.end())
-	{
-		pPso = it->second;
-	}
-	else
+	//TanGram:VSM:BEGIN
+	if (psoDesc.indirectPso.size() > 0)
 	{
 		pPso = CreateGraphicsPSOImpl(psoDesc);
-		m_GraphicsPsoCache.emplace(psoDesc, pPso);
-
-		if (!pPso->IsValid())
-			m_InvalidGraphicsPsos.emplace(psoDesc, pPso);
 	}
+	//TanGram:VSM:END
+	else
+	{
+		auto it = m_GraphicsPsoCache.find(psoDesc);
+		if (it != m_GraphicsPsoCache.end())
+		{
+			pPso = it->second;
+		}
+		else
+		{
+			pPso = CreateGraphicsPSOImpl(psoDesc);
+			m_GraphicsPsoCache.emplace(psoDesc, pPso);
+			
+			if (!pPso->IsValid())
+				m_InvalidGraphicsPsos.emplace(psoDesc, pPso);
+
+			pPso->m_psoDescHash = psoDesc.GetHash();//TanGram:VSM
+		}
+	}
+
 
 	pPso->SetLastUseFrame(gRenDev->GetRenderFrameID());
 	return pPso;
@@ -350,6 +362,26 @@ CDeviceComputePSOPtr CDeviceObjectFactory::CreateComputePSO(const CDeviceCompute
 	pPso->SetLastUseFrame(gRenDev->GetRenderFrameID());
 	return pPso;
 }
+
+//TanGram:VSM:BEGIN
+const CDeviceGraphicsPSODesc CDeviceObjectFactory::GetGraphicsPsoDescByHash(uint64 hash)
+{
+	SGraphicsPipelineStateDescription description;
+	CDeviceGraphicsPSODesc PsoDesc;
+	PsoDesc.bIndirectPSODescHash = hash;
+	auto it = m_GraphicsPsoCache.find(PsoDesc);
+	if (it != m_GraphicsPsoCache.end())
+	{
+		return it->first;
+	}
+	else
+	{
+		CRY_ASSERT(false);
+	}
+
+	return CDeviceGraphicsPSODesc();
+}
+//TanGram:VSM:END
 
 CDeviceResourceLayoutPtr CDeviceObjectFactory::CreateResourceLayout(const SDeviceResourceLayoutDesc& resourceLayoutDesc)
 {
@@ -395,6 +427,13 @@ const CDeviceInputStream* CDeviceObjectFactory::CreateIndexStreamSet(const SStre
 
 	return (indexFilled ? m_uniqueIndexStreams.insert(indexStream).first->data() : nullptr);
 }
+
+//TanGram::VSM:BEGIN
+CDeviceResourceIndirectLayoutPtr CDeviceObjectFactory::CreateResourceIndirectLayout(const SDeviceResourceIndirectLayoutDesc& resourceIndirectLayoutDesc)
+{
+	return CreateResourceIndirectLayoutImpl(resourceIndirectLayoutDesc);
+}
+//TanGram::VSM:END
 
 CDeviceRenderPassPtr CDeviceObjectFactory::GetOrCreateRenderPass(const CDeviceRenderPassDesc& passDesc)
 {

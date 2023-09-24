@@ -31,7 +31,7 @@ struct SPhysicalDeviceInfo
 	std::vector<VkQueueFamilyProperties> queueFamilyProperties;
 	std::vector<SLayerInfo> devicelayers;
 	std::vector<VkExtensionProperties> implicitExtensions;
-	std::array<VkFormatProperties, VK_FORMAT_RANGE_SIZE> formatProperties;
+	std::array<VkFormatProperties, (VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1)> formatProperties;//TanGram:VSM
 };
 
 class CInstanceHolder

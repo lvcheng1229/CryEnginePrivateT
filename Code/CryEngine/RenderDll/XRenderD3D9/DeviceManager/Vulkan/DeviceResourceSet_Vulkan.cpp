@@ -263,41 +263,107 @@ void CDeviceResourceSet_Vulkan::ReleaseDescriptors()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //TanGram:VSM:BEGIN
-
-VkIndirectCommandsTokenTypeNVX ConvertToVKIndirectCmdType(SDeviceResourceIndirectLayoutToken::ETokenType tokenType)
+VkIndirectCommandsTokenTypeNV ConvertToVKIndirectCmdType(SDeviceResourceIndirectLayoutToken::ETokenType tokenType)
 {
 	switch (tokenType)
 	{
-	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_ConstantBuffer:
-		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX;//TODO:FixMe
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_ShaderGroup:
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_SHADER_GROUP_NV;
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_PushConstant:
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NV;
 		break;
 	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_VertexBuffer:
-		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX;
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NV;
 		break;
 	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_IndexBuffer:
-		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX;
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NV;
 		break;
 	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_DrawIndexd:
-		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX;
+		return VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NV;
 		break;
 	default:
 		CRY_ASSERT(false, "Unkown indirect layout type");
 		break;
 	}
-	return VK_INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX;
+	return VK_INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NV;
 }
 
-void CDeviceResourceIndirectLayout_Vulkan::Init(const SDeviceResourceIndirectLayoutDesc& desc)
+uint32 ConvertToTTSize(SDeviceResourceIndirectLayoutToken::ETokenType tokenType ,uint32 pushCbSize)
 {
-	//std::vector<VkIndirectCommandsLayoutTokenNVX> inputInfos;
-	//std::vector<uint32_t>                        inputStrides;
-	//
-	//uint32_t numInputs = 0;
-	//
-	//for (auto iter = desc.m_indirectLayoutTokens.begin(); iter != desc.m_indirectLayoutTokens.end(); iter++)
-	//{
-	//
-	//}
+	switch (tokenType)
+	{
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_ShaderGroup:
+		return sizeof(VkBindShaderGroupIndirectCommandNV);
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_PushConstant:
+		return pushCbSize;
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_VertexBuffer:
+		return sizeof(VkBindVertexBufferIndirectCommandNV);
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_IndexBuffer:
+		return sizeof(VkBindIndexBufferIndirectCommandNV);
+		break;
+	case SDeviceResourceIndirectLayoutToken::ETokenType::TT_DrawIndexd:
+		return sizeof(VkDrawIndexedIndirectCommand);
+		break;
+	default:
+		CRY_ASSERT(false, "Unkown indirect layout type");
+		break;
+	}
+	return 0;
+}
+
+bool CDeviceResourceIndirectLayout_Vulkan::Init(const SDeviceResourceIndirectLayoutDesc& desc)
+{
+	std::vector<VkIndirectCommandsLayoutTokenNV> inputInfos;
+	
+	uint32 offsetGloabl = 0;
+
+	for (auto iter = desc.m_indirectLayoutTokens.begin(); iter != desc.m_indirectLayoutTokens.end(); iter++)
+	{
+		VkIndirectCommandsTokenTypeNV tokenTypeNV = ConvertToVKIndirectCmdType(iter->m_tokenType);
+		VkIndirectCommandsLayoutTokenNV input = { VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV, 0,tokenTypeNV };
+		input.stream = 0;
+		input.offset = offsetGloabl;
+
+		offsetGloabl += ConvertToTTSize(iter->m_tokenType, iter->m_pcSize);
+
+
+		if (tokenTypeNV == VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NV)
+		{
+			input.vertexBindingUnit = 0;
+			input.vertexDynamicStride = VK_FALSE;
+		}
+
+		if (tokenTypeNV == VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NV)
+		{
+			input.pushconstantPipelineLayout = static_cast<const CDeviceResourceLayout_Vulkan*>(iter->m_pDeviceResourceLayout.get())->GetVkPipelineLayout();
+			input.pushconstantShaderStageFlags = GetShaderStageFlags(iter->m_pcShaderStage);
+			input.pushconstantOffset = iter->m_pcOffset;
+			input.pushconstantSize = iter->m_pcSize;
+		}
+
+		inputInfos.push_back(input);
+	}
+
+	uint32_t interleavedStride = offsetGloabl;
+
+	VkIndirectCommandsLayoutCreateInfoNV genInfo = { VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV };
+	genInfo.tokenCount = (uint32_t)inputInfos.size();
+	genInfo.pTokens = inputInfos.data();
+	genInfo.streamCount = 1;
+	genInfo.pStreamStrides = &interleavedStride;
+
+	VkResult result = VK_RESULT_MAX_ENUM;
+	if (Extensions::EXT_debug_marker::IsSupported)
+	{
+		result = Extensions::EXT_device_generated_commands::CmdCreateIndirectCommandsLayout(m_pDevice->GetVkDevice(), &genInfo, NULL, &indirectCmdsLayout);
+	}
+	
+	assert(result == VK_SUCCESS);
+	return result == VK_SUCCESS;
 }
 //TanGram:VSM:END
 
@@ -383,14 +449,42 @@ bool CDeviceResourceLayout_Vulkan::Init(const SDeviceResourceLayoutDesc& desc)
 
 	}
 
+	//TanGram:VSM:BEGIN
+	std::vector<VkPushConstantRange>pushRanges;
+	for (auto iter = desc.m_pushconstantrages.begin(); iter != desc.m_pushconstantrages.end(); iter++)
+	{
+		uint32 shaderStageFlag = 0;
+
+		if (iter->shaderStage & EShaderStage_Vertex)
+		{
+			shaderStageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
+		}
+
+		if (iter->shaderStage & EShaderStage_Pixel)
+		{
+			shaderStageFlag |= VK_SHADER_STAGE_GEOMETRY_BIT;
+		}
+
+		if (iter->shaderStage & EShaderStage_Compute)
+		{
+			shaderStageFlag |= VK_SHADER_STAGE_COMPUTE_BIT;
+		}
+
+		pushRanges.push_back(VkPushConstantRange{ shaderStageFlag ,iter->offset,iter->size });
+	}
+	//TanGram:VSM:END
+
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutCreateInfo.pNext = nullptr;
 	pipelineLayoutCreateInfo.flags = 0;
 	pipelineLayoutCreateInfo.setLayoutCount = descriptorSetCount + 1;
 	pipelineLayoutCreateInfo.pSetLayouts = descriptorSets;
-	pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-	pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
+
+	//TanGram:VSM:BEGIN
+	pipelineLayoutCreateInfo.pushConstantRangeCount = pushRanges.size();
+	pipelineLayoutCreateInfo.pPushConstantRanges = pushRanges.data();
+	//TanGram:VSM:END
 
 	VkResult result = vkCreatePipelineLayout(m_pDevice->GetVkDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout);
 

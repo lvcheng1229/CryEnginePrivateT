@@ -550,6 +550,12 @@ void CDeviceGraphicsCommandInterfaceImpl::DrawIndexedImpl(uint32 IndexCountPerIn
 	GetVKCommandList()->m_nCommands += CLCOUNT_DRAW;
 }
 
+//TanGram:VSM:BEGIN
+void CDeviceGraphicsCommandInterfaceImpl::ExecuteGeneratedCommandsImpl()
+{
+
+}
+//TanGram:VSM:END
 void CDeviceGraphicsCommandInterfaceImpl::ClearSurfaceImpl(D3DSurface* pView, const FLOAT Color[4], UINT NumRects, const D3D11_RECT* pRects)
 {
 	CRY_ASSERT(NumRects == 0); // currently not supported on Vulkan

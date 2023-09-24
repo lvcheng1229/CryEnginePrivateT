@@ -96,12 +96,12 @@ private:
 	static void VKAPI_PTR  CpuForeignFree(void* pUserData, size_t size, VkInternalAllocationType type, VkSystemAllocationScope scope);
 
 #if !defined(_RELEASE)
-	static const size_t        kNumPools = VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE + VK_INTERNAL_ALLOCATION_TYPE_RANGE_SIZE;
+	static const size_t        kNumPools = (VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE - VK_SYSTEM_ALLOCATION_SCOPE_COMMAND + 1) + (VK_INTERNAL_ALLOCATION_TYPE_EXECUTABLE - VK_INTERNAL_ALLOCATION_TYPE_EXECUTABLE + 1);//TanGram:VSM
 	volatile struct SPoolStats m_stats[kNumPools];
 
 	// Access stats structure for some pool.
 	volatile SPoolStats& AtStats(VkSystemAllocationScope scope) { return m_stats[scope]; }
-	volatile SPoolStats& AtStats(VkInternalAllocationType type) { return m_stats[type + VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE]; }
+	volatile SPoolStats& AtStats(VkInternalAllocationType type) { return m_stats[type + (VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE - VK_SYSTEM_ALLOCATION_SCOPE_COMMAND + 1)]; }//TanGram:VSM
 #endif
 };
 

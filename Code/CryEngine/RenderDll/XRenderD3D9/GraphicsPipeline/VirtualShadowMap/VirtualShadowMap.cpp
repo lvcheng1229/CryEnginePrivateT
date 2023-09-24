@@ -103,14 +103,71 @@ void CTileTableGenStage::Execute()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm projection stage -- shadow project pass ////////////////////////////////////////////////////////////////////////
+
+void CShadowProjectStage::CVSMShadowProjectPass::Init(CShadowProjectStage* Stage)
+{
+	m_perPassResources = &Stage->m_perPassResources;
+	m_pPerPassResourceSet = GetDeviceObjectFactory().CreateResourceSet(CDeviceResourceSet::EFlags_ForceSetAllState);
+}
+
+bool CShadowProjectStage::CVSMShadowProjectPass::PrepareResources(const CRenderView* pMainView)
+{
+	m_pPerPassResourceSet->Update(*m_perPassResources);
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 /// vsm projection stage ////////////////////////////////////////////////////////////////////////
 
-void CShadowProjectStage::InitIndirectLayout()
+void CShadowProjectStage::Init()
 {
-	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_ConstantBuffer });
-	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_VertexBuffer });
-	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_IndexBuffer });
-	m_deviceResourceIndirectLayoutDesc.m_indirectLayoutTokens.push_back(SDeviceResourceIndirectLayoutToken{ SDeviceResourceIndirectLayoutToken::ETokenType::TT_DrawIndexd });
+	std::string name = "$RT_ShadowPool" + m_graphicsPipeline.GetUniqueIdentifierName();
+	m_pShadowDepthRT = CTexture::GetOrCreateTextureObject(name.c_str(), 0, 0, 1, eTT_2D, FT_DONT_STREAM | FT_USAGE_DEPTHSTENCIL, eTF_Unknown);
+	m_pShadowDepthRT->Invalidate(PHYSICAL_VSM_TEX_SIZE, PHYSICAL_VSM_TEX_SIZE, eTF_D32F);
+	m_pShadowDepthRT->CreateDepthStencil(eTF_D32F, ColorF(Clr_FarPlane.r, 5.f, 0.f, 0.f));
+
+	SDeviceResourceLayoutDesc layoutDesc;
+	m_perPassResources.SetTexture(0, CRendererResources::s_pTexNULL, EDefaultResourceViews::UnorderedAccess, EShaderStage_All);//Physical VSM Shadow Depth Texture
+	m_perPassResources.SetBuffer(0, CDeviceBufferManager::GetNullBufferStructured(), EDefaultResourceViews::UnorderedAccess, EShaderStage_All);//PageTable
+	layoutDesc.SetResourceSet(EResourceLayoutSlot_PerPassRS, m_perPassResources);
+	layoutDesc.AddPushConstant(EShaderStage_Vertex | EShaderStage_Pixel, sizeof(uint64) * 2, 0);
+	m_pResourceLayout = GetDeviceObjectFactory().CreateResourceLayout(layoutDesc);//see m_graphicsPipeline.CreateScenePassLayout(m_perPassResources);
+	m_perPassResources.AcceptChangedBindPoints();
+
+
+	SDeviceResourceIndirectLayoutDesc deviceResourceIndirectLayoutDesc;
+	deviceResourceIndirectLayoutDesc.AddShaderGroupToken();
+	deviceResourceIndirectLayoutDesc.AddPushConstant(m_pResourceLayout, EShaderStage_Vertex | EShaderStage_Pixel, 0, sizeof(uint64) * 2);
+	deviceResourceIndirectLayoutDesc.AddIBToken();
+	deviceResourceIndirectLayoutDesc.AddVBToken();
+	deviceResourceIndirectLayoutDesc.AddDrawIndexed();
+	m_pResourceIndirectLayout = GetDeviceObjectFactory().CreateResourceIndirectLayout(deviceResourceIndirectLayoutDesc);
+
+	m_pRenderPass.Init(this);
+}
+
+void CShadowProjectStage::Update()
+{
+	PrepareShadowPasses();
+
+	CRenerItemGPUDrawer& gpuDrawer = m_vsmGlobalInfo->m_pRenderView->GetGPUDrawer();
+
+	//update gpu scene
+	{
+		//TODO: ShadowView
+		CRenderView* pShadowView = nullptr;
+		const RenderItems& renderItems = pShadowView->GetRenderItems(ERenderListID(0));/*shadow view only has one render item list*/
+		gpuDrawer.SetPassContext(TTYPE_SHADOWGEN, 0, eStage_VSM, 0/*pass id*/);
+		gpuDrawer.UpdateGPURenderItems(&renderItems,0, renderItems.size() - 1);
+	}
+
+	if ((!m_pIndirectGraphicsPSO->IsValid() || gpuDrawer.IsPSOGroupChanged()) && gpuDrawer.GetRenderItemPSO().size() > 0)
+	{
+		CDeviceGraphicsPSODesc indirectPsoDesc = GetDeviceObjectFactory().GetGraphicsPsoDescByHash(gpuDrawer.GetRenderItemPSO()[0]->m_psoDescHash);
+		indirectPsoDesc.indirectPso = gpuDrawer.GetRenderItemPSO();
+		m_pIndirectGraphicsPSO = GetDeviceObjectFactory().CreateGraphicsPSO(indirectPsoDesc);
+	}
 }
 
 void CShadowProjectStage::Execute()
@@ -118,7 +175,7 @@ void CShadowProjectStage::Execute()
 	//CRenderView* pRenderView = m_vsmGlobalInfo->m_pRenderView;
 	//CRenerItemGPUDrawer& renderItemGPUDrawer = pRenderView->GetGPUDrawer();
 
-	m_vsmShadowProjectPass.BeginExecution(m_graphicsPipeline);
+	m_pRenderPass.BeginExecution(m_graphicsPipeline);
 	//m_vsmShadowProjectPass.SetupDrawContext(StageID, curPass.m_eShadowPassID, TTYPE_SHADOWGEN, 0);
 	//m_vsmShadowProjectPass.DrawRenderItems(pShadowsView, (ERenderListID)curPass.m_nShadowFrustumSide);
 	//m_vsmShadowProjectPass.EndExecution();
@@ -127,22 +184,165 @@ void CShadowProjectStage::Execute()
 	//rendItemDrawer.InitDrawSubmission();
 	//rendItemDrawer.JobifyDrawSubmission();
 	//rendItemDrawer.WaitForDrawSubmission(); disable multi thread
+
+	CDeviceCommandListRef  commandList = GetDeviceObjectFactory().GetCoreCommandList();
+	CDeviceGraphicsCommandInterface& commandInterface = *(commandList.GetGraphicsInterface());
+	commandInterface.ExecuteGeneratedCommands();
+}
+
+
+void CShadowProjectStage::PrepareShadowPasses()
+{
+	m_pRenderPass.SetRenderTargets(m_pShadowDepthRT, nullptr);
+	D3DViewPort viewport;// = { float(arrViewport[0]), float(arrViewport[1]), float(arrViewport[2]), float(arrViewport[3]), 0, 1 };
+	m_pRenderPass.SetViewport(viewport);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// vsm tile flag generation stage ////////////////////////////////////////////////////////////////////////
+/// virtual shadow map stage ////////////////////////////////////////////////////////////////////////
 
 void CVirtualShadowMapStage::Init()
 {
 	m_tileFlagGenStage.Init();
 	m_tileTableGenStage.Init();
+	m_vsmShadowProjectStage.Init();
 }
 
 void CVirtualShadowMapStage::Update()
 {
+	ShadowViewUpdate();
+	m_tileFlagGenStage.Update();
+	m_tileTableGenStage.Update();
+	m_vsmShadowProjectStage.Update();
+}
+
+void CVirtualShadowMapStage::PrePareShadowMap()
+{
+	//Physical VSM Shadow Depth Texture RW Texture2D Temp!!!
+}
+
+void CVirtualShadowMapStage::Execute()
+{
+	if (m_vsmGlobalInfo.m_frustumValid)
+	{
+		m_tileFlagGenStage.Execute();
+		m_tileTableGenStage.Execute();
+		m_vsmShadowProjectStage.Execute();
+	}
+
+	VisualizeBuffer();
+
+	return;
+}
+
+bool CShadowProjectStage::CreatePipelineStateInner(const SGraphicsPipelineStateDescription& description, CDeviceGraphicsPSOPtr& outPSO)
+{
+	outPSO = NULL;
+
+	CShader* pShader = static_cast<CShader*>(description.shaderItem.m_pShader);
+	SShaderTechnique* pTechnique = pShader->GetTechnique(description.shaderItem.m_nTechnique, description.technique, true);
+	if (!pTechnique)
+		return true;
+
+	CShaderResources* pRes = static_cast<CShaderResources*>(description.shaderItem.m_pShaderResources);
+	if (pRes->m_ResFlags & MTL_FLAG_NOSHADOW)
+		return true;
+
+	SShaderPass* pShaderPass = &pTechnique->m_Passes[0];
+	uint64 objectFlags = description.objectFlags;
+
+	CDeviceGraphicsPSODesc psoDesc(m_pResourceLayout, description);
+	psoDesc.m_bDynamicDepthBias = true;
+
+	// Handle quality flags
+	CGraphicsPipeline::ApplyShaderQuality(psoDesc, gcpRendD3D->GetShaderProfile(pShader->m_eShaderType));
+
+	// Set resource states
+	bool bTwoSided = false;
+	if (pRes->m_ResFlags & MTL_FLAG_2SIDED)
+		bTwoSided = true;
+
+	// Set Cull mode
+	psoDesc.m_bAllowTesselation = false;
+	psoDesc.m_CullMode = bTwoSided ? eCULL_None : ((pShaderPass && pShaderPass->m_eCull != -1) ? (ECull)pShaderPass->m_eCull : eCULL_Back);
+	if (pShader->m_eSHDType == eSHDT_Terrain)
+	{
+		psoDesc.m_CullMode = eCULL_Front; //front faces culling by default for terrain
+	}
+	if (!bTwoSided && psoDesc.m_CullMode == eCULL_Front)
+		psoDesc.m_CullMode = eCULL_Back;
+
+	//Set Shader Flags RT
+	psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_NO_TESSELLATION];
+	psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_HW_PCF_COMPARE];
+	psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SAMPLE0];
+	psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SAMPLE4];
+	if (pRes->IsAlphaTested())
+		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_ALPHATEST];
+	if (objectFlags & FOB_DECAL_TEXGEN_2D)
+		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_DECAL_TEXGEN_2D];
+	if ((objectFlags & FOB_BLEND_WITH_TERRAIN_COLOR))
+		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_BLEND_WITH_TERRAIN_COLOR];
+	if (!(objectFlags & FOB_TRANS_MASK))
+		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_OBJ_IDENTITY];
+	if (objectFlags & FOB_NEAREST)
+		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_NEAREST];
+	if (objectFlags & FOB_DISSOLVE)
+		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_DISSOLVE];
+	if (psoDesc.m_RenderState & GS_ALPHATEST)
+		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_ALPHATEST];
+
+
+	//Set VertexModifier
+	psoDesc.m_ShaderFlags_MDV |= pShader->m_nMDV;
+	if (objectFlags & FOB_OWNER_GEOMETRY)
+		psoDesc.m_ShaderFlags_MDV &= ~MDV_DEPTH_OFFSET;
+	if (objectFlags & FOB_BENDED)
+		psoDesc.m_ShaderFlags_MDV |= MDV_BENDING;
+	if (pRes->m_Textures[EFTT_DIFFUSE] && pRes->m_Textures[EFTT_DIFFUSE]->m_Ext.m_pTexModifier)
+		psoDesc.m_ShaderFlags_MD |= pRes->m_Textures[EFTT_DIFFUSE]->m_Ext.m_nUpdateFlags;
+	if (pRes->m_pDeformInfo)
+		psoDesc.m_ShaderFlags_MDV |= EVertexModifier(pRes->m_pDeformInfo->m_eType);
+
+	//Set Primitive Type
+	if (psoDesc.m_bAllowTesselation && (psoDesc.m_PrimitiveType < ept1ControlPointPatchList || psoDesc.m_PrimitiveType > ept4ControlPointPatchList))
+	{
+		psoDesc.m_PrimitiveType = ept3ControlPointPatchList;
+		psoDesc.m_ObjectStreamMask |= VSM_NORMALS;
+	}
+
+	// rendertarget and depth stencil format
+	psoDesc.m_pRenderPass = m_pRenderPass.GetRenderPass();
+
+	outPSO = GetDeviceObjectFactory().CreateGraphicsPSO(psoDesc);
+	return outPSO != nullptr;
+}
+
+
+bool CVirtualShadowMapStage::CreatePipelineStates(DevicePipelineStatesArray* pStateArray, const SGraphicsPipelineStateDescription& stateDesc, CGraphicsPipelineStateLocalCache* pStateCache)
+{
+
+	return true;//TEMP!
+
+	DevicePipelineStatesArray& stageStates = pStateArray[eStage_VSM];
+
+	if (pStateCache->Find(stateDesc, stageStates))
+		return true;
+
+	bool bFullyCompiled = m_vsmShadowProjectStage.CreatePipelineStateInner(stateDesc, stageStates[0]);
+	if (bFullyCompiled)
+	{
+		pStateCache->Put(stateDesc, stageStates);
+	}
+
+	return bFullyCompiled;
+}
+
+void CVirtualShadowMapStage::ShadowViewUpdate()
+{
 	Matrix44A viewMatrix, projMatrix;
-	CRenderView* pRenderView = RenderView();
+	CRenderView* pRenderView = RenderView();//TODO:!!!ShadowView
 	m_vsmGlobalInfo.m_pRenderView = pRenderView;
 	m_vsmGlobalInfo.m_texDeviceZ = pRenderView->GetDepthTarget();
 
@@ -172,7 +372,7 @@ void CVirtualShadowMapStage::Update()
 	f32 zf = aabbRadiusCam * 2.0f;
 
 	mathMatrixOrtho(&projMatrix, w, h, zn, zf);
-	
+
 	const Vec3 zAxis(0.f, 0.f, 1.f);
 	const Vec3 yAxis(0.f, 1.f, 0.f);
 	Vec3 up;
@@ -180,14 +380,14 @@ void CVirtualShadowMapStage::Update()
 	Vec3 at = camPos;
 	Vec3 vLightDir = -pVSMFrustum->pFrustum->vLightSrcRelPos;
 	vLightDir.Normalize();
-	
+
 	Vec3 eye = at - pVSMFrustum->pFrustum->vLightSrcRelPos.len() * vLightDir;
-	
+
 	if (fabsf(vLightDir.Dot(zAxis)) > 0.9995f)
 		up = yAxis;
 	else
 		up = zAxis;
-	
+
 	mathMatrixLookAt(&viewMatrix, eye, at, up);
 
 	m_vsmGlobalInfo.m_lightViewProjMatrix = viewMatrix * projMatrix;
@@ -198,197 +398,6 @@ void CVirtualShadowMapStage::Update()
 		auto pShadowView = reinterpret_cast<CRenderView*>(fr.pShadowsView.get());
 		pShadowView->SwitchUsageMode(IRenderView::eUsageModeReading);
 	}
-
-	m_tileFlagGenStage.Update();
-	m_tileTableGenStage.Update();
-}
-
-
-
-//PrepareOutputsForPass
-void CVirtualShadowMapStage::PrePareShadowMap()
-{
-	//_smart_ptr<CTexture> pDepthTarget = CTexture::GetOrCreateTextureObjectPtr("VSMShadowMap", PHYSICAL_VSM_TEX_SIZE, PHYSICAL_VSM_TEX_SIZE, 1, eTT_2D, FT_USAGE_TEMPORARY | FT_NOMIPS | FT_STATE_CLAMP, eTF_R32F);
-	//
-	//if (!CTexture::IsTextureExist(pDepthTarget))
-	//{
-	//	const ColorF cClear(0, 0, 0);
-	//	pDepthTarget->CreateDepthStencil(eTF_R32F, cClear);
-	//}
-	//
-	//m_pShadowDepthTarget = pDepthTarget;
-}
-
-void CVirtualShadowMapStage::Execute()
-{
-	if (m_vsmGlobalInfo.m_frustumValid)
-	{
-		m_tileFlagGenStage.Execute();
-		m_tileTableGenStage.Execute();
-	}
-
-	VisualizeBuffer();
-
-	return;
-}
-
-bool CVirtualShadowMapStage::CreatePipelineStateInner(const SGraphicsPipelineStateDescription& description, CDeviceGraphicsPSOPtr& outPSO)
-{
-//	outPSO = NULL;
-//
-//	CShader* pShader = static_cast<CShader*>(description.shaderItem.m_pShader);
-//	SShaderTechnique* pTechnique = pShader->GetTechnique(description.shaderItem.m_nTechnique, description.technique, true);
-//	if (!pTechnique)
-//		return true;
-//
-//	CShaderResources* pRes = static_cast<CShaderResources*>(description.shaderItem.m_pShaderResources);
-//	if (pRes->m_ResFlags & MTL_FLAG_NOSHADOW)
-//		return true;
-//
-//	SShaderPass* pShaderPass = &pTechnique->m_Passes[0];
-//	uint64 objectFlags = description.objectFlags;
-//
-//	CDeviceGraphicsPSODesc psoDesc(m_pResourceLayout, description);
-//	psoDesc.m_bDynamicDepthBias = true;
-//
-//	// Handle quality flags
-//	CGraphicsPipeline::ApplyShaderQuality(psoDesc, gcpRendD3D->GetShaderProfile(pShader->m_eShaderType));
-//
-//
-//	// Set resource states
-//	bool bTwoSided = false;
-//	{
-//		if (pRes->m_ResFlags & MTL_FLAG_2SIDED)
-//			bTwoSided = true;
-//
-//		if (pRes->IsAlphaTested())
-//			psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_ALPHATEST];
-//
-//		if (passID == ePass_DirectionalLightRSM || passID == ePass_LocalLightRSM)
-//		{
-//			if (pRes->m_Textures[EFTT_DIFFUSE] && pRes->m_Textures[EFTT_DIFFUSE]->m_Ext.m_pTexModifier)
-//				psoDesc.m_ShaderFlags_MD |= pRes->m_Textures[EFTT_DIFFUSE]->m_Ext.m_nUpdateFlags;
-//		}
-//
-//		// Merge EDeformType into EVertexModifier to save space/parameters
-//		if (pRes->m_pDeformInfo)
-//			psoDesc.m_ShaderFlags_MDV |= EVertexModifier(pRes->m_pDeformInfo->m_eType);
-//	}
-//
-//	if (m_shadowsLocalLightsLinearizeDepth == 1)
-//	{
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SHADOW_DEPTH_OUTPUT_LINEAR];
-//	}
-//
-//	//tessellation
-//	psoDesc.m_bAllowTesselation = false;
-//	psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_NO_TESSELLATION];
-//
-//#ifdef TESSELLATION_RENDERER
-//	const bool bHasTesselationShaders = pShaderPass && pShaderPass->m_HShader && pShaderPass->m_DShader;
-//	if (bHasTesselationShaders && (!(objectFlags & FOB_NEAREST) && (objectFlags & FOB_ALLOW_TESSELLATION)))
-//	{
-//		psoDesc.m_ShaderFlags_RT &= ~g_HWSR_MaskBit[HWSR_NO_TESSELLATION];
-//		psoDesc.m_bAllowTesselation = true;
-//	}
-//#endif
-//
-//	psoDesc.m_CullMode = bTwoSided ? eCULL_None : ((pShaderPass && pShaderPass->m_eCull != -1) ? (ECull)pShaderPass->m_eCull : eCULL_Back);
-//	if (pShader->m_eSHDType == eSHDT_Terrain)
-//	{
-//		//Flipped matrix for point light sources
-//		if (passID == ePass_DirectionalLight || passID == ePass_DirectionalLightCached)
-//			psoDesc.m_CullMode = eCULL_None;
-//		else
-//			psoDesc.m_CullMode = eCULL_Front; //front faces culling by default for terrain
-//	}
-//
-//	if (passID == ePass_DirectionalLight || passID == ePass_DirectionalLightCached || passID == ePass_DirectionalLightRSM)
-//	{
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_HW_PCF_COMPARE];
-//	}
-//	else if (passID == ePass_LocalLight || passID == ePass_LocalLightRSM)
-//	{
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_HW_PCF_COMPARE];
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_CUBEMAP0];
-//
-//		// RBPF_MIRRORCULL
-//		if (psoDesc.m_CullMode != eCULL_None)
-//		{
-//			psoDesc.m_CullMode = (psoDesc.m_CullMode == eCULL_Front) ? eCULL_Back : eCULL_Front;
-//		}
-//	}
-//
-//	if (passID == ePass_DirectionalLightRSM || passID == ePass_LocalLightRSM)
-//	{
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SAMPLE4];
-//
-//		if (!bTwoSided && psoDesc.m_CullMode == eCULL_Front)
-//			psoDesc.m_CullMode = eCULL_Back;
-//
-//		if (objectFlags & FOB_DECAL_TEXGEN_2D)
-//			psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_DECAL_TEXGEN_2D];
-//
-//		if ((objectFlags & FOB_BLEND_WITH_TERRAIN_COLOR)) // && rRP.m_pCurObject->m_nTextureID > 0
-//			psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_BLEND_WITH_TERRAIN_COLOR];
-//	}
-//
-//	psoDesc.m_ShaderFlags_MDV |= pShader->m_nMDV;
-//	if (objectFlags & FOB_OWNER_GEOMETRY)
-//		psoDesc.m_ShaderFlags_MDV &= ~MDV_DEPTH_OFFSET;
-//	if (objectFlags & FOB_BENDED)
-//		psoDesc.m_ShaderFlags_MDV |= MDV_BENDING;
-//
-//	if (!(objectFlags & FOB_TRANS_MASK))  //&& gRenDev->m_RP.m_RIs[0].Num() <= 1
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_OBJ_IDENTITY];
-//
-//	if (objectFlags & FOB_NEAREST)
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_NEAREST];
-//	if (objectFlags & FOB_DISSOLVE)
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_DISSOLVE];
-//	if (psoDesc.m_RenderState & GS_ALPHATEST)
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_ALPHATEST];
-//
-//	if (psoDesc.m_bAllowTesselation && (psoDesc.m_PrimitiveType < ept1ControlPointPatchList || psoDesc.m_PrimitiveType > ept4ControlPointPatchList))
-//	{
-//		psoDesc.m_PrimitiveType = ept3ControlPointPatchList;
-//		psoDesc.m_ObjectStreamMask |= VSM_NORMALS;
-//	}
-//
-//	// rendertarget and depth stencil format
-//	psoDesc.m_pRenderPass = m_ShadowMapPasses[passID][0].GetRenderPass();
-//
-//#if (CRY_RENDERER_DIRECT3D >= 120)
-//	// emulate slope scaled bias in shader
-//	if (passID == ePass_DirectionalLight || passID == ePass_DirectionalLightCached || passID == ePass_DirectionalLightRSM)
-//	{
-//		psoDesc.m_ShaderFlags_RT |= g_HWSR_MaskBit[HWSR_SAMPLE0];
-//	}
-//#endif
-//
-//	// Create PSO
-//	outPSO = GetDeviceObjectFactory().CreateGraphicsPSO(psoDesc);
-//	return outPSO != nullptr;
-	return false;
-}
-
-
-bool CVirtualShadowMapStage::CreatePipelineStates(DevicePipelineStatesArray* pStateArray, const SGraphicsPipelineStateDescription& stateDesc, CGraphicsPipelineStateLocalCache* pStateCache)
-{
-	return true;//TEMP!
-
-	DevicePipelineStatesArray& stageStates = pStateArray[StageID];
-
-	if (pStateCache->Find(stateDesc, stageStates))
-		return true;
-
-	bool bFullyCompiled = CreatePipelineStateInner(stateDesc, stageStates[0]);
-	if (bFullyCompiled)
-	{
-		pStateCache->Put(stateDesc, stageStates);
-	}
-
-	return bFullyCompiled;
 }
 
 void CVirtualShadowMapStage::VisualizeBuffer()

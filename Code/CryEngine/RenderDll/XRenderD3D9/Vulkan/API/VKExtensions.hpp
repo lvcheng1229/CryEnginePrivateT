@@ -24,6 +24,14 @@ namespace NCryVulkan
 			extern bool                              IsSupported;
 		}
 
+		//TanGram:VSM:BEGIN
+		namespace EXT_device_generated_commands
+		{
+			extern bool									IsSupported;
+			extern PFN_vkCreateIndirectCommandsLayoutNV CmdCreateIndirectCommandsLayout;
+		}
+		//TanGram:VSM:END
+
 		void Init(CDevice* pDevice, const std::vector<const char*>& loadedExtensions);
 
 		typedef                  std::unordered_map<uintptr_t, std::string>   DeviceObjPointerNameMap;

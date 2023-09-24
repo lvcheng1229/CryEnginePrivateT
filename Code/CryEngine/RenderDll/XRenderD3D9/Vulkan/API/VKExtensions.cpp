@@ -21,6 +21,14 @@ namespace NCryVulkan { namespace Extensions
 		bool                              IsSupported          = false;
 	}
 
+	//TanGram:VSM:BEGIN
+	namespace EXT_device_generated_commands
+	{
+		bool                              IsSupported = false;
+		PFN_vkCreateIndirectCommandsLayoutNV CmdCreateIndirectCommandsLayout = nullptr;;
+	}
+	//TanGram:VSM:END
+
 	void Init(CDevice* pDevice, const std::vector<const char*>& loadedExtensions)
 	{
 		for (auto extensionName : loadedExtensions)
@@ -41,7 +49,15 @@ namespace NCryVulkan { namespace Extensions
 			{
 				EXT_rasterization_order::IsSupported = true;
 			}
+			//TanGram:VSM:BEGIN
+			else if (strcmp(extensionName, VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME) == 0)
+			{
+				EXT_device_generated_commands::IsSupported = true;
+				EXT_device_generated_commands::CmdCreateIndirectCommandsLayout = (PFN_vkCreateIndirectCommandsLayoutNV)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCreateIndirectCommandsLayoutNV");
+			}
+			//TanGram:VSM:END
 		}
+		CRY_ASSERT(EXT_device_generated_commands::IsSupported = true);
 	}
 
 	VkResult SetObjectName(VkDevice device, uintptr_t objectPtr, VkDebugMarkerObjectNameInfoEXT* pNameInfo)

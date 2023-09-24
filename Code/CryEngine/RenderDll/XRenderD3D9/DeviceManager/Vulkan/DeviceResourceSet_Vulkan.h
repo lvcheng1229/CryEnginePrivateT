@@ -118,13 +118,18 @@ protected:
 class CDeviceResourceIndirectLayout_Vulkan : public CDeviceResourceIndirectLayout
 {
 public:
-	CDeviceResourceIndirectLayout_Vulkan()
+	CDeviceResourceIndirectLayout_Vulkan(CDevice* pDevice)
+		: m_pDevice(pDevice)
 	{
 
 	}
+	bool Init(const SDeviceResourceIndirectLayoutDesc& desc);
 
-	void Init(const SDeviceResourceIndirectLayoutDesc& desc);
-protected:
+	const VkIndirectCommandsLayoutNV& GetVkIndirectCmdLayout() const { return indirectCmdsLayout; }
+
+private:
+	CDevice* m_pDevice;
+	VkIndirectCommandsLayoutNV indirectCmdsLayout;
 };
 //TanGram:VSM:END
 

@@ -46,6 +46,25 @@ class CDeviceRenderPass;
 // Fence API (TODO: offload all to CDeviceFenceHandle)
 typedef uintptr_t DeviceFenceHandle;
 
+//TanGram:VSM:BEGIN
+
+struct CDeviceGPUDrawCmd
+{
+	uint32 m_shaderGroupIndex;
+
+	std::vector<CDeviceBuffer*> m_constBuffers;
+
+	const CDeviceInputStream* m_indexStreamSet;
+	const CDeviceInputStream* m_vertexStreamSet;
+
+	int32 IndexCountPerInstance;
+	int32 InstanceCount;
+	int32 StartIndexLocation;
+	int32  BaseVertexLocation;
+	uint32 StartInstanceLocation;
+};
+//TanGram:VSM:END
+
 struct SInputLayoutCompositionDescriptor
 {
 	const InputLayoutHandle VertexFormat;
@@ -170,6 +189,8 @@ public:
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSO(const CDeviceGraphicsPSODesc& psoDesc);
 	CDeviceComputePSOPtr     CreateComputePSO(const CDeviceComputePSODesc& psoDesc);
 
+	const CDeviceGraphicsPSODesc GetGraphicsPsoDescByHash(uint64 hash); //TanGram:VSM
+
 	void                     ReloadPipelineStates(int currentFrameID);
 	void                     UpdatePipelineStates();
 	void                     TrimPipelineStates(int currentFrameID, int trimBeforeFrameID = std::numeric_limits<int>::max());
@@ -181,6 +202,8 @@ public:
 	CDeviceResourceLayoutPtr  CreateResourceLayout(const SDeviceResourceLayoutDesc& resourceLayoutDesc);
 	const CDeviceInputStream* CreateVertexStreamSet(uint32 numStreams, const SStreamInfo* streams);
 	const CDeviceInputStream* CreateIndexStreamSet(const SStreamInfo* stream);
+
+	CDeviceResourceIndirectLayoutPtr  CreateResourceIndirectLayout(const SDeviceResourceIndirectLayoutDesc& resourceIndirectLayoutDesc);//TanGram::VSM
 
 	void                      TrimResourceLayouts();
 
@@ -360,6 +383,9 @@ public:
 
 	static bool CanUseCoreCommandList();
 
+
+	
+
 private:
 	static bool OnRenderPassInvalidated(void* pRenderPass, SResourceBindPoint bindPoint, UResourceReference pResource, uint32 flags);
 
@@ -419,6 +445,8 @@ private:
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSOImpl(const CDeviceGraphicsPSODesc& psoDesc) const;
 	CDeviceComputePSOPtr     CreateComputePSOImpl(const CDeviceComputePSODesc& psoDesc) const;
 
+	std::vector<uint8>& GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize);//TanGram:VSM
+
 	CDeviceCommandListUPtr m_pCoreCommandList;
 
 	std::unordered_map<CDeviceGraphicsPSODesc, CDeviceGraphicsPSOPtr>  m_GraphicsPsoCache;
@@ -431,6 +459,7 @@ private:
 	// Input dataset(s) API
 
 	CDeviceResourceLayoutPtr CreateResourceLayoutImpl(const SDeviceResourceLayoutDesc& resourceLayoutDesc) const;
+	CDeviceResourceIndirectLayoutPtr CreateResourceIndirectLayoutImpl(const SDeviceResourceIndirectLayoutDesc& resourceIndirectLayoutDesc) const;//TanGram::VSM
 
 	VectorMap<SDeviceResourceLayoutDesc, CDeviceResourceLayoutPtr>     m_ResourceLayoutCache;
 
@@ -673,3 +702,5 @@ struct SScopedComputeCommandList
 			return GetDeviceObjectFactory().GetCoreCommandList();
 	}
 };
+
+

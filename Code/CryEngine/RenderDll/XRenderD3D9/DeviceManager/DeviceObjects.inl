@@ -1,3 +1,4 @@
+#include "DeviceResourceSet.h"
 // Copyright 2016-2021 Crytek GmbH / Crytek Group. All rights reserved.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,6 +64,30 @@ inline CDeviceResourceSetDesc::EDirtyFlags CDeviceResourceSetDesc::SetBuffer(int
 
 	return UpdateResource<SResourceBinding::EResourceType::Buffer>(bindPoint, resource);
 }
+
+//TanGram:VSM:BEGIN
+inline bool SDeviceResourceLayoutDesc::SPushConstantRange::operator==(const SPushConstantRange& other) const
+{
+	return shaderStage == other.shaderStage && offset == other.offset && size == other.size;
+}
+
+inline bool SDeviceResourceLayoutDesc::SPushConstantRange::operator<(const SPushConstantRange& other) const
+{
+	if (shaderStage != other.shaderStage)
+	{
+		if (offset != other.offset)
+		{
+			return size < other.size;
+		}
+		else
+		{
+			return offset < other.offset;
+		}
+	}
+	
+	return shaderStage < other.shaderStage;
+}
+//TanGram:VSM:END
 
 inline bool SDeviceResourceLayoutDesc::SLayoutBindPoint::operator==(const SLayoutBindPoint& other) const 
 { 

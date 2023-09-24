@@ -83,7 +83,7 @@ public:
 
 	CImageView(CImageResource* pImage,
 	           VkFormat format = VK_FORMAT_UNDEFINED,                                   // VK_FORMAT_UNDEFINED: Use format specified when image was created.
-	           VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_RANGE_SIZE,                // VK_IMAGE_VIEW_TYPE_RANGE_SIZE: Pick automatic based on image type
+	           VkImageViewType viewType = VkImageViewType(VK_IMAGE_VIEW_TYPE_CUBE_ARRAY - VK_IMAGE_VIEW_TYPE_1D + 1),                // VK_IMAGE_VIEW_TYPE_RANGE_SIZE: Pick automatic based on image type
 	           uint32_t firstMip = 0, uint32_t numMips = VK_REMAINING_MIP_LEVELS,       // Mip range
 	           uint32_t firstSlice = 0, uint32_t numSlices = VK_REMAINING_ARRAY_LAYERS, // Array range
 	           EImageSwizzle swizzle = kImageSwizzleRGBA);                              // Swizzle for exotic formats

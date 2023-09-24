@@ -438,6 +438,13 @@ inline void CDeviceGraphicsCommandInterface::DrawIndexed(uint32 IndexCountPerIns
 	}
 }
 
+//TanGram:VSM:BEGIN
+inline void CDeviceGraphicsCommandInterface::ExecuteGeneratedCommands()
+{
+	ExecuteGeneratedCommandsImpl();
+}
+//TanGram:VSM:END
+
 inline void CDeviceGraphicsCommandInterface::ClearSurface(D3DSurface* pView, const ColorF& color, uint32 numRects, const D3D11_RECT* pRects)
 {
 	ClearSurfaceImpl(pView, (float*)&color, numRects, pRects);

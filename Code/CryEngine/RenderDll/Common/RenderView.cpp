@@ -2067,7 +2067,7 @@ CRenderView::ItemsRange CRenderView::GetShadowItemsRange(ShadowMapFrustum* pFrus
 	return ItemsRange(0, 0);
 }
 
-CRenderView::RenderItems& CRenderView::GetShadowItems(ShadowMapFrustum* pFrustum, int nFrustumSide)
+RenderItems& CRenderView::GetShadowItems(ShadowMapFrustum* pFrustum, int nFrustumSide)
 {
 	assert(m_usageMode != eUsageModeWriting); // While writing we must not read back items.
 	assert(nFrustumSide >= 0 && nFrustumSide < EFSLIST_NUM);
@@ -2076,7 +2076,7 @@ CRenderView::RenderItems& CRenderView::GetShadowItems(ShadowMapFrustum* pFrustum
 	assert(pShadowsView);
 	if (!pShadowsView)
 	{
-		static CRenderView::RenderItems empty;
+		static RenderItems empty;
 		return empty;
 	}
 	return pShadowsView->GetRenderItems(ERenderListID(nFrustumSide));
