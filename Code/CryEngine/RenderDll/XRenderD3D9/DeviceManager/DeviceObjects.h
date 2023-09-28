@@ -189,6 +189,7 @@ public:
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSO(const CDeviceGraphicsPSODesc& psoDesc);
 	CDeviceComputePSOPtr     CreateComputePSO(const CDeviceComputePSODesc& psoDesc);
 
+	void GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize, std::vector<uint8>& outCmdData);//TanGram:VSM
 	const CDeviceGraphicsPSODesc GetGraphicsPsoDescByHash(uint64 hash); //TanGram:VSM
 
 	void                     ReloadPipelineStates(int currentFrameID);
@@ -445,7 +446,7 @@ private:
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSOImpl(const CDeviceGraphicsPSODesc& psoDesc) const;
 	CDeviceComputePSOPtr     CreateComputePSOImpl(const CDeviceComputePSODesc& psoDesc) const;
 
-	std::vector<uint8>& GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize);//TanGram:VSM
+
 
 	CDeviceCommandListUPtr m_pCoreCommandList;
 

@@ -15,7 +15,14 @@
 
 #define PREFETCH_STRIDE	512
 
+
 //TanGram:VSM:BEGIN
+void CRenerItemGPUDrawer::InitUnCulledBuffer(uint32 elemSize)
+{
+	m_unCulledGPUCmdBuffer.Create(m_maxDrawSize, elemSize, DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_INDIRECTARGS, NULL);
+	m_unCulledGPUCmdBuffer.SetDebugName("m_unCulledGPUCmdBuffer");
+}
+
 //see DrawCompiledRenderItemsToCommandList
 void CRenerItemGPUDrawer::SetPassContext(uint32 batchIncludeFilter, uint32 batchExcludeFilter, uint32 stageID, uint32 passID)
 {
@@ -63,6 +70,14 @@ void CRenerItemGPUDrawer::UpdateGPURenderItems(const RenderItems* renderItems, i
 			);
 		}
 	}
+	CRY_ASSERT(m_maxDrawSize > (endRenderItem - startRenderItem));
+
+	//todo VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV
+	uint32 gpuDrawCmdDataSize = 0;
+	std::vector<uint8> gpuDrawCmdData;
+	GetDeviceObjectFactory().GetRhiGpuDrawCmdData(m_gpuDrawCommands, gpuDrawCmdDataSize, gpuDrawCmdData);
+	InitUnCulledBuffer(gpuDrawCmdDataSize);
+	m_unCulledGPUCmdBuffer.UpdateBufferContent(gpuDrawCmdData.data(), gpuDrawCmdData.size());
 }
 
 //TanGram:VSM:END

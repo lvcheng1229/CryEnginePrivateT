@@ -149,9 +149,8 @@ private:
 
 	_smart_ptr<CTexture> m_pShadowDepthRT;
 
-
+	CGpuBuffer m_preprocessBuffer;
 	CGpuBuffer CulledCmdBuffer;
-	CGpuBuffer UnCulledCmdBuffer;
 	
 };
 

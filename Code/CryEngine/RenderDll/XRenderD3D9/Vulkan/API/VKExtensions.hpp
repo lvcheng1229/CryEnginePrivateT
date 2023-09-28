@@ -29,6 +29,7 @@ namespace NCryVulkan
 		{
 			extern bool									IsSupported;
 			extern PFN_vkCreateIndirectCommandsLayoutNV CmdCreateIndirectCommandsLayout;
+			extern PFN_vkGetGeneratedCommandsMemoryRequirementsNV CmdGetGeneratedCommandsMemoryRequirements;
 		}
 		//TanGram:VSM:END
 

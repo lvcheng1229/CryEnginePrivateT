@@ -117,15 +117,26 @@ class CRenerItemGPUDrawer
 {
 public:
 	CRenerItemGPUDrawer()
-		:bPSOGroupChanged(false)
+		: m_batchIncludeFilter(0)
+		, m_batchExcludeFilter(0)
+		, m_stageID(0)
+		, m_passID(0)
+		, bBufferInit(false)
+		, bPSOGroupChanged(false)
+
 	{
 
 	}
+
+	void InitUnCulledBuffer(uint32 elemSize);
 	void SetPassContext(uint32 batchIncludeFilter, uint32 batchExcludeFilter, uint32 stageID, uint32 passID);
 	void UpdateGPURenderItems(const RenderItems* renderItems, int startRenderItem, int endRenderItem);
 
 	bool IsPSOGroupChanged() { return bPSOGroupChanged; }
 	std::vector<CDeviceGraphicsPSO*>& GetRenderItemPSO() { return m_renderItemsPSO; }
+
+	static constexpr uint32 m_maxDrawSize = 1024;
+
 private:
 
 	// Should only be used for primitive types, without constructors and destructors.
@@ -140,6 +151,7 @@ private:
 
 	CGpuBuffer m_unCulledGPUCmdBuffer;
 
+	bool bBufferInit;
 	bool bPSOGroupChanged;
 };
 //TanGram:VSM:[END]

@@ -4329,6 +4329,15 @@ void CGpuBuffer::Release()
 	InvalidateDeviceResource(this, eDeviceResourceDirty);
 }
 
+//TanGram:VSM:BEGIN
+void CGpuBuffer::CreatePreprocessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr)
+{
+	Release();
+
+
+}
+//TanGram:VSM:END
+
 void CGpuBuffer::Create(uint32 elementCount, uint32 elementSize, DXGI_FORMAT elementFormat, uint32 eFlags, const void* pData)
 {
 	Release();

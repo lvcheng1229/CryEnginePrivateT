@@ -3,6 +3,7 @@
 #include "StdAfx.h"
 #include "VKDevice.hpp"
 #include "VKInstance.hpp"
+#include "Vulkan/API/VKExtensions.hpp"
 
 namespace NCryVulkan
 {
@@ -292,6 +293,39 @@ VkResult CDevice::CommitResource(EHeapType heapHint, CResource* pInputResource) 
 	return VK_ERROR_OUT_OF_DEVICE_MEMORY;
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+//TanGram:VSM:BEGIN
+VkResult CDevice::CreatePreProcessBuffer(uint32 drawCount, VkIndirectCommandsLayoutNV indirectCmdsLayout, VkPipeline indirectPSO, CBufferResource* pInputResource) threadsafe
+{
+	VkGeneratedCommandsMemoryRequirementsInfoNV memInfo = { VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV };
+	memInfo.maxSequencesCount = drawCount;
+	memInfo.indirectCommandsLayout = indirectCmdsLayout;
+	memInfo.pipeline = indirectPSO;
+	memInfo.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+	VkMemoryRequirements2 memReqs = { VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2 };
+	if (Extensions::EXT_device_generated_commands::IsSupported)
+	{
+		Extensions::EXT_device_generated_commands::CmdGetGeneratedCommandsMemoryRequirements(GetVkDevice(), &memInfo, &memReqs);
+	}
+	
+	const VkBufferCreateInfo* bufferCreateInfo;
+	VkBuffer* retVkBuffer = VK_NULL_HANDLE;
+	
+	vkCreateBuffer(GetVkDevice(), bufferCreateInfo, nullptr, retVkBuffer);
+
+	//VkDeviceSize outSize = memReqs.memoryRequirements.size;
+
+	if (memReqs.sType == VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2)
+	{
+		return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+	}
+
+	//VkMemoryRequirements2 memReqs = { VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2 };
+	//vkGetGeneratedCommandsMemoryRequirementsNV(res->m_device, &memInfo, &memReqs);
+	return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+}
+//TanGram:VSM:END
 //---------------------------------------------------------------------------------------------------------------------
 template<class CResource, class VkCreateInfo>
 VkResult CDevice::CreateCommittedResource(EHeapType heapHint, const VkCreateInfo& createInfo, CResource** ppOutputResource) threadsafe

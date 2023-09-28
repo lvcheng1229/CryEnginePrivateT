@@ -500,6 +500,7 @@ public:
 	virtual ~CGpuBuffer();
 
 	void           Create(buffer_size_t numElements, buffer_size_t elementSize, DXGI_FORMAT elementFormat, uint32 flags, const void* pData);
+	void		   CreatePreprocessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr);//TanGram:VSM
 	void           Release();
 
 	inline SBufferLayout GetLayout() const

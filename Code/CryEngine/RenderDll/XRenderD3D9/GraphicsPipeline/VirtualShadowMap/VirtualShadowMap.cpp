@@ -145,6 +145,8 @@ void CShadowProjectStage::Init()
 	m_pResourceIndirectLayout = GetDeviceObjectFactory().CreateResourceIndirectLayout(deviceResourceIndirectLayoutDesc);
 
 	m_pRenderPass.Init(this);
+
+	
 }
 
 void CShadowProjectStage::Update()
@@ -162,12 +164,24 @@ void CShadowProjectStage::Update()
 		gpuDrawer.UpdateGPURenderItems(&renderItems,0, renderItems.size() - 1);
 	}
 
+	// compute input buffer space requirements
+	//VkPhysicalDeviceProperties2 phyProps = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+	//VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV genProps = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV };
+	//phyProps.pNext = &genProps;
+	//vkGetPhysicalDeviceProperties2(res->m_physical, &phyProps);
+
 	if ((!m_pIndirectGraphicsPSO->IsValid() || gpuDrawer.IsPSOGroupChanged()) && gpuDrawer.GetRenderItemPSO().size() > 0)
 	{
 		CDeviceGraphicsPSODesc indirectPsoDesc = GetDeviceObjectFactory().GetGraphicsPsoDescByHash(gpuDrawer.GetRenderItemPSO()[0]->m_psoDescHash);
 		indirectPsoDesc.indirectPso = gpuDrawer.GetRenderItemPSO();
 		m_pIndirectGraphicsPSO = GetDeviceObjectFactory().CreateGraphicsPSO(indirectPsoDesc);
 	}
+
+	if (!m_preprocessBuffer.IsAvailable())
+	{
+		m_preprocessBuffer.CreatePreprocessBuffer(CRenerItemGPUDrawer::m_maxDrawSize, m_pResourceIndirectLayout, m_pIndirectGraphicsPSO);
+	}
+	
 }
 
 void CShadowProjectStage::Execute()

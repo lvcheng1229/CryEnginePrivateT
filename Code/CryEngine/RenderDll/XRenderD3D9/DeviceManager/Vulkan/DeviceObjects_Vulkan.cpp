@@ -96,7 +96,7 @@ inline constexpr T AlignArbitrary(T val, uint64 alignment)
 	return (T)((((uint64)val + alignment - 1) / alignment) * alignment);
 }
 
-std::vector<uint8>& CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize)
+void CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize, std::vector<uint8>& outCmdData)
 {
 	outCmdDataSize = 0;
 	uint32 cbSize = deviceGpuDrawCmds[0].m_constBuffers.size();
@@ -107,9 +107,9 @@ std::vector<uint8>& CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector
 	outCmdDataSize += sizeof(VkDrawIndexedIndirectCommand);
 	outCmdDataSize = AlignArbitrary(outCmdDataSize, sizeof(uint64));
 
-	std::vector<uint8> retData;
-	retData.resize(outCmdDataSize * deviceGpuDrawCmds.size());
-	uint8* rawData = retData.data();
+
+	outCmdData.resize(outCmdDataSize * deviceGpuDrawCmds.size());
+	uint8* rawData = outCmdData.data();
 	
 	for (uint32 index = 0; index < deviceGpuDrawCmds.size(); index++)
 	{
@@ -138,7 +138,7 @@ std::vector<uint8>& CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector
 			buffer_size_t iboOffset;
 			buffer_size_t iboSize;
 			const CDeviceInputStream* indexStream = deviceGpuDrawCmds[index].m_indexStreamSet;
-			auto* pBuffer = gcpRendD3D.m_DevBufMan.GetD3D(indexStream->hStream, &iboSize);
+			auto* pBuffer = gcpRendD3D.m_DevBufMan.GetD3D(indexStream->hStream, &iboOffset ,&iboSize);
 			addressInfo.buffer = pBuffer->GetHandle();
 			
 			VkBindIndexBufferIndirectCommandNV* indirectIndexBuffer = (VkBindIndexBufferIndirectCommandNV*)(rawData + uint64(index) * uint64(outCmdDataSize) + offset);
@@ -151,12 +151,31 @@ std::vector<uint8>& CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector
 
 		//vbo
 		{
+			buffer_size_t vboOffset;
+			buffer_size_t vboSize;
+			const CDeviceInputStream* vertexStream = deviceGpuDrawCmds[index].m_vertexStreamSet;
+			auto* pBuffer = gcpRendD3D.m_DevBufMan.GetD3D(vertexStream->hStream, &vboOffset ,&vboSize);
+			addressInfo.buffer = pBuffer->GetHandle();
 
+			VkBindVertexBufferIndirectCommandNV* indirectVertexBuffer = (VkBindVertexBufferIndirectCommandNV*)(rawData + uint64(index) * uint64(outCmdDataSize) + offset);
+			indirectVertexBuffer->bufferAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &addressInfo);
+			indirectVertexBuffer->size = vboSize;
+			indirectVertexBuffer->stride = vertexStream->nStride;
+
+			offset += sizeof(VkBindVertexBufferIndirectCommandNV);
 		}
 
+		//drawIndexed
+		{
+			VkDrawIndexedIndirectCommand* drawIndexed = (VkDrawIndexedIndirectCommand*)(rawData + uint64(index) * uint64(outCmdDataSize) + offset);
+			drawIndexed->indexCount = deviceGpuDrawCmds[index].IndexCountPerInstance;
+			drawIndexed->firstIndex = deviceGpuDrawCmds[index].StartIndexLocation;
+			drawIndexed->instanceCount = deviceGpuDrawCmds[index].InstanceCount;
+			drawIndexed->firstInstance = deviceGpuDrawCmds[index].StartInstanceLocation;
+			drawIndexed->vertexOffset = deviceGpuDrawCmds[index].BaseVertexLocation;
+			offset += sizeof(VkDrawIndexedIndirectCommand);
+		}
 	}
-
-	return retData;
 }
 //TanGram:VSM:BEGIN
 

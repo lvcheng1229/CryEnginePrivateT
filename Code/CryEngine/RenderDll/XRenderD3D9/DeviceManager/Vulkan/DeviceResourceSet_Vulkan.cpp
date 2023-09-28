@@ -357,7 +357,7 @@ bool CDeviceResourceIndirectLayout_Vulkan::Init(const SDeviceResourceIndirectLay
 	genInfo.pStreamStrides = &interleavedStride;
 
 	VkResult result = VK_RESULT_MAX_ENUM;
-	if (Extensions::EXT_debug_marker::IsSupported)
+	if (Extensions::EXT_device_generated_commands::IsSupported)
 	{
 		result = Extensions::EXT_device_generated_commands::CmdCreateIndirectCommandsLayout(m_pDevice->GetVkDevice(), &genInfo, NULL, &indirectCmdsLayout);
 	}
