@@ -376,6 +376,7 @@ void CParserBin::Init()
 	FX_REGISTER_TOKEN(RWStructuredBuffer);
 	FX_REGISTER_TOKEN(ByteAddressBuffer);
 	FX_REGISTER_TOKEN(RWByteAddressBuffer);
+	FX_REGISTER_TOKEN(AppendStructuredBuffer);//TanGram:VSM
 
 	FX_REGISTER_TOKEN(Position);
 	FX_REGISTER_TOKEN(Allways);

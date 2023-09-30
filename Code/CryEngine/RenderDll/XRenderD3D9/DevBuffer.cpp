@@ -4333,8 +4333,7 @@ void CGpuBuffer::Release()
 void CGpuBuffer::CreatePreprocessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr)
 {
 	Release();
-
-
+	m_pDeviceBuffer = CDeviceBuffer::CreatePreprocessBuffer(maxDrawCount, indirectLayoutPtr, graphicsPSOLayoutPtr);
 }
 //TanGram:VSM:END
 

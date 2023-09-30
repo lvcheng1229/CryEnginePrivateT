@@ -47,7 +47,15 @@ void CRenerItemGPUDrawer::UpdateGPURenderItems(const RenderItems* renderItems, i
 			//TODO:instance
 			const SDrawParams& drawParams = ri.pCompiledObject->m_drawParams[m_stageID];
 			m_riGpuCullingData.clear();;
-			m_riGpuCullingData.push_back(SRenderItemGPUData{ ri.pCompiledObject->GetInstancingData().matrix,ri.pCompiledObject->m_aabb });
+			m_riGpuCullingData.push_back(
+				SRenderItemGPUData
+				{ 
+					ri.pCompiledObject->GetInstancingData().matrix,
+					ri.pCompiledObject->m_aabb.GetCenter(),
+					0,
+					ri.pCompiledObject->m_aabb.max - ri.pCompiledObject->m_aabb.GetCenter(),
+					0
+				});
 			m_renderItemsPSO.push_back(ri.pCompiledObject->m_pso[m_stageID][m_passID].get());
 
 			std::vector<CDeviceBuffer*>constBuffers;

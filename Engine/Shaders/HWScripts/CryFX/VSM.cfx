@@ -97,6 +97,63 @@ void VSMTileTableGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm shadow cmd build technique /////////////////////////////////////////////////////////////
+
+struct SvsmInputCmd
+{
+    uint        m_shaderGroupIndex;
+
+    uint64_t    addressPerObj;
+    uint64_t    addressPerVSMView;
+
+    //ib
+    uint64_t    ib_bufferAddress
+    uint        ib_size;
+    uint        ib_type;
+
+    uint64_t    vb_bufferAddress
+    uint        vb_size;
+    uint        vb_stride;
+
+    uint    indexCount;
+    uint    instanceCount;
+    uint    firstIndex;
+    int     vertexOffset;
+    uint    firstInstance;
+};
+
+struct SrhiGpuCullingStruct
+{
+    float4x4 gWorld;//row_major float4x4 gWorld;
+    
+    float3 boundingBoxCenter;//BoundingBox in World  Space
+    float padding_0;
+
+    float3 boundingBoxExtent;
+    float padding_1;
+};
+
+//https://github.com/microsoft/DirectXShaderCompiler/blob/main/docs/SPIR-V.rst#appendstructuredbuffer-and-consumestructuredbuffer
+StructuredBuffer<SvsmInputCmd>          inputCommands       : register(t0);
+StructuredBuffer<SrhiGpuCullingStruct>  rhiGpuCullingData   : register(t1);
+
+AppendStructuredBuffer<SvsmInputCmd>    outputCommands      : register(u0);
+RWBuffer<uint>                          p3_vsmTileFlags     : register(u1);//todo: use buffer type instead of rwbuffer type
+
+#define ThreadBlockSize 128
+[numthreads(ThreadBlockSize, 1, 1)]
+void VSMCmdBuild(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
+{
+    if(groupId.x == 0)
+    {
+        SrhiGpuCullingStruct cmd = inputCommands[groupId.x];
+        cmd.firstIndex = uint(rhiGpuCullingData[0].padding_1) + p3_vsmTileFlags[0];
+        outputCommands.Append(cmd);
+    }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /// vsm projection technique ////////////////////////////////////////////////////////////////////////
 
@@ -164,8 +221,6 @@ pixout VisualizeBufferPS(vtxOut IN)
 }
 
 
-
-
 technique VSMTileFlagGen
 {
 	pass p0
@@ -179,6 +234,15 @@ technique VSMTileTableGen
 	pass p0
 	{
 		ComputeShader = VSMTileTableGenCS();
+	}
+};
+
+
+technique VSMCmdBuild
+{
+	pass p0
+	{
+		ComputeShader = VSMCmdBuild();
 	}
 };
 

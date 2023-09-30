@@ -549,7 +549,7 @@ void CInstance::GatherPhysicalDeviceExtensionsToEnable()
 	m_enabledPhysicalDeviceExtensions.emplace_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
 #endif
 
-	m_enabledPhysicalDeviceExtensions.emplace_back(VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME, true);//TanGram:VSM
+	//m_enabledPhysicalDeviceExtensions.emplace_back(VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME, true);//TanGram:VSM
 }
 
 const char* DebugLevelToString(VkDebugReportFlagsEXT flags)

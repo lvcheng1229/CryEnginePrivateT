@@ -260,6 +260,7 @@ enum EToken
 	eT_RWByteAddressBuffer,
 	eT_Buffer,
 	eT_RWBuffer,
+	eT_AppendStructuredBuffer,//TanGram:VSM
 
 	eT_color,
 	eT_Position,

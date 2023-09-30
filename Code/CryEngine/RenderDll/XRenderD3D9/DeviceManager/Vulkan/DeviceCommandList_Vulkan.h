@@ -142,7 +142,7 @@ protected:
 
 	void DrawImpl(uint32 VertexCountPerInstance, uint32 InstanceCount, uint32 StartVertexLocation, uint32 StartInstanceLocation);
 	void DrawIndexedImpl(uint32 IndexCountPerInstance, uint32 InstanceCount, uint32 StartIndexLocation, int BaseVertexLocation, uint32 StartInstanceLocation);
-	void ExecuteGeneratedCommandsImpl();//TanGram:VSM
+	void ExecuteGeneratedCommandsImpl(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 drawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer);//TanGram:VSM
 
 	void ClearSurfaceImpl(D3DSurface* pView, const FLOAT Color[4], UINT NumRects, const D3D11_RECT* pRects);
 	void ClearSurfaceImpl(D3DDepthSurface* pView, int clearFlags, float depth, uint8 stencil, uint32 numRects, const D3D11_RECT* pRects);

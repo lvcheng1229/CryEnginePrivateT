@@ -309,6 +309,8 @@ public:
 	HRESULT        CreateVolumeTexture(uint32 nWidth, uint32 nHeight, uint32 nDepth, uint32 nMips, uint32 nUsage, const ColorF& cClearValue, D3DFormat Format, LPDEVICETEXTURE* ppDevTexture, const STexturePayload* pTI = nullptr);
 	HRESULT        CreateBuffer(buffer_size_t nSize, buffer_size_t elemSize, uint32 nUsage, uint32 nBindFlags, D3DBuffer** ppBuff, const void* pData = nullptr);
 
+	void        CreateBufferPreProcessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, D3DBuffer** ppBuff, uint32& outSize);//TanGram:VSM
+
 	static HRESULT InvalidateGpuCache(D3DBuffer* buffer, void* base_ptr, buffer_size_t size, buffer_size_t offset);
 	static HRESULT InvalidateCpuCache(void* base_ptr, size_t size, size_t offset);
 	void           InvalidateBuffer(D3DBuffer* buffer, void* base_ptr, buffer_size_t offset, buffer_size_t size, uint32 id);

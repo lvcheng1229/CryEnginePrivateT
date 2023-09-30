@@ -3833,6 +3833,7 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 		FX_TOKEN(RWStructuredBuffer)
 		FX_TOKEN(ByteAddressBuffer)
 		FX_TOKEN(RWByteAddressBuffer)
+		FX_TOKEN(AppendStructuredBuffer)//TanGram:VSM
 		FX_TOKEN(cbuffer)
 	FX_END_TOKENS
 
@@ -4067,6 +4068,7 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 		case eT_RWStructuredBuffer:
 		case eT_ByteAddressBuffer:
 		case eT_RWByteAddressBuffer:
+		case eT_AppendStructuredBuffer://TanGram:VSM
 		case eT_RWTexture2D:
 		case eT_RWTexture2DArray:
 		case eT_RWTexture3D:
@@ -4428,6 +4430,7 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		FX_TOKEN(StructuredBuffer)
 		FX_TOKEN(RWStructuredBuffer)
 		FX_TOKEN(RWByteAddressBuffer)//TanGram:TileBloom
+		FX_TOKEN(AppendStructuredBuffer)//TanGram:VSM
 		FX_TOKEN(cbuffer)
 		FX_TOKEN(struct)
 		FX_TOKEN(sampler1D)
@@ -4473,6 +4476,7 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		case eT_StructuredBuffer:
 		case eT_RWStructuredBuffer:
 		case eT_RWByteAddressBuffer://TanGram: TiledBloom
+		case eT_AppendStructuredBuffer://TanGram:VSM
 		case eT_cbuffer:
 		case eT_struct:
 		case eT_SamplerState:

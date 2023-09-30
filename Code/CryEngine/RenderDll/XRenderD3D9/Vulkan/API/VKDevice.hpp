@@ -101,7 +101,7 @@ public:
 	// After kDeferTicks the deferred objects will be actually destroyed.
 	void TickDestruction();
 
-	VkResult CreatePreProcessBuffer(uint32 drawCount, VkIndirectCommandsLayoutNV indirectCmdsLayout, VkPipeline indirectPSO, CBufferResource* pInputResource) threadsafe;//TanGram:VSM
+	void CreatePreProcessBuffer(uint32 drawCount, VkIndirectCommandsLayoutNV indirectCmdsLayout, VkPipeline indirectPSO, CBufferResource* pInputResource, uint32& outSize) threadsafe;//TanGram:VSM
 
 	template<class CResource> VkResult CommitResource(EHeapType HeapHint, CResource* pInputResource) threadsafe;
 	template<class CResource, class VkCreateInfo> VkResult CreateCommittedResource(EHeapType HeapHint, const VkCreateInfo& createInfo, CResource** ppOutputResource) threadsafe;

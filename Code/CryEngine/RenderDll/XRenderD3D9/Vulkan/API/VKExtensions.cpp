@@ -27,6 +27,7 @@ namespace NCryVulkan { namespace Extensions
 		bool                              IsSupported = false;
 		PFN_vkCreateIndirectCommandsLayoutNV CmdCreateIndirectCommandsLayout = nullptr;;
 		PFN_vkGetGeneratedCommandsMemoryRequirementsNV CmdGetGeneratedCommandsMemoryRequirements = nullptr;
+		PFN_vkCmdExecuteGeneratedCommandsNV  CmdExecuteGeneratedCommands = nullptr;
 	}
 	//TanGram:VSM:END
 
@@ -56,6 +57,7 @@ namespace NCryVulkan { namespace Extensions
 				EXT_device_generated_commands::IsSupported = true;
 				EXT_device_generated_commands::CmdCreateIndirectCommandsLayout = (PFN_vkCreateIndirectCommandsLayoutNV)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCreateIndirectCommandsLayoutNV");
 				EXT_device_generated_commands::CmdGetGeneratedCommandsMemoryRequirements = (PFN_vkGetGeneratedCommandsMemoryRequirementsNV)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkGetGeneratedCommandsMemoryRequirementsNV");
+				EXT_device_generated_commands::CmdExecuteGeneratedCommands = (PFN_vkCmdExecuteGeneratedCommandsNV)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCmdExecuteGeneratedCommandsNV");
 			}
 			//TanGram:VSM:END
 		}

@@ -527,6 +527,7 @@ public:
 	CDeviceBuffer* GetDevBuffer()    const { return m_pDeviceBuffer; }
 	uint32         GetFlags()        const { return m_eFlags; }
 	buffer_size_t  GetElementCount() const { return m_elementCount; }
+	buffer_size_t  GetElementSize()  const { return m_elementSize; }//TanGram:VSM
 
 #if DURANGO_USE_ESRAM
 	bool IsESRAMResident();

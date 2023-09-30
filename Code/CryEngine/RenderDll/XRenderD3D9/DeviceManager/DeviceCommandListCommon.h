@@ -144,7 +144,7 @@ public:
 
 	void Draw(uint32 VertexCountPerInstance, uint32 InstanceCount, uint32 StartVertexLocation, uint32 StartInstanceLocation);
 	void DrawIndexed(uint32 IndexCountPerInstance, uint32 InstanceCount, uint32 StartIndexLocation, int BaseVertexLocation, uint32 StartInstanceLocation);
-	void ExecuteGeneratedCommands();//TanGram:VSM
+	void ExecuteGeneratedCommands(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer);//TanGram:VSM
 
 #define CLEAR_ZBUFFER           0x00000001l  /* Clear target z buffer, equals D3D11_CLEAR_DEPTH */
 #define CLEAR_STENCIL           0x00000002l  /* Clear stencil planes, equals D3D11_CLEAR_STENCIL */

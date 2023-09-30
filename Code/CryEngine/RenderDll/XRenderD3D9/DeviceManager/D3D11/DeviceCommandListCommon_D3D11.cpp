@@ -1078,3 +1078,8 @@ void CDeviceCopyCommandInterfaceImpl::CopyImpl(CDeviceTexture* pSrc, void* pDst,
 {
 	assert(0);
 }
+
+void CDeviceGraphicsCommandInterfaceImpl::ExecuteGeneratedCommandsImpl(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer)
+{
+	assert(0);
+}

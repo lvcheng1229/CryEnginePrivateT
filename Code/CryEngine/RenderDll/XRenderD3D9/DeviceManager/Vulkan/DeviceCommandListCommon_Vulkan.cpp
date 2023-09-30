@@ -551,9 +551,33 @@ void CDeviceGraphicsCommandInterfaceImpl::DrawIndexedImpl(uint32 IndexCountPerIn
 }
 
 //TanGram:VSM:BEGIN
-void CDeviceGraphicsCommandInterfaceImpl::ExecuteGeneratedCommandsImpl()
+void CDeviceGraphicsCommandInterfaceImpl::ExecuteGeneratedCommandsImpl(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer)
 {
+	CDeviceResourceIndirectLayout_Vulkan* pVKIndirectCmdsLayout = static_cast<CDeviceResourceIndirectLayout_Vulkan*>(indirectLayoutPtr.get());
+	CDeviceGraphicsPSO_Vulkan* pVkIndirectPSO = static_cast<CDeviceGraphicsPSO_Vulkan*>(graphicsPSOLayoutPtr.get());
+	
+	//ApplyPendingBindings(GetVKCommandList()->GetVkCommandList(), pVkLayout->GetVkPipelineLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsState.custom.pendingBindings);
 
+	//local variable
+	VkIndirectCommandsStreamNV input;
+	input.buffer = cmdBuffer->GetDevBuffer()->GetBuffer()->GetHandle();
+	input.offset = 0;
+
+	VkGeneratedCommandsInfoNV info = { VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_NV };
+	info.pipeline = pVkIndirectPSO->GetVkPipeline();
+	info.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	info.indirectCommandsLayout = pVKIndirectCmdsLayout->GetVkIndirectCmdLayout();
+	info.sequencesCount = maxDrawCount;
+	info.streamCount = 1;
+	info.pStreams = &input;
+	info.preprocessBuffer = preprocessBuffer->GetDevBuffer()->GetBuffer()->GetHandle();
+	info.preprocessSize = preprocessBuffer->GetElementSize();
+
+	if (Extensions::EXT_device_generated_commands::IsSupported)
+	{
+		Extensions::EXT_device_generated_commands::CmdExecuteGeneratedCommands(GetVKCommandList()->GetVkCommandList(), false, &info);
+	}
+	
 }
 //TanGram:VSM:END
 void CDeviceGraphicsCommandInterfaceImpl::ClearSurfaceImpl(D3DSurface* pView, const FLOAT Color[4], UINT NumRects, const D3D11_RECT* pRects)

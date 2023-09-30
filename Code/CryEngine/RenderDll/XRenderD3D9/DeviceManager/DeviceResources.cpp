@@ -143,6 +143,34 @@ RenderTargetData::~RenderTargetData()
 
 ////////////////////////////////////////////////////////////////////////////
 
+//TanGram:VSM:BEGIN
+CDeviceBuffer* CDeviceBuffer::CreatePreprocessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr)
+{
+	CDeviceBuffer* pDevBuffer = nullptr;
+	D3DBuffer* pBuffer = nullptr;
+
+	uint32 bufferSize = 0;
+
+	GetDeviceObjectFactory().CreateBufferPreProcessBuffer(maxDrawCount, indirectLayoutPtr, graphicsPSOLayoutPtr, &pBuffer, bufferSize);
+	pDevBuffer = new CDeviceBuffer();
+	pDevBuffer->m_pNativeResource = pBuffer;
+	pDevBuffer->m_eNativeFormat = DXGI_FORMAT_UNKNOWN;
+	pDevBuffer->m_eFlags = CDeviceObjectFactory::USAGE_INDIRECTARGS;
+	pDevBuffer->m_resourceElements = bufferSize;
+	pDevBuffer->m_subResources[eSubResource_Mips] = 0;
+	pDevBuffer->m_subResources[eSubResource_Slices] = 0;
+	pDevBuffer->m_eTT = eTT_User;
+	pDevBuffer->m_bFilterable = false;
+	pDevBuffer->m_bIsSrgb = false;
+	pDevBuffer->m_bAllowSrgb = false;
+	pDevBuffer->m_bIsMSAA = false;
+	pDevBuffer->AllocatePredefinedResourceViews();
+	return pDevBuffer;
+}
+//TanGram:VSM:END
+
+////////////////////////////////////////////////////////////////////////////
+
 CDeviceBuffer* CDeviceBuffer::Create(const SBufferLayout& pLayout, const void* pData)
 {
 	CDeviceBuffer* pDevBuffer = nullptr;

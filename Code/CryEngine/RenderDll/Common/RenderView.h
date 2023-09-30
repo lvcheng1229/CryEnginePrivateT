@@ -106,7 +106,10 @@ public:
 	Matrix44 m_Matrix;
 
 	//CCompiledRenderObject
-	AABB m_aabb;
+	Vec3 m_boundingBoxCenter;
+	float padding_0;
+	Vec3 m_boundingBoxExtent;
+	float padding_1;
 };
 
 
@@ -134,7 +137,7 @@ public:
 
 	bool IsPSOGroupChanged() { return bPSOGroupChanged; }
 	std::vector<CDeviceGraphicsPSO*>& GetRenderItemPSO() { return m_renderItemsPSO; }
-
+	std::vector<SRenderItemGPUData>& GetRenderItemGPUData() { return m_riGpuCullingData; }
 	static constexpr uint32 m_maxDrawSize = 1024;
 
 private:

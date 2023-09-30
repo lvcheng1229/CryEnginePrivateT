@@ -286,6 +286,8 @@ public:
 	static CDeviceBuffer*    Create(const SBufferLayout& pLayout, const void* pData);
 	static CDeviceBuffer*    Associate(const SBufferLayout& pLayout, D3DResource* pBuf);
 
+	static CDeviceBuffer*	 CreatePreprocessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr);//TanGram:VSM
+
 	SBufferLayout            GetLayout() const;
 	// This calculates the hardware alignments of a texture resource, respecting block-compression and tiling mode (typeStride will round up if a fraction)
 	SResourceMemoryAlignment GetAlignment() const;

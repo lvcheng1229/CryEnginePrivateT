@@ -1075,6 +1075,20 @@ HRESULT CDeviceObjectFactory::CreateVolumeTexture(uint32 nWidth, uint32 nHeight,
 	return S_OK;
 }
 
+
+//TanGram:VSM:BEGIN
+void CDeviceObjectFactory::CreateBufferPreProcessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, D3DBuffer** ppBuff, uint32& outSize)
+{
+	CDeviceResourceIndirectLayout_Vulkan* pVKIndirectCmdsLayout = static_cast<CDeviceResourceIndirectLayout_Vulkan*>(indirectLayoutPtr.get());
+	CDeviceGraphicsPSO_Vulkan* pVkIndirectPSO = static_cast<CDeviceGraphicsPSO_Vulkan*>(graphicsPSOLayoutPtr.get());
+
+	CBufferResource* pResult = nullptr;
+	GetDevice()->CreatePreProcessBuffer(maxDrawCount, pVKIndirectCmdsLayout->GetVkIndirectCmdLayout(), pVkIndirectPSO->GetVkPipeline(), pResult, outSize);
+	pResult->SetStrideAndElementCount(outSize, 1);
+	*ppBuff = pResult;
+}
+//TanGram:VSM:END
+
 HRESULT CDeviceObjectFactory::CreateBuffer(buffer_size_t nSize, buffer_size_t elemSize, uint32 nUsage, uint32 nBindFlags, D3DBuffer** ppBuff, const void* pData)
 {
 	VkBufferCreateInfo info;

@@ -474,6 +474,7 @@ const char* RenderListNames[] =
 	"GENERAL",
 	"TERRAIN",
 	"SHADOWS",
+	"SHADOW_GEN",//TanGram:VSM
 	"DECAL",
 	"WATER_VOLUMES",
 	"GENERAL",

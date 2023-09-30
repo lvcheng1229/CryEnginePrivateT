@@ -295,7 +295,7 @@ VkResult CDevice::CommitResource(EHeapType heapHint, CResource* pInputResource) 
 
 //---------------------------------------------------------------------------------------------------------------------
 //TanGram:VSM:BEGIN
-VkResult CDevice::CreatePreProcessBuffer(uint32 drawCount, VkIndirectCommandsLayoutNV indirectCmdsLayout, VkPipeline indirectPSO, CBufferResource* pInputResource) threadsafe
+void CDevice::CreatePreProcessBuffer(uint32 drawCount, VkIndirectCommandsLayoutNV indirectCmdsLayout, VkPipeline indirectPSO, CBufferResource* pOutputResource, uint32& outSize) threadsafe
 {
 	VkGeneratedCommandsMemoryRequirementsInfoNV memInfo = { VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV };
 	memInfo.maxSequencesCount = drawCount;
@@ -309,21 +309,32 @@ VkResult CDevice::CreatePreProcessBuffer(uint32 drawCount, VkIndirectCommandsLay
 		Extensions::EXT_device_generated_commands::CmdGetGeneratedCommandsMemoryRequirements(GetVkDevice(), &memInfo, &memReqs);
 	}
 	
-	const VkBufferCreateInfo* bufferCreateInfo;
-	VkBuffer* retVkBuffer = VK_NULL_HANDLE;
+	VkBufferCreateInfo createInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+	createInfo.size = memReqs.memoryRequirements.size;
+	createInfo.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	createInfo.flags = 0;
+
+	outSize = static_cast<uint32>(memReqs.memoryRequirements.size);
+
+	VkBuffer hVkResource = VK_NULL_HANDLE;
 	
-	vkCreateBuffer(GetVkDevice(), bufferCreateInfo, nullptr, retVkBuffer);
+	VK_ASSERT(vkCreateBuffer(GetVkDevice(), &createInfo, nullptr, &hVkResource));
+	
+	pOutputResource = new CBufferResource(this);
+	pOutputResource->CBufferResource::Init(hVkResource, createInfo);
 
-	//VkDeviceSize outSize = memReqs.memoryRequirements.size;
+	const EHeapType heapHint = kHeapTargets;
 
-	if (memReqs.sType == VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2)
+	CMemoryHandle boundMemory;
+	if ((boundMemory = GetHeap().Allocate(memReqs.memoryRequirements, heapHint)))
 	{
-		return VK_ERROR_OUT_OF_DEVICE_MEMORY;
-	}
+		VkDeviceMemoryLocation memloc = GetHeap().GetBindAddress(boundMemory);
 
-	//VkMemoryRequirements2 memReqs = { VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2 };
-	//vkGetGeneratedCommandsMemoryRequirementsNV(res->m_device, &memInfo, &memReqs);
-	return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+		VK_ASSERT(vkBindResourceMemory(GetVkDevice(), pOutputResource->GetHandle(), memloc.first, memloc.second));
+		pOutputResource->CMemoryResource::Init(heapHint, std::move(boundMemory));
+
+		GetHeap().Deallocate(boundMemory);
+	}
 }
 //TanGram:VSM:END
 //---------------------------------------------------------------------------------------------------------------------

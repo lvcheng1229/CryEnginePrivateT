@@ -108,6 +108,24 @@ private:
 	CTileTableGenParameter m_tileTableGenParameters;
 };
 
+class CShadowCmdBuildStage
+{
+public:
+	CShadowCmdBuildStage(CVSMGlobalInfo* vsmGlobalInfo, CComputeRenderPass* compRenderPass)
+		:m_vsmGlobalInfo(vsmGlobalInfo),
+		m_compPass(compRenderPass) {};
+
+	void Init();
+	void Update();
+	void Execute();
+
+private:
+	CComputeRenderPass* m_compPass;
+	CVSMGlobalInfo* m_vsmGlobalInfo;
+
+	CGpuBuffer m_riGpuCullData;
+};
+
 class CShadowProjectStage
 {
 public:
@@ -150,7 +168,7 @@ private:
 	_smart_ptr<CTexture> m_pShadowDepthRT;
 
 	CGpuBuffer m_preprocessBuffer;
-	CGpuBuffer CulledCmdBuffer;
+	CGpuBuffer m_culledCmdBuffer;
 	
 };
 
@@ -163,18 +181,22 @@ public:
 		: CGraphicsPipelineStage(graphicsPipeline)
 		, m_passVSMTileFlagGen(&graphicsPipeline)
 		, m_passVSMTileTableGen(&graphicsPipeline)
+		, m_passVSMCmdBuild(&graphicsPipeline)
 		, m_passBufferVisualize(&graphicsPipeline)
 		, m_vsmShadowProjectStage(&m_vsmGlobalInfo, graphicsPipeline)
 		, m_tileFlagGenStage(&m_vsmGlobalInfo, &m_passVSMTileFlagGen)
 		, m_tileTableGenStage(&m_vsmGlobalInfo, &m_passVSMTileTableGen)
+		, m_shadowCmdBuildStage(&m_vsmGlobalInfo, &m_passVSMCmdBuild)
 	{
 		
 	}
 
+	static constexpr bool m_gloablEnableVSM = TRUE;
+
 	bool IsStageActive(EShaderRenderingFlags flags) const final
 	{
-		return false;
-		//return CRenderer::CV_r_VirtualShadowMap;
+		//return false;
+		return CRenderer::CV_r_VirtualShadowMap;
 	}
 
 	void  Init()   final;
@@ -198,6 +220,9 @@ private:
 	CComputeRenderPass m_passVSMTileTableGen;
 	CTileTableGenStage m_tileTableGenStage;
 
+	//shadow cmd build stage
+	CComputeRenderPass m_passVSMCmdBuild;
+	CShadowCmdBuildStage m_shadowCmdBuildStage;
 
 	_smart_ptr<CTexture>	m_pShadowDepthTarget;
 

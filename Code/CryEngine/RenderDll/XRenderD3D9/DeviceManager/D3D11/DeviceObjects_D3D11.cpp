@@ -994,3 +994,20 @@ bool CDeviceObjectFactory::GetOcclusionQueryResults(D3DOcclusionQuery* pQuery, u
 {
 	return gcpRendD3D->GetDeviceContext()->GetData(pQuery, &samplesPassed, sizeof(uint64), 0) == S_OK;
 }
+
+//TanGram::VSM
+void CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize, std::vector<uint8>& outCmdData)
+{
+
+}
+
+void CDeviceObjectFactory::CreateBufferPreProcessBuffer(uint32 maxDrawCount, CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, D3DBuffer** ppBuff, uint32& outSize)
+{
+
+}
+
+CDeviceResourceIndirectLayoutPtr CDeviceObjectFactory::CreateResourceIndirectLayoutImpl(const SDeviceResourceIndirectLayoutDesc& resourceIndirectLayoutDesc) const
+{
+	return nullptr;
+}
+

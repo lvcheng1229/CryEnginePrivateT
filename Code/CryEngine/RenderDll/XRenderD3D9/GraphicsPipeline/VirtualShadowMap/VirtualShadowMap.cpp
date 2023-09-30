@@ -103,6 +103,25 @@ void CTileTableGenStage::Execute()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+/// vsm shadow cmd build stage////////////////////////////////////////////////////////////////////////
+
+void CShadowCmdBuildStage::Init()
+{
+
+}
+
+void CShadowCmdBuildStage::Update()
+{
+	CRenerItemGPUDrawer& gpuDrawer = m_vsmGlobalInfo->m_pRenderView->GetGPUDrawer();
+	m_riGpuCullData.Create(gpuDrawer.GetRenderItemGPUData().size(), sizeof(SRenderItemGPUData), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED /*| CDeviceObjectFactory::BIND_UNORDERED_ACCESS*/, gpuDrawer.GetRenderItemGPUData().data());
+	m_riGpuCullData.SetDebugName("m_riGpuCullData");
+}
+
+void CShadowCmdBuildStage::Execute()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 /// vsm projection stage -- shadow project pass ////////////////////////////////////////////////////////////////////////
 
 void CShadowProjectStage::CVSMShadowProjectPass::Init(CShadowProjectStage* Stage)
@@ -165,10 +184,6 @@ void CShadowProjectStage::Update()
 	}
 
 	// compute input buffer space requirements
-	//VkPhysicalDeviceProperties2 phyProps = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
-	//VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV genProps = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV };
-	//phyProps.pNext = &genProps;
-	//vkGetPhysicalDeviceProperties2(res->m_physical, &phyProps);
 
 	if ((!m_pIndirectGraphicsPSO->IsValid() || gpuDrawer.IsPSOGroupChanged()) && gpuDrawer.GetRenderItemPSO().size() > 0)
 	{
@@ -199,9 +214,12 @@ void CShadowProjectStage::Execute()
 	//rendItemDrawer.JobifyDrawSubmission();
 	//rendItemDrawer.WaitForDrawSubmission(); disable multi thread
 
+			//TODO: ShadowView
+	CRenderView* pShadowView = nullptr;
 	CDeviceCommandListRef  commandList = GetDeviceObjectFactory().GetCoreCommandList();
 	CDeviceGraphicsCommandInterface& commandInterface = *(commandList.GetGraphicsInterface());
-	commandInterface.ExecuteGeneratedCommands();
+	const RenderItems& renderItems = pShadowView->GetRenderItems(ERenderListID(0));
+	commandInterface.ExecuteGeneratedCommands(m_pResourceIndirectLayout, m_pIndirectGraphicsPSO, renderItems.size(), &m_culledCmdBuffer, &m_preprocessBuffer);
 }
 
 
@@ -218,17 +236,26 @@ void CShadowProjectStage::PrepareShadowPasses()
 
 void CVirtualShadowMapStage::Init()
 {
-	m_tileFlagGenStage.Init();
-	m_tileTableGenStage.Init();
-	m_vsmShadowProjectStage.Init();
+	if (m_gloablEnableVSM)
+	{
+		m_tileFlagGenStage.Init();
+		//m_tileTableGenStage.Init();
+		//m_shadowCmdBuildStage.Init();
+		//m_vsmShadowProjectStage.Init();
+	}
+
 }
 
 void CVirtualShadowMapStage::Update()
 {
-	ShadowViewUpdate();
-	m_tileFlagGenStage.Update();
-	m_tileTableGenStage.Update();
-	m_vsmShadowProjectStage.Update();
+	if (m_gloablEnableVSM)
+	{
+		ShadowViewUpdate();
+		m_tileFlagGenStage.Update();
+		//m_tileTableGenStage.Update();
+		//m_shadowCmdBuildStage.Update();
+		//m_vsmShadowProjectStage.Update();
+	}
 }
 
 void CVirtualShadowMapStage::PrePareShadowMap()
@@ -241,8 +268,9 @@ void CVirtualShadowMapStage::Execute()
 	if (m_vsmGlobalInfo.m_frustumValid)
 	{
 		m_tileFlagGenStage.Execute();
-		m_tileTableGenStage.Execute();
-		m_vsmShadowProjectStage.Execute();
+		//m_tileTableGenStage.Execute();
+		//m_shadowCmdBuildStage.Execute();
+		//m_vsmShadowProjectStage.Execute();
 	}
 
 	VisualizeBuffer();
@@ -356,7 +384,7 @@ bool CVirtualShadowMapStage::CreatePipelineStates(DevicePipelineStatesArray* pSt
 void CVirtualShadowMapStage::ShadowViewUpdate()
 {
 	Matrix44A viewMatrix, projMatrix;
-	CRenderView* pRenderView = RenderView();//TODO:!!!ShadowView
+	CRenderView* pRenderView = RenderView();
 	m_vsmGlobalInfo.m_pRenderView = pRenderView;
 	m_vsmGlobalInfo.m_texDeviceZ = pRenderView->GetDepthTarget();
 
@@ -392,10 +420,12 @@ void CVirtualShadowMapStage::ShadowViewUpdate()
 	Vec3 up;
 	Vec3 camPos = pRenderView->GetCamera(CCamera::eEye_Left).GetPosition();
 	Vec3 at = camPos;
-	Vec3 vLightDir = -pVSMFrustum->pFrustum->vLightSrcRelPos;
+	//Vec3 vLightDir = -pVSMFrustum->pFrustum->vLightSrcRelPos;
+	Vec3 vLightDir = pVSMFrustum->pFrustum->vLightSrcRelPos;
 	vLightDir.Normalize();
 
-	Vec3 eye = at - pVSMFrustum->pFrustum->vLightSrcRelPos.len() * vLightDir;
+	//Vec3 eye = at - pVSMFrustum->pFrustum->vLightSrcRelPos.len() * vLightDir;
+	Vec3 eye = at + pVSMFrustum->pFrustum->vLightSrcRelPos.len() * vLightDir;
 
 	if (fabsf(vLightDir.Dot(zAxis)) > 0.9995f)
 		up = yAxis;
