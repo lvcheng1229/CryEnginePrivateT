@@ -236,7 +236,7 @@ void CGraphicsPipelineResources::CreateHDRMaps(int resourceWidth, int resourceHe
 	//TanGram: TiledBloom:[END]
 
 	//TanGram:VSM:[BEGIN]
-	m_renderTargetPool.AddRenderTarget(width, height, Clr_Unknown, eTF_R8G8B8A8, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$VSMBufferVisualize").c_str(), &m_pTexVSMVisualize, FT_DONT_RELEASE);
+	m_renderTargetPool.AddRenderTarget(1024, 1024, Clr_Unknown, eTF_R16G16B16A16F, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$VSMBufferVisualize").c_str(), &m_pTexVSMVisualize, FT_DONT_RELEASE);
 	//TanGram:VSM:[END]
 
 	// Scaled versions of compositions of the HDR scene texture (with alpha)

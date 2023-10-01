@@ -27,6 +27,8 @@ struct SGraphicsPipelinePassContext;
 #include "DeviceInfo.h"
 #include "PipelineProfiler.h"
 
+#include "renderdoc_app.h"//TanGram:RenderDoc
+
 #if defined(DX11_ALLOW_D3D_DEBUG_RUNTIME)
 	#include "D3DDebug.h"
 #endif
@@ -780,6 +782,8 @@ private:
 	SGraphicsPipelineKey             m_renderToTexturePipelineKey;
 
 	CD3DStereoRenderer*              m_pStereoRenderer;
+
+	RENDERDOC_API_1_6_0*			 m_pRenderDocAPI;//TanGram:RenderDoc
 
 	volatile int                     m_lockCharCB;
 	util::list<SCharacterInstanceCB> m_CharCBFreeList;

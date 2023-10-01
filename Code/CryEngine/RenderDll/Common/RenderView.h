@@ -176,6 +176,8 @@ public:
 		eShadowFrustumRenderType_LocalLight  = 3,
 		eShadowFrustumRenderType_Custom      = 4,
 
+		eShadowFrustumRenderType_VSM		 = 5,//TanGram:RenderDoc
+
 		eShadowFrustumRenderType_Count,
 		eShadowFrustumRenderType_First = eShadowFrustumRenderType_SunCached
 	};

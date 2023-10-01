@@ -16,6 +16,7 @@
 #define TILE_MASK_CS_GROUP_SIZE 16
 #define TILE_TABLE_GEN_CS_GROUP_SIZE 16
 
+#define VSM_SHADOW_PROJ_WH 512
 
 class CVSMGlobalInfo
 {
@@ -61,10 +62,12 @@ public:
 	void Update();
 	void Execute();
 
+	//visualize
 	CGpuBuffer* GetVsmTileFlagBuffer()
 	{
 		return &m_vsmTileFlagBuffer;
 	}
+
 private:
 	CComputeRenderPass* m_compPass;
 	CVSMGlobalInfo* m_vsmGlobalInfo;
@@ -83,8 +86,10 @@ class CTileTableGenStage
 {
 public:
 	CTileTableGenStage(CVSMGlobalInfo* vsmGlobalInfo, CComputeRenderPass* compRenderPass)
-		:m_vsmGlobalInfo(vsmGlobalInfo),
-		m_compPass(compRenderPass) {};
+		:
+		m_vsmGlobalInfo(vsmGlobalInfo),
+		m_compPass(compRenderPass)
+	{};
 
 	void Init();
 	void Update();
@@ -95,6 +100,12 @@ public:
 		Vec4i vsmVirtualTileSizeWH;
 		Vec4i vsmPhyTileSizeWH;
 	};
+
+	//visualize
+	CGpuBuffer* GetVsmTileTableBuffer()
+	{
+		return &m_vsmTileTableBuffer;
+	}
 private:
 	CComputeRenderPass* m_compPass;
 	CVSMGlobalInfo* m_vsmGlobalInfo;
@@ -191,7 +202,7 @@ public:
 		
 	}
 
-	static constexpr bool m_gloablEnableVSM = TRUE;
+	static constexpr bool m_gloablEnableVSM = true;
 
 	bool IsStageActive(EShaderRenderingFlags flags) const final
 	{
@@ -216,7 +227,7 @@ private:
 	CComputeRenderPass	m_passVSMTileFlagGen;
 	CTileFlagGenStage m_tileFlagGenStage;
 
-	//tile table generation stage
+	//tile table generation 
 	CComputeRenderPass m_passVSMTileTableGen;
 	CTileTableGenStage m_tileTableGenStage;
 

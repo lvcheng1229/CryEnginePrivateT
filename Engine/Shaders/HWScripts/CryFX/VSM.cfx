@@ -18,6 +18,7 @@ cbuffer cbTileFlagGen : register(b0)
 	} c_tileFlagGenConstants;
 };
 
+
 [numthreads(16, 16, 1)]
 void VSMTileFlagGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
 {
@@ -36,9 +37,11 @@ void VSMTileFlagGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
     float4 ndcPos = float4(screenPos, deviceZ, 1.0);
     
     float4 worldPosition = mul(c_tileFlagGenConstants.invViewProj, ndcPos);
+    //float4 worldPosition = mul(ndcPos,c_tileFlagGenConstants.invViewProj);
     worldPosition.xyz /= worldPosition.w;
 
     float4 shadowScreenPOS = mul(worldPosition,c_tileFlagGenConstants.lightViewProj);
+    //float4 shadowScreenPOS = mul(c_tileFlagGenConstants.lightViewProj,worldPosition);
     shadowScreenPOS.xyz /= shadowScreenPOS.w;
 
     float2 uvVSM = shadowScreenPOS.xy; 
@@ -58,7 +61,7 @@ void VSMTileFlagGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
 /// vsm tile table generation technique /////////////////////////////////////////////////////////////
 
 RWBuffer<uint>              p2_vsmTileFlags     : register(u0);//todo: use buffer type instead of rwbuffer type
-RWStructuredBuffer<uint>    p2_vsmTileTable     : register(u1);
+RWStructuredBuffer<int>     p2_vsmTileTable     : register(u1);
 RWByteAddressBuffer 		p2_validTileCount	: register(u2);
 
 cbuffer cbTileTableGen : register(b0)
@@ -85,6 +88,8 @@ void VSMTileTableGenCS(uint2 DispatchThreadID :SV_DispatchThreadID)
 
     uint tileIndex = 0xffffffff;
     uint bufferIndex = DispatchThreadID.y * c_tileTableGenConstants.vsmVirtualTileNum.x + DispatchThreadID.x;
+
+    p2_vsmTileTable[bufferIndex] = -1;
 
     if(p2_vsmTileFlags[bufferIndex] == 1)
     {
@@ -139,7 +144,7 @@ StructuredBuffer<SvsmInputCmd>          inputCommands       : register(t0);
 StructuredBuffer<SrhiGpuCullingStruct>  rhiGpuCullingData   : register(t1);
 
 AppendStructuredBuffer<SvsmInputCmd>    outputCommands      : register(u0);
-RWBuffer<uint>                          p3_vsmTileFlags     : register(u1);//todo: use buffer type instead of rwbuffer type
+RWStructuredBuffer<int>                 p3_vsmTileTable     : register(u1);//todo: use buffer type instead of rwbuffer type
 
 #define ThreadBlockSize 128
 [numthreads(ThreadBlockSize, 1, 1)]
@@ -148,7 +153,7 @@ void VSMCmdBuild(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
     if(groupId.x == 0)
     {
         SrhiGpuCullingStruct cmd = inputCommands[groupId.x];
-        cmd.firstIndex = uint(rhiGpuCullingData[0].padding_1) + p3_vsmTileFlags[0];
+        cmd.firstIndex = uint(rhiGpuCullingData[0].padding_1) + p3_vsmTileTable[0];
         outputCommands.Append(cmd);
     }
 }
@@ -210,6 +215,7 @@ vtxOut FullscreenTriVS(uint VertexID : SV_VertexID)
 }
 
 Buffer<uint>    visualizeBuffer    : register(t0);
+//RWStructuredBuffer<int> visualizeBuffer : register(u0);
 float4 visualizeBufferSize;
 
 pixout VisualizeBufferPS(vtxOut IN)
@@ -219,7 +225,6 @@ pixout VisualizeBufferPS(vtxOut IN)
     OUT.Color = float4(visualizeBuffer[uvCoord.y * visualizeBufferSize.x + uvCoord.x],0.0,0.0,1.0);
     return OUT;
 }
-
 
 technique VSMTileFlagGen
 {
@@ -236,7 +241,6 @@ technique VSMTileTableGen
 		ComputeShader = VSMTileTableGenCS();
 	}
 };
-
 
 technique VSMCmdBuild
 {

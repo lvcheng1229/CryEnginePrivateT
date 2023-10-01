@@ -2324,7 +2324,7 @@ void CRendererCVars::InitCVars()
 	                  "Maximum number of frames that can be in-flight on the GPU",
 	                  OnChange_CV_r_MaxFrameLatency);
 
-	DefineConstIntCVar3("r_ShadersDebug", CV_r_shadersdebug, 0, VF_DUMPTODISK,
+	DefineConstIntCVar3("r_ShadersDebug", CV_r_shadersdebug, 3/*TanGram:RenderDoc*/, VF_DUMPTODISK,
 	                    "Enable special logging when shaders become compiled\n"
 	                    "Usage: r_ShadersDebug [0/1/2/3/4]\n"
 	                    " 1 = assembly into directory Main/{Game}/shaders/cache/d3d9\n"

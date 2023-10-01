@@ -660,6 +660,7 @@ add_sources("CryRenderer_uber_3.cpp"
 		"../Common/Defs.h"
 		"DeviceInfo.h"
 		"DriverD3D.h"
+		"renderdoc_app.h"#TanGram:RenderDoc
 		"NullD3D11Device.h"
 		"PipelineProfiler.h"
 		"resource.h"
