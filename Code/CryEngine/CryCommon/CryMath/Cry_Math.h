@@ -742,6 +742,13 @@ enum type_min { VMIN };
 enum type_max { VMAX };
 enum type_identity { IDENTITY };
 
+template <typename T>
+inline constexpr T AlignArbitrary(T val, uint64 alignment)
+{
+	static_assert(std::is_integral_v<T> || std::is_pointer_v<T>, "AlignArbitrary expects an integer or pointer type");
+	return (T)((((uint64)val + alignment - 1) / alignment) * alignment);
+}
+
 #include "NumberVector.h"
 #include "Cry_Vector2.h"
 #include "Cry_Vector3.h"

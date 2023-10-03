@@ -39,6 +39,12 @@ public:
 
 	//used in tile table generation pass
 	CGpuBuffer* m_vsmTileFlagBuffer;
+
+	CGpuBuffer* m_vsmTileTableBuffer;
+
+	CGpuBuffer* m_culledCmdBuffer;
+
+	CGpuBuffer* m_culledCmdCountBuffer;
 };
 
 class CTileFlagGenStage
@@ -130,11 +136,20 @@ public:
 	void Update();
 	void Execute();
 
+	struct SCmdBuildPara
+	{
+		Matrix44 lightViewProj;
+		Vec4i cmdBuildPara;
+	};
+
 private:
 	CComputeRenderPass* m_compPass;
 	CVSMGlobalInfo* m_vsmGlobalInfo;
 
-	CGpuBuffer m_riGpuCullData;
+	CConstantBufferPtr  m_cmdBuildConstantBuffer;
+	CGpuBuffer m_culledCmdBuffer;
+
+	CGpuBuffer m_culledCmdCountBuffer;
 };
 
 class CShadowProjectStage
@@ -179,7 +194,6 @@ private:
 	_smart_ptr<CTexture> m_pShadowDepthRT;
 
 	CGpuBuffer m_preprocessBuffer;
-	CGpuBuffer m_culledCmdBuffer;
 	
 };
 

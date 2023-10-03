@@ -17,10 +17,25 @@
 
 
 //TanGram:VSM:BEGIN
-void CRenerItemGPUDrawer::InitUnCulledBuffer(uint32 elemSize)
+void CRenerItemGPUDrawer::InitUnCulledBuffer()
 {
-	m_unCulledGPUCmdBuffer.Create(m_maxDrawSize, elemSize, DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_INDIRECTARGS, NULL);
+	uint32 gpuDrawCmdDataSize = 0;
+	std::vector<uint8> gpuDrawCmdData;
+	std::vector<CDeviceBuffer*> constBuffers;
+	constBuffers.push_back(nullptr);
+	constBuffers.push_back(nullptr);
+	std::vector<CDeviceGPUDrawCmd> gpuDrawCommands;
+	gpuDrawCommands.push_back(CDeviceGPUDrawCmd{ 0,constBuffers });
+
+	GetDeviceObjectFactory().GetRhiGpuDrawCmdData(gpuDrawCommands, gpuDrawCmdDataSize, gpuDrawCmdData, true);
+	
+	m_unCulledGPUCmdBuffer.Create(m_maxDrawSize, gpuDrawCmdDataSize, DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::USAGE_STRUCTURED, NULL);
 	m_unCulledGPUCmdBuffer.SetDebugName("m_unCulledGPUCmdBuffer");
+
+	m_riGpuCullData.Create(m_maxDrawSize, sizeof(SRenderItemGPUData), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::USAGE_STRUCTURED, NULL);
+	m_riGpuCullData.SetDebugName("m_riGpuCullData");
+
+	m_gpuDrawCmdDataSize = gpuDrawCmdDataSize;
 }
 
 //see DrawCompiledRenderItemsToCommandList
@@ -35,6 +50,11 @@ void CRenerItemGPUDrawer::SetPassContext(uint32 batchIncludeFilter, uint32 batch
 void CRenerItemGPUDrawer::UpdateGPURenderItems(const RenderItems* renderItems, int startRenderItem, int endRenderItem)
 {
 	bPSOGroupChanged = true;
+	m_riGpuCullingData.clear();
+	m_renderItemsPSO.clear();
+	m_gpuDrawCommands.clear();
+
+	uint32 posIndex = 0;
 	for (int32 i = startRenderItem, e = endRenderItem - 1; i <= e; ++i)
 	{
 		const SRendItem& rif = (*renderItems)[std::min<int32>(i + PREFETCH_STRIDE / sizeof(SRendItem), e)];
@@ -42,11 +62,12 @@ void CRenerItemGPUDrawer::UpdateGPURenderItems(const RenderItems* renderItems, i
 
 		const SRendItem& ri = (*renderItems)[i];
 
-		if (SRendItem::TestIndividualBatchFlags(ri.nBatchFlags, m_batchExcludeFilter, m_batchIncludeFilter))
+		if (SRendItem::TestIndividualBatchFlags(ri.nBatchFlags, m_batchIncludeFilter, m_batchExcludeFilter))
 		{
 			//TODO:instance
-			const SDrawParams& drawParams = ri.pCompiledObject->m_drawParams[m_stageID];
-			m_riGpuCullingData.clear();;
+			const SDrawParams& drawParams = ri.pCompiledObject->m_drawParams[(m_stageID == eStage_ShadowMap || m_stageID == eStage_VSM) ? eDrawParam_Shadow : eDrawParam_General];
+			
+
 			m_riGpuCullingData.push_back(
 				SRenderItemGPUData
 				{ 
@@ -60,11 +81,11 @@ void CRenerItemGPUDrawer::UpdateGPURenderItems(const RenderItems* renderItems, i
 
 			std::vector<CDeviceBuffer*>constBuffers;
 			constBuffers.push_back(ri.pCompiledObject->m_perDrawCB->m_buffer);
-			constBuffers.push_back(ri.pCompiledObject->m_perDrawCB->m_buffer);//TODO:PerViewCB
+			constBuffers.push_back(ri.pCompiledObject->m_perDrawCB->m_buffer);//placeholder buffer,set on gpu
 			m_gpuDrawCommands.push_back(
 				CDeviceGPUDrawCmd
 				{
-					0,
+					posIndex,
 					constBuffers,
 					ri.pCompiledObject->m_vertexStreamSet,
 					ri.pCompiledObject->m_indexStreamSet,
@@ -76,16 +97,29 @@ void CRenerItemGPUDrawer::UpdateGPURenderItems(const RenderItems* renderItems, i
 					0
 				}
 			);
+
+			posIndex++;
 		}
 	}
 	CRY_ASSERT(m_maxDrawSize > (endRenderItem - startRenderItem));
 
-	//todo VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV
-	uint32 gpuDrawCmdDataSize = 0;
-	std::vector<uint8> gpuDrawCmdData;
-	GetDeviceObjectFactory().GetRhiGpuDrawCmdData(m_gpuDrawCommands, gpuDrawCmdDataSize, gpuDrawCmdData);
-	InitUnCulledBuffer(gpuDrawCmdDataSize);
-	m_unCulledGPUCmdBuffer.UpdateBufferContent(gpuDrawCmdData.data(), gpuDrawCmdData.size());
+	if (bBufferInit == false)
+	{
+		InitUnCulledBuffer();
+		bBufferInit = true;
+	}
+
+	if (m_gpuDrawCommands.size() > 0)
+	{
+		//todo VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV
+		uint32 gpuDrawCmdDataSize = 0;
+		std::vector<uint8> gpuDrawCmdData;
+		GetDeviceObjectFactory().GetRhiGpuDrawCmdData(m_gpuDrawCommands, gpuDrawCmdDataSize, gpuDrawCmdData);
+		m_unCulledGPUCmdBuffer.UpdateBufferContent(gpuDrawCmdData.data(), gpuDrawCmdData.size());
+
+		m_riGpuCullData.UpdateBufferContent(GetRenderItemGPUData().data(), GetRenderItemGPUData().size());
+	}
+
 }
 
 //TanGram:VSM:END

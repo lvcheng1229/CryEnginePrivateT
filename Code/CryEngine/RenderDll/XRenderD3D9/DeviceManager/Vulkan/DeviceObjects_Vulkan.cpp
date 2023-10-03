@@ -89,14 +89,9 @@ CDeviceComputePSOPtr CDeviceObjectFactory::CreateComputePSOImpl(const CDeviceCom
 }
 
 //TanGram:VSM:BEGIN
-template <typename T>
-inline constexpr T AlignArbitrary(T val, uint64 alignment)
-{
-	static_assert(std::is_integral_v<T> || std::is_pointer_v<T>, "AlignArbitrary expects an integer or pointer type");
-	return (T)((((uint64)val + alignment - 1) / alignment) * alignment);
-}
 
-void CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize, std::vector<uint8>& outCmdData)
+
+void CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize, std::vector<uint8>& outCmdData, bool onlyDataSize)
 {
 	outCmdDataSize = 0;
 	uint32 cbSize = deviceGpuDrawCmds[0].m_constBuffers.size();
@@ -107,6 +102,10 @@ void CDeviceObjectFactory::GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDraw
 	outCmdDataSize += sizeof(VkDrawIndexedIndirectCommand);
 	outCmdDataSize = AlignArbitrary(outCmdDataSize, sizeof(uint64));
 
+	if (onlyDataSize == true)
+	{
+		return;
+	}
 
 	outCmdData.resize(outCmdDataSize * deviceGpuDrawCmds.size());
 	uint8* rawData = outCmdData.data();

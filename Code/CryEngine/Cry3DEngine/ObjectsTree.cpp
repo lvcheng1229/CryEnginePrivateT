@@ -679,6 +679,14 @@ FrustumMaskType COctreeNode::UpdateCullMask(uint32 onePassTraversalFrameId, uint
 					continue;
 				}
 
+				//TanGram:VSM:ShadowView:BEGIN
+				if (pFr->m_eFrustumType == ShadowMapFrustum::e_VSM)
+				{
+					//culled by gpu
+					continue;
+				}
+				//TanGram:VSM:ShadowView:END
+
 				// skip non dynamic casters for dynamic shadow frustums
 				bool bSkipCaster = (pFr->m_eFrustumType == ShadowMapFrustum::e_GsmDynamicDistance) && ((renderFlags & ERF_DYNAMIC_DISTANCESHADOWS) == 0);
 

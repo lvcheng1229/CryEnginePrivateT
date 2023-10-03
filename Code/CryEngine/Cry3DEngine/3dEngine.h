@@ -1089,6 +1089,7 @@ public:
 	virtual void                     RemovePerObjectShadow(IShadowCaster* pCaster);
 	virtual struct SPerObjectShadow* GetPerObjectShadow(IShadowCaster* pCaster);
 	virtual void                     GetCustomShadowMapFrustums(ShadowMapFrustum**& arrFrustums, int& nFrustumCount);
+	//virtual ShadowMapFrustum*		 GetVirtualShadowFrustums();//TanGram:VSM:ShadowView
 	virtual int                      SaveStatObj(IStatObj* pStatObj, TSerialize ser);
 	virtual IStatObj*                LoadStatObj(TSerialize ser);
 
@@ -1172,6 +1173,7 @@ public:
 	PodArray<IRenderNode*>         m_lstKilledVegetations;
 	PodArray<SPerObjectShadow>     m_lstPerObjectShadows;
 	std::vector<ShadowMapFrustum*> m_lstCustomShadowFrustums;
+	//ShadowMapFrustum*			   m_pVirtualShadowFrustums = nullptr;//TanGram:VSM:ShadowView
 	int                            m_nCustomShadowFrustumCount;
 	uint32                         m_onePassShadowTraversalCount = 0;
 

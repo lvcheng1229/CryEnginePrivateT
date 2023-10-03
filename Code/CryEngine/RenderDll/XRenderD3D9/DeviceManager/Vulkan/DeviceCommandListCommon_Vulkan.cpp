@@ -551,7 +551,7 @@ void CDeviceGraphicsCommandInterfaceImpl::DrawIndexedImpl(uint32 IndexCountPerIn
 }
 
 //TanGram:VSM:BEGIN
-void CDeviceGraphicsCommandInterfaceImpl::ExecuteGeneratedCommandsImpl(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer)
+void CDeviceGraphicsCommandInterfaceImpl::ExecuteGeneratedCommandsImpl(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer, CGpuBuffer* countBuffer, uint32 countbufferOffset)
 {
 	CDeviceResourceIndirectLayout_Vulkan* pVKIndirectCmdsLayout = static_cast<CDeviceResourceIndirectLayout_Vulkan*>(indirectLayoutPtr.get());
 	CDeviceGraphicsPSO_Vulkan* pVkIndirectPSO = static_cast<CDeviceGraphicsPSO_Vulkan*>(graphicsPSOLayoutPtr.get());
@@ -572,6 +572,8 @@ void CDeviceGraphicsCommandInterfaceImpl::ExecuteGeneratedCommandsImpl(CDeviceRe
 	info.pStreams = &input;
 	info.preprocessBuffer = preprocessBuffer->GetDevBuffer()->GetBuffer()->GetHandle();
 	info.preprocessSize = preprocessBuffer->GetElementSize();
+	info.sequencesCountBuffer = countBuffer->GetDevBuffer()->GetBuffer()->GetHandle();
+	info.sequencesCountOffset = countbufferOffset;
 
 	if (Extensions::EXT_device_generated_commands::IsSupported)
 	{

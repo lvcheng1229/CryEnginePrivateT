@@ -2497,6 +2497,22 @@ void CRenderView::PrepareShadowViews()
 	m_shadows.CreateFrustumGroups();
 }
 
+//TanGram:VSM:ShadowView:BEGIN
+void CRenderView::PrepareVSMShadowView()
+{
+	FUNCTION_PROFILER_RENDERER();
+	for (auto& fr : m_shadows.m_renderFrustums)
+	{
+		if (fr.pFrustum->m_eFrustumType == ShadowMapFrustum::e_VSM)
+		{
+			fr.pShadowsView->SwitchUsageMode(CRenderView::eUsageModeReading);
+		}
+	}
+
+	m_shadows.CreateVSMFrustum();
+}
+//TanGram:VSM:ShadowView:END
+
 //////////////////////////////////////////////////////////////////////////
 void CRenderView::DrawCompiledRenderItems(const SGraphicsPipelinePassContext& passContext) const
 {
@@ -2674,6 +2690,24 @@ void CRenderView::SShadows::CreateFrustumGroups()
 }
 
 //////////////////////////////////////////////////////////////////////////
+//TanGram:VSM:ShadowView:BEGIN
+void CRenderView::SShadows::CreateVSMFrustum()
+{
+	m_frustumsByType[eShadowFrustumRenderType_VSM].clear();
+	for (auto& fr : m_renderFrustums)
+	{
+		m_frustumsByLight[fr.nLightID].push_back(&fr);
+		CRY_ASSERT(fr.pFrustum->bRestrictToRT);
+
+		if (fr.pFrustum->m_eFrustumType == ShadowMapFrustum::e_VSM && (fr.pLight->m_Flags & DLF_SUN))
+		{
+			m_frustumsByType[eShadowFrustumRenderType_VSM].push_back(&fr);
+		}
+	}
+}
+//TanGram:VSM:ShadowView:END
+
+//////////////////////////////////////////////////////////////////////////
 void CRenderView::SShadows::Clear()
 {
 	m_renderFrustums.clear();
@@ -2704,6 +2738,8 @@ void CRenderView::SShadows::AddNearestCaster(CRenderObject* pObj, const SRenderi
 		pObjectBox->max += objTranslation;
 	}
 }
+
+
 
 //////////////////////////////////////////////////////////////////////////
 void CRenderView::SShadows::PrepareNearestShadows()

@@ -70,6 +70,7 @@ void CTileTableGenStage::Init()
 	{
 		m_vsmTileTableBuffer.Create(VSM_VIRTUAL_TILE_SIZE_WH * VSM_VIRTUAL_TILE_SIZE_WH, sizeof(uint32), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
 		m_vsmTileTableBuffer.SetDebugName("m_vsmTileTableBuffer");
+		m_vsmGlobalInfo->m_vsmTileTableBuffer = &m_vsmTileTableBuffer;
 	}
 
 	if (!m_vsmValidTileCountBuffer.IsAvailable())
@@ -97,7 +98,7 @@ void CTileTableGenStage::Execute()
 
 	//tile table generation
 	{
-		m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileTableGen"), 0);
+		m_compPass->SetTechnique(CShaderMan::s_ShaderVSMTileTableGen, CCryNameTSCRC("VSMTileTableGen"), 0);
 		m_compPass->SetOutputUAV(0, m_vsmGlobalInfo->m_vsmTileFlagBuffer);
 		m_compPass->SetOutputUAV(1, &m_vsmTileTableBuffer);
 		m_compPass->SetOutputUAV(2, &m_vsmValidTileCountBuffer);
@@ -123,48 +124,90 @@ void CTileTableGenStage::Execute()
 
 void CShadowCmdBuildStage::Init()
 {
-
+	if (!m_culledCmdCountBuffer.IsAvailable())
+	{
+		m_culledCmdCountBuffer.Create(1, sizeof(uint32), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+		m_culledCmdCountBuffer.SetDebugName("m_culledCmdCountBuffer");
+		m_vsmGlobalInfo->m_culledCmdCountBuffer = &m_culledCmdCountBuffer;
+	}
+	m_cmdBuildConstantBuffer = gcpRendD3D->m_DevBufMan.CreateConstantBuffer(sizeof(SCmdBuildPara));
 }
 
 void CShadowCmdBuildStage::Update()
 {
-	CRenerItemGPUDrawer& gpuDrawer = m_vsmGlobalInfo->m_pRenderView->GetGPUDrawer();
 
-	std::vector<SShadowFrustumToRender*>& frustumsToRender = (m_vsmGlobalInfo->m_pRenderView->GetShadowFrustumsByType(CRenderView::eShadowFrustumRenderType_VSM));
-	if (frustumsToRender.size() > 0)
-	{
-		SShadowFrustumToRender*& frustumToRender = frustumsToRender[0];
-		auto* pShadowView = reinterpret_cast<CRenderView*>(frustumToRender->pShadowsView.get());
-		const RenderItems& renderItems = pShadowView->GetRenderItems(ERenderListID(0));/*shadow view only has one render item list*/
-		gpuDrawer.SetPassContext(TTYPE_SHADOWGEN, 0, eStage_VSM, 0/*pass id*/);
-		gpuDrawer.UpdateGPURenderItems(&renderItems, 0, renderItems.size() - 1);
-
-		m_riGpuCullData.Create(gpuDrawer.GetRenderItemGPUData().size(), sizeof(SRenderItemGPUData), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED /*| CDeviceObjectFactory::BIND_UNORDERED_ACCESS*/, gpuDrawer.GetRenderItemGPUData().data());
-		m_riGpuCullData.SetDebugName("m_riGpuCullData");
-	}
 }
 
 void CShadowCmdBuildStage::Execute()
 {
-	Vec4i DispatchSize = Vec4i(divideRoundUp(Vec2i(VSM_VIRTUAL_TILE_SIZE_WH, VSM_VIRTUAL_TILE_SIZE_WH), Vec2i(TILE_TABLE_GEN_CS_GROUP_SIZE, TILE_TABLE_GEN_CS_GROUP_SIZE)), 0, 0);
+	//Creating CompiledRenderObjects should happen after Update() call of the GraphicsPipeline, as it requires access to initialized Render Targets
+	bool cullDataValid = false;
 
-	//m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMCmdBuild"), 0);
-	//m_compPass->SetOutputUAV(0, m_vsmGlobalInfo->m_vsmTileFlagBuffer);
-	//m_compPass->SetOutputUAV(1, &m_vsmTileTableBuffer);
-	//m_compPass->SetOutputUAV(2, &m_vsmValidTileCountBuffer);
-	//m_compPass->SetConstantBuffer(0, m_tileTableGenConstantBuffer);
-	//m_compPass->SetDispatchSize(DispatchSize.x, DispatchSize.y, 1);
-	//
-	//CDeviceBuffer* uavs[3] = { m_vsmGlobalInfo->m_vsmTileFlagBuffer->GetDevBuffer() ,m_vsmTileTableBuffer.GetDevBuffer() ,m_vsmValidTileCountBuffer.GetDevBuffer() };
-	//
-	//const CDeviceCommandListRef coreCmdList = GetDeviceObjectFactory().GetCoreCommandList();
-	//coreCmdList.GetGraphicsInterface()->PrepareUAVsForUse(3, uavs, true);
-	//m_compPass->PrepareResourcesForUse(coreCmdList);
-	//
-	//const bool bAsynchronousCompute = false;
-	//SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
-	//
-	//m_compPass->Execute(computeCommandList);
+	CRenderView* RenderView = m_vsmGlobalInfo->m_pRenderView;
+	RenderView->PrepareVSMShadowView();
+	CRenerItemGPUDrawer& gpuDrawer = RenderView->GetGPUDrawer();
+	{
+		std::vector<SShadowFrustumToRender*>& frustumsToRender = RenderView->GetShadowFrustumsByType(CRenderView::eShadowFrustumRenderType_VSM);
+		if (frustumsToRender.size() > 0)
+		{
+			SShadowFrustumToRender*& frustumToRender = frustumsToRender[0];
+			auto* pShadowView = reinterpret_cast<CRenderView*>(frustumToRender->pShadowsView.get());
+			const RenderItems& renderItems = pShadowView->GetRenderItems(ERenderListID(0));/*shadow view only has one render item list*/
+
+			if (renderItems.size() > 0)
+			{
+				gpuDrawer.SetPassContext(TTYPE_SHADOWGEN/*todo :vsm type shadow gen*/, 0, eStage_VSM, 0/*pass id*/);
+				gpuDrawer.UpdateGPURenderItems(&renderItems, 0, renderItems.size() - 1);
+				cullDataValid = true;
+			}
+		}
+	}
+
+	if (cullDataValid)
+	{
+		//init culled cmd buffer and counter offset
+		{
+			//m_draw.inputBuffer = m_memoryAllocator.createBuffer(totalSize, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, aid);
+			if (!m_culledCmdBuffer.IsAvailable())
+			{
+				m_culledCmdBuffer.Create(CRenerItemGPUDrawer::m_maxDrawSize, gpuDrawer.m_gpuDrawCmdDataSize, DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+				m_culledCmdBuffer.SetDebugName("m_culledCmdBuffer");
+			}
+
+			m_vsmGlobalInfo->m_culledCmdBuffer = &m_culledCmdBuffer;
+		}
+
+		{
+			SCmdBuildPara cmdBuildPara{ m_vsmGlobalInfo->m_lightViewProjMatrix,Vec4i(gpuDrawer.GetDrawCount(),VSM_VIRTUAL_TILE_SIZE_WH,0,0) };
+			m_cmdBuildConstantBuffer->UpdateBuffer(&cmdBuildPara, sizeof(SCmdBuildPara));
+		}
+
+
+		m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMCmdBuild"), 0);
+
+		m_compPass->SetOutputUAV(0, &m_culledCmdBuffer);
+		m_compPass->SetOutputUAV(1, m_vsmGlobalInfo->m_vsmTileTableBuffer);
+		m_compPass->SetOutputUAV(2, &m_culledCmdCountBuffer);
+
+		m_compPass->SetBuffer(0, gpuDrawer.GetUnCulledCmdBuffer());
+		m_compPass->SetBuffer(1, gpuDrawer.GetGpuCullDataBuffer());
+
+		m_compPass->SetConstantBuffer(0, m_cmdBuildConstantBuffer);
+
+		int dispatchSizex = gpuDrawer.GetDrawCount() / 128 + (gpuDrawer.GetDrawCount() % 128 > 0 ? 1 : 0);
+		m_compPass->SetDispatchSize(dispatchSizex, 1, 1);
+
+		CDeviceBuffer* uavs[3] = { m_vsmGlobalInfo->m_vsmTileFlagBuffer->GetDevBuffer() ,m_culledCmdBuffer.GetDevBuffer() ,m_culledCmdCountBuffer.GetDevBuffer() };
+
+		const CDeviceCommandListRef coreCmdList = GetDeviceObjectFactory().GetCoreCommandList();
+		coreCmdList.GetGraphicsInterface()->PrepareUAVsForUse(3, uavs, true);
+		m_compPass->PrepareResourcesForUse(coreCmdList);
+
+		const bool bAsynchronousCompute = false;
+		SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
+
+		m_compPass->Execute(computeCommandList);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,11 +297,11 @@ void CShadowProjectStage::Execute()
 	//rendItemDrawer.WaitForDrawSubmission(); disable multi thread
 
 			//TODO: ShadowView
-	CRenderView* pShadowView = nullptr;
-	CDeviceCommandListRef  commandList = GetDeviceObjectFactory().GetCoreCommandList();
-	CDeviceGraphicsCommandInterface& commandInterface = *(commandList.GetGraphicsInterface());
-	const RenderItems& renderItems = pShadowView->GetRenderItems(ERenderListID(0));
-	commandInterface.ExecuteGeneratedCommands(m_pResourceIndirectLayout, m_pIndirectGraphicsPSO, renderItems.size(), &m_culledCmdBuffer, &m_preprocessBuffer);
+	//CRenderView* pShadowView = nullptr;
+	//CDeviceCommandListRef  commandList = GetDeviceObjectFactory().GetCoreCommandList();
+	//CDeviceGraphicsCommandInterface& commandInterface = *(commandList.GetGraphicsInterface());
+	//const RenderItems& renderItems = pShadowView->GetRenderItems(ERenderListID(0));
+	//commandInterface.ExecuteGeneratedCommands(m_pResourceIndirectLayout, m_pIndirectGraphicsPSO, renderItems.size(), &m_culledCmdBuffer, &m_preprocessBuffer);
 }
 
 
@@ -275,6 +318,8 @@ void CShadowProjectStage::PrepareShadowPasses()
 
 void CVirtualShadowMapStage::Init()
 {
+	CRenderView* pRenderView = RenderView();
+	m_vsmGlobalInfo.m_pRenderView = pRenderView;
 	if (m_gloablEnableVSM)
 	{
 		m_tileFlagGenStage.Init();
@@ -292,7 +337,7 @@ void CVirtualShadowMapStage::Update()
 		ShadowViewUpdate();
 		m_tileFlagGenStage.Update();
 		m_tileTableGenStage.Update();
-		m_shadowCmdBuildStage.Update();
+		//m_shadowCmdBuildStage.Update();
 		//m_vsmShadowProjectStage.Update();
 	}
 }

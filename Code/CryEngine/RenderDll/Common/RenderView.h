@@ -131,15 +131,20 @@ public:
 
 	}
 
-	void InitUnCulledBuffer(uint32 elemSize);
+	void InitUnCulledBuffer();
 	void SetPassContext(uint32 batchIncludeFilter, uint32 batchExcludeFilter, uint32 stageID, uint32 passID);
 	void UpdateGPURenderItems(const RenderItems* renderItems, int startRenderItem, int endRenderItem);
+	int32 GetDrawCount() { return m_gpuDrawCommands.size(); };
+	
+	CGpuBuffer* GetUnCulledCmdBuffer() { return &m_unCulledGPUCmdBuffer; }
+	CGpuBuffer* GetGpuCullDataBuffer() { return &m_riGpuCullData; }
 
 	bool IsPSOGroupChanged() { return bPSOGroupChanged; }
 	std::vector<CDeviceGraphicsPSO*>& GetRenderItemPSO() { return m_renderItemsPSO; }
 	std::vector<SRenderItemGPUData>& GetRenderItemGPUData() { return m_riGpuCullingData; }
 	static constexpr uint32 m_maxDrawSize = 1024;
-
+	
+	uint32 m_gpuDrawCmdDataSize = 0;
 private:
 
 	// Should only be used for primitive types, without constructors and destructors.
@@ -153,7 +158,7 @@ private:
 	uint32 m_passID;
 
 	CGpuBuffer m_unCulledGPUCmdBuffer;
-
+	CGpuBuffer m_riGpuCullData;
 	bool bBufferInit;
 	bool bPSOGroupChanged;
 };
@@ -343,6 +348,7 @@ public:
 	// Can start executing post write jobs on shadow views
 	void                      PostWriteShadowViews();
 	void                      PrepareShadowViews(); // Sync all outstanding shadow preparation jobs
+	void                      PrepareVSMShadowView(); // Sync all outstanding shadow preparation jobs
 	virtual void              SetShadowFrustumOwner(ShadowMapFrustum* pOwner) final { m_shadows.m_pShadowFrustumOwner = pOwner; }
 	virtual ShadowMapFrustum* GetShadowFrustumOwner() const final                   { return m_shadows.m_pShadowFrustumOwner; }
 
@@ -678,6 +684,7 @@ private:
 		void Clear();
 		void AddNearestCaster(CRenderObject* pObj, const SRenderingPassInfo& passInfo);
 		void CreateFrustumGroups();
+		void CreateVSMFrustum();//TanGram:VSM:ShadowView
 		void PrepareNearestShadows();
 		void GenerateSortedFrustumsForTiledShadingByScreenspaceOverlap();
 	};

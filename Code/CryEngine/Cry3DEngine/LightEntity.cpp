@@ -265,7 +265,9 @@ void CLightEntity::UpdateGSMLightSourceShadowFrustum(const SRenderingPassInfo& p
 	//TanGram:VSM:[BEGIN]
 	if (m_light.m_Flags & DLF_SUN)
 	{
+		int32 vsmFrustum = nNextLod;
 		nNextLod += UpdateGSMLightSourceVSMFrustum(nNextLod, passInfo);
+		CollectShadowCascadeForOnePassTraversal(m_pShadowMapInfo->pGSM[vsmFrustum]);
 	}
 	//TanGram:VSM:[END]
 
@@ -506,6 +508,7 @@ int CLightEntity::UpdateGSMLightSourceVSMFrustum(int nFrustumIndex, const SRende
 bool CLightEntity::IsOnePassTraversalFrustum(const ShadowMapFrustum* pFr)
 {
 	return (
+	  pFr->m_eFrustumType == ShadowMapFrustum::e_VSM ||//TanGram:VSM:ShadowView
 	  pFr->m_eFrustumType == ShadowMapFrustum::e_PerObject ||
 	  pFr->m_eFrustumType == ShadowMapFrustum::e_GsmCached ||
 	  pFr->m_eFrustumType == ShadowMapFrustum::e_HeightMapAO ||
@@ -683,6 +686,8 @@ void CLightEntity::InitShadowFrustum_SUN_Conserv(ShadowMapFrustum* pFr, int dwAl
 		pFr->fBlendVal = 1.0f;
 	}
 }
+
+
 
 void CLightEntity::CalculateShadowBias(ShadowMapFrustum* pFr, int nLod, float fGSMBoxSize) const
 {

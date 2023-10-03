@@ -419,6 +419,8 @@ void CVars::Init()
 	              "Allows sun shadows from terrain to be activated in editor level settings");
 	DefineConstIntCVar(e_ShadowsFrustums, 0, VF_CHEAT,
 	                   "Debug");
+	DefineConstIntCVar(e_VSMFrustum, 1, VF_CHEAT,
+		"Debug");
 	DefineConstIntCVar(e_ShadowsDebug, 0, VF_CHEAT,
 	                   "0=off,\n"
 	                   "2=visualize shadow maps on the screen,\n"

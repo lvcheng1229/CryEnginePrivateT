@@ -439,9 +439,9 @@ inline void CDeviceGraphicsCommandInterface::DrawIndexed(uint32 IndexCountPerIns
 }
 
 //TanGram:VSM:BEGIN
-inline void CDeviceGraphicsCommandInterface::ExecuteGeneratedCommands(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer)
+inline void CDeviceGraphicsCommandInterface::ExecuteGeneratedCommands(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer, CGpuBuffer* countBuffer, uint32 countbufferOffset)
 {
-	ExecuteGeneratedCommandsImpl(indirectLayoutPtr, graphicsPSOLayoutPtr, maxDrawCount, cmdBuffer, preprocessBuffer);
+	ExecuteGeneratedCommandsImpl(indirectLayoutPtr, graphicsPSOLayoutPtr, maxDrawCount, cmdBuffer, preprocessBuffer, countBuffer, countbufferOffset);
 }
 //TanGram:VSM:END
 
