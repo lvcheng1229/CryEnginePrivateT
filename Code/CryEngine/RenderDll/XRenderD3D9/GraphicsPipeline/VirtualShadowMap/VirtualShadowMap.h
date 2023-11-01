@@ -18,6 +18,15 @@
 
 #define VSM_SHADOW_PROJ_WH 512
 
+struct SShadowProjectMatrix
+{
+	Matrix44A m_lightViewProjMatrix;
+	uint indexX;
+	uint indexY;
+	uint unused0;
+	uint unused1;
+};
+
 class CVSMGlobalInfo
 {
 public:
@@ -150,6 +159,8 @@ private:
 	CGpuBuffer m_culledCmdBuffer;
 
 	CGpuBuffer m_culledCmdCountBuffer;
+
+	CConstantBufferPtr m_vsmFrustumProjectBuffer[VSM_VIRTUAL_TILE_SIZE_WH * VSM_VIRTUAL_TILE_SIZE_WH];
 };
 
 class CShadowProjectStage
@@ -216,12 +227,12 @@ public:
 		
 	}
 
-	static constexpr bool m_gloablEnableVSM = true;
+	static constexpr bool m_gloablEnableVSM = false;
 
 	bool IsStageActive(EShaderRenderingFlags flags) const final
 	{
-		//return false;
-		return CRenderer::CV_r_VirtualShadowMap;
+		return false;
+		//return CRenderer::CV_r_VirtualShadowMap;
 	}
 
 	void  Init()   final;

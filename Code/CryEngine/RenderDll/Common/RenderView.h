@@ -85,27 +85,25 @@ struct SRenderViewInfo
 DEFINE_ENUM_FLAG_OPERATORS(SRenderViewInfo::EFlags);
 
 //TanGram:VSM:[BEGIN]
-struct SRenderItemInfo
-{
-public:
-	//point to the index of m_renderItems
-	int32 m_renderItemIndex;
-	
-	//CCompiledRenderObject
-	Matrix44 m_Matrix;
-
-	//CCompiledRenderObject
-	AABB m_aabb;
-};
+//struct SRenderItemInfo
+//{
+//public:
+//	//point to the index of m_renderItems
+//	int32 m_renderItemIndex;
+//	
+//	//CCompiledRenderObject
+//	Matrix44 m_Matrix;
+//
+//	//CCompiledRenderObject
+//	AABB m_aabb;
+//};
 
 
 struct SRenderItemGPUData
 {
 public:
-	//CCompiledRenderObject
 	Matrix44 m_Matrix;
-
-	//CCompiledRenderObject
+	
 	Vec3 m_boundingBoxCenter;
 	float padding_0;
 	Vec3 m_boundingBoxExtent;
@@ -119,6 +117,9 @@ typedef lockfree_add_vector<SRendItem>       RenderItems;
 class CRenerItemGPUDrawer
 {
 public:
+	static constexpr uint32 m_maxDrawSize = 1024;
+	uint32 m_gpuDrawCmdDataSize = 0;
+
 	CRenerItemGPUDrawer()
 		: m_batchIncludeFilter(0)
 		, m_batchExcludeFilter(0)
@@ -134,20 +135,18 @@ public:
 	void InitUnCulledBuffer();
 	void SetPassContext(uint32 batchIncludeFilter, uint32 batchExcludeFilter, uint32 stageID, uint32 passID);
 	void UpdateGPURenderItems(const RenderItems* renderItems, int startRenderItem, int endRenderItem);
-	int32 GetDrawCount() { return m_gpuDrawCommands.size(); };
 	
 	CGpuBuffer* GetUnCulledCmdBuffer() { return &m_unCulledGPUCmdBuffer; }
 	CGpuBuffer* GetGpuCullDataBuffer() { return &m_riGpuCullData; }
 
+	int32 GetDrawCount() { return m_gpuDrawCommands.size(); };
 	bool IsPSOGroupChanged() { return bPSOGroupChanged; }
+
 	std::vector<CDeviceGraphicsPSO*>& GetRenderItemPSO() { return m_renderItemsPSO; }
 	std::vector<SRenderItemGPUData>& GetRenderItemGPUData() { return m_riGpuCullingData; }
-	static constexpr uint32 m_maxDrawSize = 1024;
-	
-	uint32 m_gpuDrawCmdDataSize = 0;
-private:
 
-	// Should only be used for primitive types, without constructors and destructors.
+private:
+	
 	std::vector<SRenderItemGPUData> m_riGpuCullingData; 
 	std::vector<CDeviceGraphicsPSO*>m_renderItemsPSO;
 	std::vector<CDeviceGPUDrawCmd> m_gpuDrawCommands;
@@ -159,6 +158,7 @@ private:
 
 	CGpuBuffer m_unCulledGPUCmdBuffer;
 	CGpuBuffer m_riGpuCullData;
+
 	bool bBufferInit;
 	bool bPSOGroupChanged;
 };

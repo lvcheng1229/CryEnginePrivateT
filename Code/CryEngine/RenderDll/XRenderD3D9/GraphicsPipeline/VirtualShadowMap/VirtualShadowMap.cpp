@@ -68,7 +68,7 @@ void CTileTableGenStage::Init()
 {
 	if (!m_vsmTileTableBuffer.IsAvailable())
 	{
-		m_vsmTileTableBuffer.Create(VSM_VIRTUAL_TILE_SIZE_WH * VSM_VIRTUAL_TILE_SIZE_WH, sizeof(uint32), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+		m_vsmTileTableBuffer.Create(VSM_VIRTUAL_TILE_SIZE_WH * VSM_VIRTUAL_TILE_SIZE_WH, sizeof(uint32), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::BIND_SHADER_RESOURCE, NULL);
 		m_vsmTileTableBuffer.SetDebugName("m_vsmTileTableBuffer");
 		m_vsmGlobalInfo->m_vsmTileTableBuffer = &m_vsmTileTableBuffer;
 	}
@@ -143,6 +143,7 @@ void CShadowCmdBuildStage::Execute()
 	//Creating CompiledRenderObjects should happen after Update() call of the GraphicsPipeline, as it requires access to initialized Render Targets
 	bool cullDataValid = false;
 
+
 	CRenderView* RenderView = m_vsmGlobalInfo->m_pRenderView;
 	RenderView->PrepareVSMShadowView();
 	CRenerItemGPUDrawer& gpuDrawer = RenderView->GetGPUDrawer();
@@ -163,6 +164,18 @@ void CShadowCmdBuildStage::Execute()
 		}
 	}
 
+	{
+		for (uint32 indexX = 0; indexX < VSM_VIRTUAL_TILE_SIZE_WH; indexX++)
+		{
+			for (uint32 indexY = 0; indexY < VSM_VIRTUAL_TILE_SIZE_WH; indexY++)
+			{
+				Matrix44A lightViewProjMatrix;
+				SShadowProjectMatrix ShadowProjectMatrix{ lightViewProjMatrix ,indexX,indexY };
+				m_vsmFrustumProjectBuffer[indexX + indexY * VSM_VIRTUAL_TILE_SIZE_WH]->UpdateBuffer(&ShadowProjectMatrix,sizeof(SShadowProjectMatrix));
+			}
+		}
+	}
+
 	if (cullDataValid)
 	{
 		//init culled cmd buffer and counter offset
@@ -173,39 +186,39 @@ void CShadowCmdBuildStage::Execute()
 				m_culledCmdBuffer.Create(CRenerItemGPUDrawer::m_maxDrawSize, gpuDrawer.m_gpuDrawCmdDataSize, DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
 				m_culledCmdBuffer.SetDebugName("m_culledCmdBuffer");
 			}
-
+	
 			m_vsmGlobalInfo->m_culledCmdBuffer = &m_culledCmdBuffer;
 		}
-
+	
 		{
-			SCmdBuildPara cmdBuildPara{ m_vsmGlobalInfo->m_lightViewProjMatrix,Vec4i(gpuDrawer.GetDrawCount(),VSM_VIRTUAL_TILE_SIZE_WH,0,0) };
+			SCmdBuildPara cmdBuildPara{ m_vsmGlobalInfo->m_lightViewProjMatrix,Vec4i(gpuDrawer.GetDrawCount(),VSM_VIRTUAL_TILE_SIZE_WH,CRenerItemGPUDrawer::m_maxDrawSize,0) };
 			m_cmdBuildConstantBuffer->UpdateBuffer(&cmdBuildPara, sizeof(SCmdBuildPara));
 		}
-
-
-		m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMCmdBuild"), 0);
-
+	
+	
+		m_compPass->SetTechnique(CShaderMan::s_ShaderVSMCmdBuild, CCryNameTSCRC("VSMCmdBuild"), 0);
+	
 		m_compPass->SetOutputUAV(0, &m_culledCmdBuffer);
-		m_compPass->SetOutputUAV(1, m_vsmGlobalInfo->m_vsmTileTableBuffer);
-		m_compPass->SetOutputUAV(2, &m_culledCmdCountBuffer);
-
-		m_compPass->SetBuffer(0, gpuDrawer.GetUnCulledCmdBuffer());
-		m_compPass->SetBuffer(1, gpuDrawer.GetGpuCullDataBuffer());
+		m_compPass->SetOutputUAV(1, &m_culledCmdCountBuffer);
+	
+		m_compPass->SetOutputUAV(2, gpuDrawer.GetUnCulledCmdBuffer());
+		m_compPass->SetOutputUAV(3, gpuDrawer.GetGpuCullDataBuffer());
+		m_compPass->SetOutputUAV(4, m_vsmGlobalInfo->m_vsmTileTableBuffer);
 
 		m_compPass->SetConstantBuffer(0, m_cmdBuildConstantBuffer);
-
+	
 		int dispatchSizex = gpuDrawer.GetDrawCount() / 128 + (gpuDrawer.GetDrawCount() % 128 > 0 ? 1 : 0);
 		m_compPass->SetDispatchSize(dispatchSizex, 1, 1);
-
-		CDeviceBuffer* uavs[3] = { m_vsmGlobalInfo->m_vsmTileFlagBuffer->GetDevBuffer() ,m_culledCmdBuffer.GetDevBuffer() ,m_culledCmdCountBuffer.GetDevBuffer() };
-
+	
+		CDeviceBuffer* uavs[2] = { m_culledCmdBuffer.GetDevBuffer(),m_culledCmdCountBuffer.GetDevBuffer() };
+	
 		const CDeviceCommandListRef coreCmdList = GetDeviceObjectFactory().GetCoreCommandList();
-		coreCmdList.GetGraphicsInterface()->PrepareUAVsForUse(3, uavs, true);
+		coreCmdList.GetGraphicsInterface()->PrepareUAVsForUse(2, uavs, true);
 		m_compPass->PrepareResourcesForUse(coreCmdList);
-
+	
 		const bool bAsynchronousCompute = false;
 		SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
-
+	
 		m_compPass->Execute(computeCommandList);
 	}
 }
@@ -274,7 +287,7 @@ void CShadowProjectStage::Update()
 		m_pIndirectGraphicsPSO = GetDeviceObjectFactory().CreateGraphicsPSO(indirectPsoDesc);
 	}
 
-	if (!m_preprocessBuffer.IsAvailable())
+	//if (!m_preprocessBuffer.IsAvailable())
 	{
 		m_preprocessBuffer.CreatePreprocessBuffer(CRenerItemGPUDrawer::m_maxDrawSize, m_pResourceIndirectLayout, m_pIndirectGraphicsPSO);
 	}
@@ -324,7 +337,7 @@ void CVirtualShadowMapStage::Init()
 	{
 		m_tileFlagGenStage.Init();
 		m_tileTableGenStage.Init();
-		//m_shadowCmdBuildStage.Init();
+		m_shadowCmdBuildStage.Init();
 		//m_vsmShadowProjectStage.Init();
 	}
 
@@ -337,7 +350,7 @@ void CVirtualShadowMapStage::Update()
 		ShadowViewUpdate();
 		m_tileFlagGenStage.Update();
 		m_tileTableGenStage.Update();
-		//m_shadowCmdBuildStage.Update();
+		m_shadowCmdBuildStage.Update();
 		//m_vsmShadowProjectStage.Update();
 	}
 }
@@ -353,7 +366,7 @@ void CVirtualShadowMapStage::Execute()
 	{
 		m_tileFlagGenStage.Execute();
 		m_tileTableGenStage.Execute();
-		//m_shadowCmdBuildStage.Execute();
+		m_shadowCmdBuildStage.Execute();
 		//m_vsmShadowProjectStage.Execute();
 	}
 

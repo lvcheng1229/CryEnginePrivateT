@@ -29,10 +29,10 @@ void CRenerItemGPUDrawer::InitUnCulledBuffer()
 
 	GetDeviceObjectFactory().GetRhiGpuDrawCmdData(gpuDrawCommands, gpuDrawCmdDataSize, gpuDrawCmdData, true);
 	
-	m_unCulledGPUCmdBuffer.Create(m_maxDrawSize, gpuDrawCmdDataSize, DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::USAGE_STRUCTURED, NULL);
+	m_unCulledGPUCmdBuffer.Create(m_maxDrawSize, gpuDrawCmdDataSize, DXGI_FORMAT_UNKNOWN, /*CDeviceObjectFactory::BIND_SHADER_RESOURCE */CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::USAGE_STRUCTURED, NULL);
 	m_unCulledGPUCmdBuffer.SetDebugName("m_unCulledGPUCmdBuffer");
 
-	m_riGpuCullData.Create(m_maxDrawSize, sizeof(SRenderItemGPUData), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::BIND_SHADER_RESOURCE | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::USAGE_STRUCTURED, NULL);
+	m_riGpuCullData.Create(m_maxDrawSize, sizeof(SRenderItemGPUData), DXGI_FORMAT_UNKNOWN, /*CDeviceObjectFactory::BIND_SHADER_RESOURCE */CDeviceObjectFactory::BIND_UNORDERED_ACCESS | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::USAGE_STRUCTURED, NULL);
 	m_riGpuCullData.SetDebugName("m_riGpuCullData");
 
 	m_gpuDrawCmdDataSize = gpuDrawCmdDataSize;
@@ -454,3 +454,4 @@ void CRenderItemDrawer::WaitForDrawSubmission()
 
 	m_CoalescedContexts.WaitForJobs();
 }
+

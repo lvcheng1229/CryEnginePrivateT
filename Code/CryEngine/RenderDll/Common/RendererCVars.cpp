@@ -2830,7 +2830,7 @@ void CRendererCVars::InitCVars()
 	               "0: Flush at end-frame only"
 	               "1: Flush at positions where the character of the work changes drastically (Flash vs. Scene vs. Post vs. Uploads etc.)");
 
-	REGISTER_CVAR3("r_EnableDebugLayer", CV_r_EnableDebugLayer, 0, VF_NULL,
+	REGISTER_CVAR3("r_EnableDebugLayer", CV_r_EnableDebugLayer, 1/*TanGram:RenderDoc*/, VF_NULL,
 	               "Enable Graphics API specific debug layer"
 	               "0: Debug layers disabled"
 	               "1: Debug layers enabled"
