@@ -44,7 +44,7 @@ void CTileFlagGenStage::Execute()
 
 	Vec4i DispatchSize = Vec4i(divideRoundUp(m_texDeviceZWH, Vec2i(TILE_MASK_CS_GROUP_SIZE, TILE_MASK_CS_GROUP_SIZE)), 0, 0);
 
-	m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileFlagGen"), 0);
+	//m_compPass->SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMTileFlagGen"), 0);
 	m_compPass->SetOutputUAV(0, &m_vsmTileFlagBuffer);
 	m_compPass->SetTexture(0, m_vsmGlobalInfo->m_texDeviceZ);
 	m_compPass->SetConstantBuffer(0, m_tileFlagGenConstantBuffer);
@@ -98,7 +98,7 @@ void CTileTableGenStage::Execute()
 
 	//tile table generation
 	{
-		m_compPass->SetTechnique(CShaderMan::s_ShaderVSMTileTableGen, CCryNameTSCRC("VSMTileTableGen"), 0);
+		//m_compPass->SetTechnique(CShaderMan::s_ShaderVSMTileTableGen, CCryNameTSCRC("VSMTileTableGen"), 0);
 		m_compPass->SetOutputUAV(0, m_vsmGlobalInfo->m_vsmTileFlagBuffer);
 		m_compPass->SetOutputUAV(1, &m_vsmTileTableBuffer);
 		m_compPass->SetOutputUAV(2, &m_vsmValidTileCountBuffer);
@@ -196,7 +196,7 @@ void CShadowCmdBuildStage::Execute()
 		}
 	
 	
-		m_compPass->SetTechnique(CShaderMan::s_ShaderVSMCmdBuild, CCryNameTSCRC("VSMCmdBuild"), 0);
+		//m_compPass->SetTechnique(CShaderMan::s_ShaderVSMCmdBuild, CCryNameTSCRC("VSMCmdBuild"), 0);
 	
 		m_compPass->SetOutputUAV(0, &m_culledCmdBuffer);
 		m_compPass->SetOutputUAV(1, &m_culledCmdCountBuffer);
@@ -551,7 +551,7 @@ void CVirtualShadowMapStage::VisualizeBuffer()
 		{
 			m_passBufferVisualize.SetPrimitiveFlags(CRenderPrimitive::eFlags_ReflectShaderConstants_PS);
 			m_passBufferVisualize.SetPrimitiveType(CRenderPrimitive::ePrim_ProceduralTriangle);
-			m_passBufferVisualize.SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMVisualizeBuffer"), 0);
+			//m_passBufferVisualize.SetTechnique(CShaderMan::s_ShaderVSM, CCryNameTSCRC("VSMVisualizeBuffer"), 0);
 			m_passBufferVisualize.SetRenderTarget(0, m_graphicsPipelineResources.m_pTexVSMVisualize);
 			m_passBufferVisualize.SetState(GS_NODEPTHTEST | GS_NOCOLMASK_A);
 			m_passBufferVisualize.SetBuffer(0, m_tileFlagGenStage.GetVsmTileFlagBuffer());

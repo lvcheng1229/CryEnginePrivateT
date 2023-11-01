@@ -326,9 +326,9 @@ public:
 	static CShader*              s_ShaderShadowBlur;
 	static CShader*              s_ShaderShadowMaskGen;
 	//TanGram: VSM:BEGIN
-	static CShader*				 s_ShaderVSM;
-	static CShader*				 s_ShaderVSMTileTableGen;
-	static CShader*				 s_ShaderVSMCmdBuild;
+	//static CShader*				 s_ShaderVSM;
+	//static CShader*				 s_ShaderVSMTileTableGen;
+	//static CShader*				 s_ShaderVSMCmdBuild;
 	//TanGram: VSM:END
 #if defined(FEATURE_SVO_GI)
 	static CShader*              s_ShaderSVOGI;

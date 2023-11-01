@@ -35,9 +35,9 @@ CShader* CShaderMan::s_ShaderShadowBlur;
 CShader* CShaderMan::s_ShaderShadowMaskGen;
 
 //TanGram: VSM:BEGIN
-CShader* CShaderMan::s_ShaderVSM;
-CShader* CShaderMan::s_ShaderVSMTileTableGen;
-CShader* CShaderMan::s_ShaderVSMCmdBuild;
+//CShader* CShaderMan::s_ShaderVSM;
+//CShader* CShaderMan::s_ShaderVSMTileTableGen;
+//CShader* CShaderMan::s_ShaderVSMCmdBuild;
 //TanGram: VSM:END
 #if defined(FEATURE_SVO_GI)
 CShader* CShaderMan::s_ShaderSVOGI;
@@ -1425,9 +1425,9 @@ void CShaderMan::mfReleaseSystemShaders()
 	SAFE_RELEASE_FORCE(s_ShaderShadowBlur);
 	SAFE_RELEASE_FORCE(s_ShaderShadowMaskGen);
 	//TanGram:VSM:BEGIN
-	SAFE_RELEASE_FORCE(s_ShaderVSM);
-	SAFE_RELEASE_FORCE(s_ShaderVSMTileTableGen);
-	SAFE_RELEASE_FORCE(s_ShaderVSMCmdBuild);
+	//SAFE_RELEASE_FORCE(s_ShaderVSM);
+	//SAFE_RELEASE_FORCE(s_ShaderVSMTileTableGen);
+	//SAFE_RELEASE_FORCE(s_ShaderVSMCmdBuild);
 	//TanGram:VSM:END
 #if defined(FEATURE_SVO_GI)
 	SAFE_RELEASE_FORCE(s_ShaderSVOGI);
@@ -1489,9 +1489,9 @@ void CShaderMan::mfLoadDefaultSystemShaders()
 		sLoadShader("Light", s_ShaderLightStyles);
 		sLoadShader("ShadowMaskGen", s_ShaderShadowMaskGen);
 		//TanGram:VSM:BEGIN
-		sLoadShader("VSM", s_ShaderVSM);
-		sLoadShader("VSMTileTableGen", s_ShaderVSMTileTableGen);
-		sLoadShader("VSMCmdBuild", s_ShaderVSMCmdBuild);
+		//sLoadShader("VSM", s_ShaderVSM);
+		//sLoadShader("VSMTileTableGen", s_ShaderVSMTileTableGen);
+		//sLoadShader("VSMCmdBuild", s_ShaderVSMCmdBuild);
 		//TanGram:VSM:END
 		sLoadShader("BloomSetup", s_shBloomSetup);
 		sLoadShader("HDRPostProcess", s_shHDRPostProcess);
