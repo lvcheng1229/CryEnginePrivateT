@@ -25,6 +25,7 @@ enum EGraphicsPipelineStage
 	eStage_TiledShading,
 	eStage_VolumetricClouds,
 	eStage_BloomSetup,//TanGram:BloomSetup
+	eStage_RayTracingTest,//TanGram:VkRT
 
 	// Regular stages
 	eStage_SceneDepth, // TODO: pure compute

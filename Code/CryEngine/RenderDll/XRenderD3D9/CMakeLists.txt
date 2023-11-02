@@ -761,11 +761,16 @@ add_sources("CryRenderer_uber_6.cpp"
         "GraphicsPipeline/TiledBloom.cpp"
 		"GraphicsPipeline/BloomSetup.h"
         "GraphicsPipeline/BloomSetup.cpp"
-        #TanGram:TiledBasedBloom:[BEGIN]
+        #TanGram:TiledBasedBloom:[END]
 		
 		#TanGram:VSM:[BEGIN]
 		"GraphicsPipeline/VirtualShadowMap/VirtualShadowMap.h"
         "GraphicsPipeline/VirtualShadowMap/VirtualShadowMap.cpp"
+        #TanGram:VSM:[END]
+
+		#TanGram:VSM:[BEGIN]
+		"GraphicsPipeline/RayTracing/RayTracingTestStage.h"
+        "GraphicsPipeline/RayTracing/RayTracingTestStage.cpp"
         #TanGram:VSM:[BEGIN]
 
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.h"

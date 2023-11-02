@@ -1863,9 +1863,9 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D11CreateDevice(D3DDevice* pd3dDevice)
 #if CRY_PLATFORM_WINDOWS
 	HWND hWndDesktop = GetDesktopWindow();
 	HDC dc = GetDC(hWndDesktop);
-	uint16 gamma[3][256];
-	if (GetDeviceGammaRamp(dc, gamma))
-		rd->m_Features |= RFT_HWGAMMA;
+	//uint16 gamma[3][256];
+	//if (GetDeviceGammaRamp(dc, gamma))
+	//	rd->m_Features |= RFT_HWGAMMA;
 	ReleaseDC(hWndDesktop, dc);
 #endif
 

@@ -208,6 +208,10 @@ public:
 
 	void                      TrimResourceLayouts();
 
+#if ENABLE_RAY_TRACING
+	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelAS();
+#endif
+
 #if CRY_RENDERER_VULKAN
 	SDeviceResourceLayoutDesc LookupResourceLayoutDesc(uint64 layoutHash);
 	const std::vector<uint8>* LookupResourceLayoutEncoding(uint64 layoutHash);
@@ -705,5 +709,7 @@ struct SScopedComputeCommandList
 			return GetDeviceObjectFactory().GetCoreCommandList();
 	}
 };
+
+
 
 

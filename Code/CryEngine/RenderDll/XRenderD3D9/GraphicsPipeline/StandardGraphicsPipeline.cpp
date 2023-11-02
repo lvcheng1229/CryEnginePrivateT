@@ -54,6 +54,8 @@
 
 #include "VirtualShadowMap/VirtualShadowMap.h"//TanGram:VSM
 
+
+
 CStandardGraphicsPipeline::CStandardGraphicsPipeline(const IRenderer::SGraphicsPipelineDescription& desc, const std::string& uniqueIdentifier, const SGraphicsPipelineKey key)
 	: CGraphicsPipeline(desc, uniqueIdentifier, key)
 {
@@ -284,6 +286,16 @@ void CStandardGraphicsPipeline::Execute()
 
 	// Generate cloud volume textures for shadow mapping. Only needs view, and needs to run before ShadowMaskgen.
 	GetStage<CVolumetricCloudsStage>()->ExecuteShadowGen();
+
+	//TanGram: VkRT:BEGIN
+	if (GetStage<CRayTracingTestStage>()->IsStageActive(m_renderingFlags))
+	{
+		pRenderer->ForceFlushRTCommands();
+		GetStage<CRayTracingTestStage>()->Execute();
+	}
+	//TanGram: VkRT:END
+	
+
 
 	if (pRenderView->GetCurrentEye() != CCamera::eEye_Right)
 	{

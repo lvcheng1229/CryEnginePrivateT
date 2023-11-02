@@ -343,3 +343,5 @@ extern void SliceAndSleep(const char* pFunc, int line);
 #if defined(CRY_ENGINE_DEFINE_OVERRIDE_FILE)
 	#include CRY_ENGINE_DEFINE_OVERRIDE_FILE
 #endif
+
+#define ENABLE_RAY_TRACING 1//TanGram:VKRT

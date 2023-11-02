@@ -104,10 +104,10 @@ void CD3D9Renderer::InitRenderer()
 	CRenderer::InitRenderer();
 
 	//TanGram:RenderDoc:BEGIN
-	m_pRenderDocAPI = GetRenderDocApi();
-	RENDERDOC_InputButton captureKeys[2] = { eRENDERDOC_Key_Tab,eRENDERDOC_Key_PrtScrn };
-	m_pRenderDocAPI->SetCaptureKeys(captureKeys, 2);
-	m_pRenderDocAPI->SetCaptureFilePathTemplate(RDC_SAVE_PATH);
+	//m_pRenderDocAPI = GetRenderDocApi();
+	//RENDERDOC_InputButton captureKeys[2] = { eRENDERDOC_Key_Tab,eRENDERDOC_Key_PrtScrn };
+	//m_pRenderDocAPI->SetCaptureKeys(captureKeys, 2);
+	//m_pRenderDocAPI->SetCaptureFilePathTemplate(RDC_SAVE_PATH);
 	//TanGram:RenderDoc:END
 
 	m_renderToTexturePipelineKey = SGraphicsPipelineKey::InvalidGraphicsPipelineKey;

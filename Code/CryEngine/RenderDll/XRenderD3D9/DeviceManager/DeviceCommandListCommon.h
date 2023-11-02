@@ -146,6 +146,11 @@ public:
 	void DrawIndexed(uint32 IndexCountPerInstance, uint32 InstanceCount, uint32 StartIndexLocation, int BaseVertexLocation, uint32 StartInstanceLocation);
 	void ExecuteGeneratedCommands(CDeviceResourceIndirectLayoutPtr indirectLayoutPtr, CDeviceGraphicsPSOPtr graphicsPSOLayoutPtr, uint32 maxDrawCount, CGpuBuffer* cmdBuffer, CGpuBuffer* preprocessBuffer, CGpuBuffer* countBuffer, uint32 countbufferOffset);//TanGram:VSM
 
+#if ENABLE_RAY_TRACING
+	void BuildRayTracingBottomLevelAS(CRayTracingBottomLevelAccelerationStructurePtr rtBottomLevelASPtr);
+	void BuildRayTracingBottomLevelASs();
+#endif
+
 #define CLEAR_ZBUFFER           0x00000001l  /* Clear target z buffer, equals D3D11_CLEAR_DEPTH */
 #define CLEAR_STENCIL           0x00000002l  /* Clear stencil planes, equals D3D11_CLEAR_STENCIL */
 #define CLEAR_RTARGET           0x00000004l  /* Clear target surface */

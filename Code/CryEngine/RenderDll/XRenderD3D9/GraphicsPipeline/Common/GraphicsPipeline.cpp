@@ -20,6 +20,8 @@
 
 #include "../VirtualShadowMap/VirtualShadowMap.h"
 
+#include "../RayTracing/RayTracingTestStage.h"//TanGram:VkRayTracing
+
 void CGraphicsPipelineResources::Init()
 {
 	// Default Template textures
@@ -665,6 +667,8 @@ void CGraphicsPipeline::Init()
 	RegisterStage<CSceneForwardStage>();
 	RegisterStage<CShadowMapStage>();
 	RegisterStage<CVirtualShadowMapStage>();//Speedengine: VSM
+
+	RegisterStage<CRayTracingTestStage>();//TanGram:VkRT
 
 	// Register all other stages that don't need the global PSO cache
 	RegisterStage<CTiledLightVolumesStage>();
