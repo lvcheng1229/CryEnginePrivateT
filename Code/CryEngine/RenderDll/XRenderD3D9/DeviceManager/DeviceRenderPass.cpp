@@ -435,6 +435,15 @@ CDeviceResourceIndirectLayoutPtr CDeviceObjectFactory::CreateResourceIndirectLay
 }
 //TanGram::VSM:END
 
+	//TanGram:VKRT:BEGIN
+#if ENABLE_RAY_TRACING
+CRayTracingBottomLevelAccelerationStructurePtr CDeviceObjectFactory::CreateRayTracingBottomLevelAS(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo)
+{
+	return CreateRayTracingBottomLevelASImpl(rtBottomLevelCreateInfo);
+}
+#endif
+//TanGram:VKRT:END
+
 CDeviceRenderPassPtr CDeviceObjectFactory::GetOrCreateRenderPass(const CDeviceRenderPassDesc& passDesc)
 {
 	if (auto pRenderPass = GetRenderPass(passDesc))

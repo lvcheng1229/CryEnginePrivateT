@@ -207,10 +207,12 @@ public:
 	CDeviceResourceIndirectLayoutPtr  CreateResourceIndirectLayout(const SDeviceResourceIndirectLayoutDesc& resourceIndirectLayoutDesc);//TanGram::VSM
 
 	void                      TrimResourceLayouts();
-
+	
+	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
-	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelAS();
+	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelAS(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
 #endif
+	//TanGram:VKRT:END
 
 #if CRY_RENDERER_VULKAN
 	SDeviceResourceLayoutDesc LookupResourceLayoutDesc(uint64 layoutHash);
@@ -467,6 +469,12 @@ private:
 
 	CDeviceResourceLayoutPtr CreateResourceLayoutImpl(const SDeviceResourceLayoutDesc& resourceLayoutDesc) const;
 	CDeviceResourceIndirectLayoutPtr CreateResourceIndirectLayoutImpl(const SDeviceResourceIndirectLayoutDesc& resourceIndirectLayoutDesc) const;//TanGram::VSM
+
+	//TanGram:VKRT:BEGIN
+#if ENABLE_RAY_TRACING
+	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelASImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
+#endif
+	//TanGram:VKRT:END
 
 	VectorMap<SDeviceResourceLayoutDesc, CDeviceResourceLayoutPtr>     m_ResourceLayoutCache;
 

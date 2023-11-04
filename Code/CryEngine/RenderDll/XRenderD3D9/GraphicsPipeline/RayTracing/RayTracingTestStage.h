@@ -24,9 +24,11 @@ public:
 
 	
 	void CreateVbIb();
-	
+	void CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* pCommandInterface);
 
 private:
+
+	//VB IB
 	struct SRtVertex
 	{
 		Vec3 m_Pos;
@@ -45,4 +47,7 @@ private:
 
 	const CDeviceInputStream* m_pVertexInputSet = nullptr;
 	const CDeviceInputStream* m_pIndexInputSet = nullptr;
+
+	//BLAS
+	CRayTracingBottomLevelAccelerationStructurePtr m_pRtBottomLevelAS;
 };

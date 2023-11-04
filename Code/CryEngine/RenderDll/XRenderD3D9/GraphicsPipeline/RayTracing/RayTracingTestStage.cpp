@@ -30,15 +30,36 @@ void CRayTracingTestStage::CreateVbIb()
 	m_pIndexInputSet = GetDeviceObjectFactory().CreateIndexStreamSet(&indexStreamInfo);
 }
 
+void CRayTracingTestStage::CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* pCommandInterface)
+{
+	SRayTracingBottomLevelASCreateInfo rtBottomLevelCreateInfo;
+	rtBottomLevelCreateInfo.m_eBuildFlag = EBuildAccelerationStructureFlag::eBuild_PreferBuild;
+	rtBottomLevelCreateInfo.m_sSTriangleIndexInfo.m_sIndexStreaming = m_pIndexInputSet;
+	rtBottomLevelCreateInfo.m_sSTriangleIndexInfo.m_nIndexBufferOffset;;
+
+	SRayTracingGeometryTriangle rtGeometryTriangle;
+	rtGeometryTriangle.m_sTriangVertexleInfo.m_sVertexStreaming = m_pVertexInputSet;
+	rtGeometryTriangle.m_sTriangVertexleInfo.m_nMaxVertex = m_RtVertices.size();
+	rtGeometryTriangle.m_sTriangVertexleInfo.m_hVertexFormat = EDefaultInputLayouts::P3F;
+	rtGeometryTriangle.m_sRangeInfo.m_nFirstVertex = 0;
+	rtGeometryTriangle.m_sRangeInfo.m_nPrimitiveCount = 1;
+	rtGeometryTriangle.m_sRangeInfo.m_nPrimitiveOffset = 0;
+	rtGeometryTriangle.bEnable = true;
+	rtGeometryTriangle.bForceOpaque = true;
+	rtBottomLevelCreateInfo.m_rtGeometryTriangles.push_back(rtGeometryTriangle);
+
+	m_pRtBottomLevelAS = GetDeviceObjectFactory().CreateRayTracingBottomLevelAS(rtBottomLevelCreateInfo);
+	pCommandInterface->BuildRayTracingBottomLevelAS(m_pRtBottomLevelAS);
+}
+
 
 void CRayTracingTestStage::Init()
 {
-	CreateVbIb();
-
 	CDeviceGraphicsCommandInterface* pCommandInterface = GetDeviceObjectFactory().GetCoreCommandList().GetGraphicsInterface();
+	CreateVbIb();
+	CreateAndBuildBLAS(pCommandInterface);
 
-	CRayTracingBottomLevelAccelerationStructurePtr m_pRtBottomLevelAS = GetDeviceObjectFactory().CreateRayTracingBottomLevelAS();
-	pCommandInterface->BuildRayTracingBottomLevelAS(m_pRtBottomLevelAS);
+
 	
 }
 

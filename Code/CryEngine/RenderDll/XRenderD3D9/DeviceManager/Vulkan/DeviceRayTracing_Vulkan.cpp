@@ -1,0 +1,6 @@
+#include "DeviceRayTracing_Vulkan.h"
+
+CRayTracingBottomLevelAccelerationStructurePtr CDeviceObjectFactory::CreateRayTracingBottomLevelASImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo)
+{
+	return CRayTracingBottomLevelAccelerationStructurePtr();
+}

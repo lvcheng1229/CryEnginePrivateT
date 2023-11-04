@@ -744,6 +744,7 @@ add_sources("CryRenderer_uber_5.cpp"
 		"DeviceManager/DevicePSO.cpp"
 		"DeviceManager/DeviceRenderPass.h"
 		"DeviceManager/DeviceRenderPass.cpp"
+		"DeviceManager/DeviceRayTracing.h"#TanGram:VKRT
 )
 
 add_sources("CryRenderer_uber_6.cpp"
@@ -768,10 +769,10 @@ add_sources("CryRenderer_uber_6.cpp"
         "GraphicsPipeline/VirtualShadowMap/VirtualShadowMap.cpp"
         #TanGram:VSM:[END]
 
-		#TanGram:VSM:[BEGIN]
+		#TanGram:VKRT:[BEGIN]
 		"GraphicsPipeline/RayTracing/RayTracingTestStage.h"
         "GraphicsPipeline/RayTracing/RayTracingTestStage.cpp"
-        #TanGram:VSM:[BEGIN]
+        #TanGram:VKRT:[BEGIN]
 
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.h"
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.cpp"
