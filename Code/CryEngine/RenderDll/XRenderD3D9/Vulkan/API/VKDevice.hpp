@@ -28,6 +28,15 @@ namespace NCryVulkan
 class CInstance;
 struct SPhysicalDeviceInfo;
 
+//TanGram:VKRT:BEGIN
+struct SVulkanDeviceExtensionProperties
+{
+	VkPhysicalDeviceAccelerationStructurePropertiesKHR m_vkAccelerationStructureProperties;
+	VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_vkRayTracingPipelineProperties;
+	VkPhysicalDeviceDescriptorBufferPropertiesEXT m_vkDescriptorBufferPropsProperties;
+};
+//TanGram:VKRT:END
+
 class CDeviceHolder
 {
 protected:
@@ -118,11 +127,20 @@ public:
 	bool IsTessellationShaderSupported() const;
 	bool IsGeometryShaderSupported()     const;
 
+	//TanGram:VKRT:BEGIN
+	SVulkanDeviceExtensionProperties& GetVulkanDeviceExtensionProperties()
+	{
+		return m_sVkDeviceExtensionProperties;
+	}
+	//TanGram:VKRT:END
+
 private:
 	const SPhysicalDeviceInfo* m_pDeviceInfo;
 	VkPipelineCache m_pipelineCache;
 	VkDescriptorPool m_descriptorPool;
 	CHeap m_heap;
+
+	SVulkanDeviceExtensionProperties m_sVkDeviceExtensionProperties;//TanGram:VKRT
 
 	struct SRenderPass
 	{

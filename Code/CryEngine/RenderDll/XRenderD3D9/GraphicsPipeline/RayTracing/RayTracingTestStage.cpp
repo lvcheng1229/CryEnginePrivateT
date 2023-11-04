@@ -49,7 +49,7 @@ void CRayTracingTestStage::CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* p
 	rtBottomLevelCreateInfo.m_rtGeometryTriangles.push_back(rtGeometryTriangle);
 
 	m_pRtBottomLevelAS = GetDeviceObjectFactory().CreateRayTracingBottomLevelAS(rtBottomLevelCreateInfo);
-	pCommandInterface->BuildRayTracingBottomLevelAS(m_pRtBottomLevelAS);
+	//pCommandInterface->BuildRayTracingBottomLevelAS(m_pRtBottomLevelAS);
 }
 
 

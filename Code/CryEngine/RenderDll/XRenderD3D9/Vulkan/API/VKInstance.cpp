@@ -156,6 +156,19 @@ _smart_ptr<CDevice> CInstance::CreateDevice(size_t physicalDeviceIndex)
 	auto device = CDevice::Create(&pDeviceInfo, &allocationCallbacks, m_enabledPhysicalDeviceLayers, extensions);
 	Extensions::Init(device.get(), extensions);
 
+	//TanGram:VKRT:BEGIN
+	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+	// Get physical device properties
+	{
+		VkPhysicalDeviceProperties2 PhysicalDeviceProperties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+		for (auto extension : deviceExtensions)
+		{
+			extension.GetPhysicalDeviceProperties(PhysicalDeviceProperties2, device.get());
+		}
+		vkGetPhysicalDeviceProperties2(pDeviceInfo.device, &PhysicalDeviceProperties2);
+	}
+	//TanGram:VKRT:END
+
 	return device;
 }
 
@@ -550,6 +563,12 @@ void CInstance::GatherPhysicalDeviceExtensionsToEnable()
 #endif
 
 	//m_enabledPhysicalDeviceExtensions.emplace_back(VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME, true);//TanGram:VSM
+
+	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+	for (auto extension : deviceExtensions)
+	{
+		m_enabledPhysicalDeviceExtensions.emplace_back(extension.GetExtensionName(), true);
+	}
 }
 
 const char* DebugLevelToString(VkDebugReportFlagsEXT flags)

@@ -441,6 +441,10 @@ CRayTracingBottomLevelAccelerationStructurePtr CDeviceObjectFactory::CreateRayTr
 {
 	return CreateRayTracingBottomLevelASImpl(rtBottomLevelCreateInfo);
 }
+SRayTracingAccelerationStructSize CDeviceObjectFactory::GetRayTracingBottomLevelASSize(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo)
+{
+	return GetRayTracingBottomLevelASSizeImpl(rtBottomLevelCreateInfo);
+}
 #endif
 //TanGram:VKRT:END
 

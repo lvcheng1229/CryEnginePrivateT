@@ -294,6 +294,10 @@ add_sources("CryRenderer_uber_5_vulkan_vulkan.cpp"
 	SOURCE_GROUP "DeviceManager\\\\Vulkan"
 		"DeviceManager/Vulkan/DeviceObjects_Vulkan.inl"
 		"DeviceManager/Vulkan/DeviceObjects_Vulkan.cpp"
+		#TanGram:VKRT:BEGIN
+		"DeviceManager/Vulkan/DeviceRayTracing_Vulkan.cpp"
+		"DeviceManager/Vulkan/DeviceRayTracing_Vulkan.h"
+		#TanGram:VKRT:END
 		"DeviceManager/Vulkan/DeviceResources_Vulkan.inl"
 		"DeviceManager/Vulkan/DeviceCommandList_Vulkan.h"
 		"DeviceManager/Vulkan/DeviceResourceSet_Vulkan.h"

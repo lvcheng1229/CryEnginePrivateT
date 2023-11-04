@@ -241,6 +241,9 @@ uint32 CDeviceObjectFactory::GetEncodedResourceLayoutSize(const std::vector<uint
 	return encodedResourceLayoutSize;
 }
 
+
+
+
 VkDescriptorSetLayout CDeviceObjectFactory::GetInlineConstantBufferLayout()
 {
 	// NOTE: In order to avoid building a set of descriptors for each constant buffer

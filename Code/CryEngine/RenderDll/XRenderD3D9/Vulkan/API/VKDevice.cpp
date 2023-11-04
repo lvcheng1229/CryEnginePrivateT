@@ -37,6 +37,28 @@ _smart_ptr<CDevice> CDevice::Create(const SPhysicalDeviceInfo* pDeviceInfo, VkAl
 	VkDeviceCreateInfo DeviceInfo;
 	ZeroStruct(DeviceInfo);
 
+	//TanGram:VKRT:BEGIN
+	{
+		std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+
+		// Write physical device features
+		{
+			VkPhysicalDeviceFeatures2 PhysicalDeviceFeatures2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
+			for (auto extension : deviceExtensions)
+			{
+				extension.WritePhysicalDeviceFeatures(PhysicalDeviceFeatures2);
+			}
+			vkGetPhysicalDeviceFeatures2(pDeviceInfo->device, &PhysicalDeviceFeatures2);
+		}
+
+		for (auto extension : deviceExtensions)
+		{
+			extension.EnablePhysicalDeviceFeatures(DeviceInfo);
+		}
+
+	}
+	//TanGram:VKRT:END
+
 	DeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	DeviceInfo.queueCreateInfoCount = queueRequests.size();
 	DeviceInfo.pQueueCreateInfos = queueRequests.data();

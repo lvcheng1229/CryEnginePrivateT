@@ -3,11 +3,37 @@
 #pragma once
 
 #include "VKBase.hpp"
-
 namespace NCryVulkan
 {
 	namespace Extensions
 	{
+		class CVulkanDeviceExtension
+		{
+		public:
+			CVulkanDeviceExtension(const char* inVkExtensionName)
+				:vkExtensionName(inVkExtensionName) {}
+
+			const char* GetExtensionName()
+			{
+				return vkExtensionName;
+			}
+		private:
+			const char* vkExtensionName;
+		};
+
+		class CVulkanDeviceExtensionWithFeature : public CVulkanDeviceExtension
+		{
+		public:
+			CVulkanDeviceExtensionWithFeature(const char* inVkExtensionName)
+				:CVulkanDeviceExtension(inVkExtensionName) {}
+
+			virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2) {};
+			virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice){};
+			virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) {};
+		};
+
+		std::vector<CVulkanDeviceExtensionWithFeature>& GetVulkanDeviceExtensionWithFeatureList();
+
 		namespace EXT_debug_marker
 		{
 			extern bool                              IsSupported;
@@ -33,6 +59,14 @@ namespace NCryVulkan
 			extern PFN_vkCmdExecuteGeneratedCommandsNV  CmdExecuteGeneratedCommands;
 		}
 		//TanGram:VSM:END
+
+		//TanGram:VKRT:BEGIN
+		namespace KHR_acceleration_structure
+		{
+			extern  bool                              IsSupported;
+			extern  PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR;
+		}
+		//TanGram:VKRT:END
 
 		void Init(CDevice* pDevice, const std::vector<const char*>& loadedExtensions);
 

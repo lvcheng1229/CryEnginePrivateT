@@ -211,6 +211,7 @@ public:
 	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
 	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelAS(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
+	SRayTracingAccelerationStructSize GetRayTracingBottomLevelASSize(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
 #endif
 	//TanGram:VKRT:END
 
@@ -473,6 +474,7 @@ private:
 	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
 	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelASImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
+	SRayTracingAccelerationStructSize GetRayTracingBottomLevelASSizeImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
 #endif
 	//TanGram:VKRT:END
 
