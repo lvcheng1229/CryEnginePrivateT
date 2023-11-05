@@ -153,6 +153,8 @@ _smart_ptr<CDevice> CInstance::CreateDevice(size_t physicalDeviceIndex)
 		}
 	}
 
+
+
 	auto device = CDevice::Create(&pDeviceInfo, &allocationCallbacks, m_enabledPhysicalDeviceLayers, extensions);
 	Extensions::Init(device.get(), extensions);
 
@@ -323,7 +325,7 @@ VkResult CInstance::InitializeInstance(const char* appName, uint32_t appVersion,
 	applicationInfo.pEngineName = engineName;
 	applicationInfo.engineVersion = engineVersion;
 #if CRY_RENDERER_VULKAN >= 11
-	applicationInfo.apiVersion = VK_API_VERSION_1_1;
+	applicationInfo.apiVersion = VK_API_VERSION_1_3;//TanGram:VKRT
 #else
 	applicationInfo.apiVersion = VK_API_VERSION_1_0;
 #endif
@@ -388,8 +390,24 @@ VkResult CInstance::InitializePhysicalDeviceInfos()
 		vkGetPhysicalDeviceProperties(gpus[i], &info.deviceProperties);
 		vkGetPhysicalDeviceMemoryProperties(gpus[i], &info.deviceMemoryProperties);
 
+		//TanGram:VKRT:BEGIN
+		std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+		{
+			// Write physical device features
+			{
+				VkPhysicalDeviceFeatures2 PhysicalDeviceFeatures2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
+				for (auto extension : deviceExtensions)
+				{
+					extension.WritePhysicalDeviceFeatures(PhysicalDeviceFeatures2);
+				}
+				vkGetPhysicalDeviceFeatures2(info.device, &PhysicalDeviceFeatures2);
+				info.deviceFeatures = PhysicalDeviceFeatures2.features;
+			}
+		}
+		//TanGram:VKRT:END
+		// 
 		// Fetch physical device features
-		vkGetPhysicalDeviceFeatures(info.device, &info.deviceFeatures);
+		//vkGetPhysicalDeviceFeatures(info.device, &info.deviceFeatures);
 
 		// Fetch physical device format support
 		for (VkFormat format = VK_FORMAT_UNDEFINED; format != VK_FORMAT_ASTC_12x12_SRGB_BLOCK; format = VkFormat(format + 1))//TanGram:VSM
@@ -503,7 +521,8 @@ void CInstance::GatherInstanceLayersToEnable()
 	if (CRendererCVars::CV_r_EnableDebugLayer)
 	{
 #if   CRY_PLATFORM_WINDOWS || CRY_PLATFORM_LINUX
-		m_enabledInstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+		//m_enabledInstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+		m_enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
 #elif CRY_PLATFORM_ANDROID
 		m_enabledInstanceLayers.push_back("VK_LAYER_GOOGLE_threading");
 		m_enabledInstanceLayers.push_back("VK_LAYER_GOOGLE_unique_objects");
@@ -541,7 +560,8 @@ void CInstance::GatherPhysicalDeviceLayersToEnable()
 	if (CRendererCVars::CV_r_EnableDebugLayer)
 	{
 #if   CRY_PLATFORM_WINDOWS || CRY_PLATFORM_LINUX
-		m_enabledInstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+		//m_enabledInstanceLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+		m_enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
 #elif CRY_PLATFORM_ANDROID
 		m_enabledInstanceLayers.push_back("VK_LAYER_GOOGLE_threading");
 		m_enabledInstanceLayers.push_back("VK_LAYER_GOOGLE_unique_objects");

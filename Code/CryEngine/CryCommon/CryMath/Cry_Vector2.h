@@ -188,3 +188,9 @@ ILINE Vec2i divideRoundUp(Vec2i val1, Vec2i val2)
 	return Vec2i(val1.x / val2.x + (val1.x % val2.x > 0 ? 1 : 0), val1.y / val2.y + (val1.y % val2.y > 0 ? 1 : 0));
 }
 
+template <typename T>
+inline constexpr T alignedValue(T value, uint64 alignment)
+{
+	static_assert(std::is_integral_v<T> || std::is_pointer_v<T>);
+	return (T)((((uint64)value + alignment - 1) / alignment) * alignment);
+}

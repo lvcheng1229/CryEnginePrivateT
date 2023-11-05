@@ -25,6 +25,7 @@ namespace Extensions
 		virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2)override
 		{
 			m_vkAccelerationStructureFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR };
+			m_vkAccelerationStructureFeatures.accelerationStructure = true;
 			AddToPNext(PhysicalDeviceFeatures2, m_vkAccelerationStructureFeatures);
 		}
 
@@ -73,6 +74,29 @@ namespace Extensions
 		VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_vkRtPipelineFeature;
 	};
 
+	class CVulkanKHRBufferDeviceAddressExtension : public CVulkanDeviceExtensionWithFeature
+	{
+	public:
+
+		CVulkanKHRBufferDeviceAddressExtension()
+			: CVulkanDeviceExtensionWithFeature(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) {}
+
+		virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2)override
+		{
+			m_bufferDeviceAddressFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR };
+			AddToPNext(PhysicalDeviceFeatures2, m_bufferDeviceAddressFeatures);
+		}
+
+
+		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
+		{
+			AddToPNext(DeviceInfo, m_bufferDeviceAddressFeatures);
+		}
+
+	private:
+		VkPhysicalDeviceBufferDeviceAddressFeaturesKHR m_bufferDeviceAddressFeatures;
+	};
+
 	//https://github.com/KhronosGroup/Vulkan-Samples/blob/main/samples/extensions/descriptor_buffer_basic/descriptor_buffer_basic.cpp
 
 	//class CVulkanDescriptorBufferExtension :public CVulkanDeviceExtensionWithFeature
@@ -112,6 +136,22 @@ namespace Extensions
 		{}
 	};
 
+	class CVulkanSpirvExtension :public CVulkanDeviceExtensionWithFeature
+	{
+	public:
+		CVulkanSpirvExtension()
+			:CVulkanDeviceExtensionWithFeature(VK_KHR_SPIRV_1_4_EXTENSION_NAME)
+		{}
+	};
+
+	class CVulkanShaderFloatControlsExtension :public CVulkanDeviceExtensionWithFeature
+	{
+	public:
+		CVulkanShaderFloatControlsExtension()
+			:CVulkanDeviceExtensionWithFeature(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME)
+		{}
+	};
+
 	static std::vector<CVulkanDeviceExtensionWithFeature> extensionsWithFeatures;
 	static bool isDeviceExtensionInit = false;
 
@@ -121,8 +161,11 @@ namespace Extensions
 		{
 			extensionsWithFeatures.push_back(CVulkanAccelerationStructureExtension());
 			extensionsWithFeatures.push_back(CVulkanRayTracingPipelineExtension());
+			extensionsWithFeatures.push_back(CVulkanKHRBufferDeviceAddressExtension());
 			//extensionsWithFeatures.push_back(CVulkanDescriptorBufferExtension());
 			extensionsWithFeatures.push_back(CVulkanDefferedHostOperationExtension());
+			extensionsWithFeatures.push_back(CVulkanSpirvExtension());
+			extensionsWithFeatures.push_back(CVulkanShaderFloatControlsExtension());
 		}
 		return extensionsWithFeatures;
 	}
@@ -158,6 +201,9 @@ namespace Extensions
 	{
 		bool                              IsSupported = false;
 		PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR = nullptr;
+		PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR = nullptr;
+		PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR = nullptr;
+		PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR = nullptr;
 	}
 	//TanGram:VKRT:END
 
@@ -195,6 +241,9 @@ namespace Extensions
 			{
 				KHR_acceleration_structure::IsSupported = true;
 				KHR_acceleration_structure::vkGetAccelerationStructureBuildSizesKHR = (PFN_vkGetAccelerationStructureBuildSizesKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkGetAccelerationStructureBuildSizesKHR");
+				KHR_acceleration_structure::vkCreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCreateAccelerationStructureKHR");
+				KHR_acceleration_structure::vkGetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkGetAccelerationStructureDeviceAddressKHR");
+				KHR_acceleration_structure::vkCmdBuildAccelerationStructuresKHR = (PFN_vkCmdBuildAccelerationStructuresKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCmdBuildAccelerationStructuresKHR");
 			}
 			//TanGram:VKRT:END
 		}

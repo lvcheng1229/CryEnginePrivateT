@@ -7,6 +7,7 @@
 	#endif
 #endif
 #include <CryRenderer/RenderElements/RendElement.h>
+class CGpuBuffer;
 
 // Enum specifying the type of build operation to perform
 enum class EBuildAccelerationStructureMode : uint32
@@ -16,6 +17,7 @@ enum class EBuildAccelerationStructureMode : uint32
 	//unsupported currently
 	eUpdate,											// Specifies that the destination acceleration structure will be built using data in a source acceleration structure, updated by the specified geometries
 };
+DEFINE_ENUM_FLAG_OPERATORS(EBuildAccelerationStructureMode);
 
 // Bitmask specifying additional parameters for acceleration structure builds
 enum class EBuildAccelerationStructureFlag : uint32
@@ -24,7 +26,7 @@ enum class EBuildAccelerationStructureFlag : uint32
 	eBuild_PreferTrace = 1 << 2,						// Indicates that the given acceleration structure build should prioritize trace performance over build time
 	eBuild_PreferBuild = 1 << 3,						// Indicates that the given acceleration structure build should prioritize build time over trace performance
 };
-DEFINE_ENUM_FLAG_OPERATORS(EBuildAccelerationStructureFlag)
+DEFINE_ENUM_FLAG_OPERATORS(EBuildAccelerationStructureFlag);
 
 struct SRayTracingAccelerationStructSize
 {
@@ -73,9 +75,56 @@ public:
 	CRayTracingBottomLevelAccelerationStructure(const SRayTracingBottomLevelASCreateInfo& sRtBlASCreateInfo)
 		:m_sRtBlASCreateInfo(sRtBlASCreateInfo)
 	{}
-private:
+	
 	SRayTracingBottomLevelASCreateInfo m_sRtBlASCreateInfo;
 	SRayTracingAccelerationStructSize m_sSizeInfo;
 };
 
 typedef std::shared_ptr<CRayTracingBottomLevelAccelerationStructure> CRayTracingBottomLevelAccelerationStructurePtr;
+
+// Top level acceleration structure
+struct SAccelerationStructureInstanceData
+{
+	float m_aTransform[3][4];									// A transformation to be applied to the acceleration structure
+	uint32 m_nInstanceCustomIndex : 24;							// A 24-bit user-specified index value accessible to ray shaders in the InstanceCustomIndexKHR built-in
+	uint32 m_nMask : 8;											// An 8-bit visibility mask for the geometry. The instance may only be hit if Cull Mask & instance.mask != 0
+	uint32 m_instanceShaderBindingTableRecordOffset : 24;		// A 24-bit offset used in calculating the hit shader binding table index
+	uint32 m_flags : 8;											// An 8-bit mask values to apply to this instance
+	uint64 accelerationStructureReference;						// The device address of the acceleration structure
+};
+
+struct SRayTracingInstanceTransform
+{
+	float m_aTransform[3][4];
+};
+
+struct SAccelerationStructureInstanceInfo
+{
+	CRayTracingBottomLevelAccelerationStructurePtr m_blas;
+	std::vector<SRayTracingInstanceTransform> m_transformPerInstance;
+	uint8 m_rayMask = 0xFF;
+};
+
+struct SRayTracingTopLevelASCreateInfo
+{
+	std::vector<CRayTracingBottomLevelAccelerationStructurePtr> m_aBLASPerInstance;
+	std::vector<uint32> m_nPreGeometryNumSum;
+
+	uint32 m_nInstanceTransform = 0;
+	uint32 m_nTotalGeometry = 0;
+	uint32 m_nHitShaderNumPerTriangle = 1;
+	uint32 m_nMissShaderNum = 1;
+};
+
+class CRayTracingTopLevelAccelerationStructure
+{
+public:
+	CRayTracingTopLevelAccelerationStructure(const SRayTracingTopLevelASCreateInfo& sRtTLASCreateInfo)
+		:m_sRtTLASCreateInfo(sRtTLASCreateInfo)
+	{}
+
+	SRayTracingTopLevelASCreateInfo m_sRtTLASCreateInfo;
+	SRayTracingAccelerationStructSize m_sSizeInfo;
+};
+
+typedef std::shared_ptr<CRayTracingTopLevelAccelerationStructure> CRayTracingTopLevelAccelerationStructurePtr;

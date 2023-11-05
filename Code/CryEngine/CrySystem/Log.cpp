@@ -282,18 +282,18 @@ void CLog::RegisterConsoleVariables()
 		REGISTER_COMMAND("log_flush", &LogFlushFile, 0, "Flush the log file");
 #endif
 	}
-	/*
+	
 	   //testbed
 	   {
 	    int iSave0 = m_pLogVerbosity->GetIVal();
-	    int iSave1 = m_pLogFileVerbosity->GetIVal();
+	   // int iSave1 = m_pLogFileVerbosity->GetIVal();
 
 	    for(int i=0;i<=4;++i)
 	    {
 	      m_pLogVerbosity->Set(i);
-	      m_pLogFileVerbosity->Set(i);
+	     // m_pLogFileVerbosity->Set(i);
 
-	      LogWithType(eAlways,"CLog selftest: Verbosity=%d FileVerbosity=%d",m_pLogVerbosity->GetIVal(),m_pLogFileVerbosity->GetIVal());
+	     // LogWithType(eAlways,"CLog selftest: Verbosity=%d FileVerbosity=%d",m_pLogVerbosity->GetIVal(),m_pLogFileVerbosity->GetIVal());
 	      LogWithType(eAlways,"--------------");
 
 	      LogWithType(eError,"eError");
@@ -308,9 +308,9 @@ void CLog::RegisterConsoleVariables()
 	    }
 
 	    m_pLogVerbosity->Set(iSave0);
-	    m_pLogFileVerbosity->Set(iSave1);
+	   // m_pLogFileVerbosity->Set(iSave1);
 	   }
-	 */
+	 
 #undef DEFAULT_VERBOSITY
 }
 

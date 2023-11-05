@@ -93,8 +93,11 @@ static inline VkBufferUsageFlagBits ConvertToVKBufferUsageBits(const T& desc)
 		                              /* Workaround for >64k */ VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT    : 0) |
 		((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT    : 0) |
 		((desc & CDeviceObjectFactory::USAGE_INDIRECTARGS   ) ? VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT         : 0) |
-		                                                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT                  |
-		                                                        VK_BUFFER_USAGE_TRANSFER_DST_BIT                 );
+		                                                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT                 |
+		                                                        VK_BUFFER_USAGE_TRANSFER_DST_BIT                 |
+																VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT		 |
+		((desc & CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE) ? (VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR) : 0)//TanGram:VKRT
+	);
 	// *INDENT-ON*
 }
 

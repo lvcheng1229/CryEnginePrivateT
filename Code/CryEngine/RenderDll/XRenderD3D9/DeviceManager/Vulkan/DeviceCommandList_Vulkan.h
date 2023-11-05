@@ -153,6 +153,9 @@ protected:
 	void BeginOcclusionQueryImpl(D3DOcclusionQuery* pQuery);
 	void EndOcclusionQueryImpl(D3DOcclusionQuery* pQuery);
 
+	//TanGram:VKRT:BEGIN
+	void BuildRayTracingBottomLevelASsImpl(std::vector<CRayTracingBottomLevelAccelerationStructurePtr>& rtBottomLevelASPtrs);
+	//TanGram:VKRT:END
 protected:
 	void BindNullVertexBuffers();
 };

@@ -49,17 +49,56 @@ void CRayTracingTestStage::CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* p
 	rtBottomLevelCreateInfo.m_rtGeometryTriangles.push_back(rtGeometryTriangle);
 
 	m_pRtBottomLevelAS = GetDeviceObjectFactory().CreateRayTracingBottomLevelAS(rtBottomLevelCreateInfo);
-	//pCommandInterface->BuildRayTracingBottomLevelAS(m_pRtBottomLevelAS);
+
+	std::vector<CRayTracingBottomLevelAccelerationStructurePtr> rtBottomLevelASPtrs;
+	rtBottomLevelASPtrs.push_back(m_pRtBottomLevelAS);
+	pCommandInterface->BuildRayTracingBottomLevelASs(rtBottomLevelASPtrs);
 }
 
+
+void CRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* pCommandInterface)
+{
+	SRayTracingInstanceTransform transform;
+	memset(&transform.m_aTransform, 0, sizeof(float) * 3 * 4);
+	transform.m_aTransform[0][0] = 1;
+	transform.m_aTransform[1][1] = 1;
+	transform.m_aTransform[2][2] = 1;
+
+	SAccelerationStructureInstanceInfo accelerationStructureInstanceInfo;
+	accelerationStructureInstanceInfo.m_transformPerInstance.push_back(transform);
+	accelerationStructureInstanceInfo.m_blas = m_pRtBottomLevelAS;
+	accelerationStructureInstanceInfo.m_rayMask = 0xFF;
+
+	std::vector<SAccelerationStructureInstanceInfo> accelerationStructureInstanceInfos;
+	accelerationStructureInstanceInfos.push_back(accelerationStructureInstanceInfo);
+
+	SRayTracingTopLevelASCreateInfo rtTopLevelASCreateInfo;
+	rtTopLevelASCreateInfo.m_nHitShaderNumPerTriangle = 1;
+	rtTopLevelASCreateInfo.m_nMissShaderNum = 1;
+	for (const auto& blas : accelerationStructureInstanceInfos)
+	{
+		rtTopLevelASCreateInfo.m_nInstanceTransform += blas.m_transformPerInstance.size();
+		rtTopLevelASCreateInfo.m_nTotalGeometry += blas.m_blas->m_sRtBlASCreateInfo.m_rtGeometryTriangles.size();
+		rtTopLevelASCreateInfo.m_nPreGeometryNumSum.push_back(rtTopLevelASCreateInfo.m_nTotalGeometry);
+	}
+
+	m_pRtTopLevelAS = GetDeviceObjectFactory().CreateRayTracingTopLevelAS(rtTopLevelASCreateInfo);
+
+	std::vector<SAccelerationStructureInstanceData> accelerationStructureInstanceData;
+	accelerationStructureInstanceData.resize(accelerationStructureInstanceInfos.size());
+	for(uint32 index = 0)
+	{
+
+	}
+
+}
 
 void CRayTracingTestStage::Init()
 {
 	CDeviceGraphicsCommandInterface* pCommandInterface = GetDeviceObjectFactory().GetCoreCommandList().GetGraphicsInterface();
 	CreateVbIb();
 	CreateAndBuildBLAS(pCommandInterface);
-
-
+	CreateAndBuildTLAS(pCommandInterface);
 	
 }
 

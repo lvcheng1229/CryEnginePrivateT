@@ -38,19 +38,8 @@ _smart_ptr<CDevice> CDevice::Create(const SPhysicalDeviceInfo* pDeviceInfo, VkAl
 	ZeroStruct(DeviceInfo);
 
 	//TanGram:VKRT:BEGIN
+	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
 	{
-		std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
-
-		// Write physical device features
-		{
-			VkPhysicalDeviceFeatures2 PhysicalDeviceFeatures2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-			for (auto extension : deviceExtensions)
-			{
-				extension.WritePhysicalDeviceFeatures(PhysicalDeviceFeatures2);
-			}
-			vkGetPhysicalDeviceFeatures2(pDeviceInfo->device, &PhysicalDeviceFeatures2);
-		}
-
 		for (auto extension : deviceExtensions)
 		{
 			extension.EnablePhysicalDeviceFeatures(DeviceInfo);
@@ -84,6 +73,7 @@ _smart_ptr<CDevice> CDevice::Create(const SPhysicalDeviceInfo* pDeviceInfo, VkAl
 			CryLogAlways("vkCreateDevice: Discarded %" PRISIZE_T " layers during Vulkan initialization", layersToEnable.size());
 		}
 	}
+
 
 	_smart_ptr<CDevice> pSmart;
 	pSmart.Assign_NoAddRef(new CDevice(pDeviceInfo, hostAllocator, Device));

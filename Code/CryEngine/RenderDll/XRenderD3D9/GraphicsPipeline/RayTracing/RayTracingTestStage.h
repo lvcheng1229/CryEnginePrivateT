@@ -25,6 +25,7 @@ public:
 	
 	void CreateVbIb();
 	void CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* pCommandInterface);
+	void CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* pCommandInterface);
 
 private:
 
@@ -48,6 +49,6 @@ private:
 	const CDeviceInputStream* m_pVertexInputSet = nullptr;
 	const CDeviceInputStream* m_pIndexInputSet = nullptr;
 
-	//BLAS
 	CRayTracingBottomLevelAccelerationStructurePtr m_pRtBottomLevelAS;
+	CRayTracingTopLevelAccelerationStructurePtr m_pRtTopLevelAS;
 };

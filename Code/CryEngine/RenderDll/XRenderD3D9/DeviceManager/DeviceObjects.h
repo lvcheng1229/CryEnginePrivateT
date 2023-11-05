@@ -211,6 +211,7 @@ public:
 	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
 	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelAS(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
+	CRayTracingTopLevelAccelerationStructurePtr CreateRayTracingTopLevelAS(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo);
 	SRayTracingAccelerationStructSize GetRayTracingBottomLevelASSize(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
 #endif
 	//TanGram:VKRT:END
@@ -256,6 +257,7 @@ public:
 		BIND_STREAM_OUTPUT               = BIT(7),
 
 		// Bits [8, 15] free
+		USAGE_ACCELERATION_STRUCTURE	 = BIT(8),
 
 		USAGE_UAV_READWRITE              = BIT(16), // Reading from UAVs is only possible through typeless formats under DX11
 		USAGE_UAV_OVERLAP                = BIT(17), // Concurrent access to UAVs should be allowed
@@ -284,7 +286,7 @@ public:
 		USAGE_CPU_READ                   = BIT(29),
 		USAGE_CPU_WRITE                  = BIT(30),
 
-		USAGE_HIFREQ_HEAP                = BIT(31)  // Resource is reallocated every frame or multiple times each frame, use a recycling heap with delayed deletes
+		USAGE_HIFREQ_HEAP                = BIT(31),  // Resource is reallocated every frame or multiple times each frame, use a recycling heap with delayed deletes
 	};
 
 	// Resource Usage	| Default	| Dynamic	| Immutable	| Staging
@@ -474,6 +476,7 @@ private:
 	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
 	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelASImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
+	CRayTracingTopLevelAccelerationStructurePtr CreateRayTracingTopLevelASImpl(const SRayTracingTopLevelASCreateInfo& rtBottomLevelCreateInfo);
 	SRayTracingAccelerationStructSize GetRayTracingBottomLevelASSizeImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
 #endif
 	//TanGram:VKRT:END

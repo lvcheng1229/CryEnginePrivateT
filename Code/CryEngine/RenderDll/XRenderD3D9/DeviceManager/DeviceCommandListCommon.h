@@ -148,8 +148,7 @@ public:
 
 	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
-	//void BuildRayTracingBottomLevelAS(CRayTracingBottomLevelAccelerationStructurePtr rtBottomLevelASPtr);
-	//void BuildRayTracingBottomLevelASs();
+	void BuildRayTracingBottomLevelASs(std::vector<CRayTracingBottomLevelAccelerationStructurePtr>& rtBottomLevelASPtrs);
 #endif
 	//TanGram:VKRT:END
 
