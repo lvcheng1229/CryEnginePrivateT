@@ -76,6 +76,8 @@ public:
 		:m_sRtBlASCreateInfo(sRtBlASCreateInfo)
 	{}
 	
+	virtual uint64 GetAccelerationStructureAddress() { return 0; };
+
 	SRayTracingBottomLevelASCreateInfo m_sRtBlASCreateInfo;
 	SRayTracingAccelerationStructSize m_sSizeInfo;
 };
@@ -102,6 +104,8 @@ struct SAccelerationStructureInstanceInfo
 {
 	CRayTracingBottomLevelAccelerationStructurePtr m_blas;
 	std::vector<SRayTracingInstanceTransform> m_transformPerInstance;
+	std::vector<uint32> m_nCustomIndex;
+	uint32 m_defaultIndex = 0;
 	uint8 m_rayMask = 0xFF;
 };
 

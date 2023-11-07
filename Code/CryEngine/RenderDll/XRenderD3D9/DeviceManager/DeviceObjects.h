@@ -213,6 +213,7 @@ public:
 	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelAS(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
 	CRayTracingTopLevelAccelerationStructurePtr CreateRayTracingTopLevelAS(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo);
 	SRayTracingAccelerationStructSize GetRayTracingBottomLevelASSize(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
+	SRayTracingAccelerationStructSize GetRayTracingTopLevelASSize(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo);
 #endif
 	//TanGram:VKRT:END
 
@@ -478,6 +479,7 @@ private:
 	CRayTracingBottomLevelAccelerationStructurePtr CreateRayTracingBottomLevelASImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
 	CRayTracingTopLevelAccelerationStructurePtr CreateRayTracingTopLevelASImpl(const SRayTracingTopLevelASCreateInfo& rtBottomLevelCreateInfo);
 	SRayTracingAccelerationStructSize GetRayTracingBottomLevelASSizeImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo);
+	SRayTracingAccelerationStructSize GetRayTracingTopLevelASSizeImpl(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo);
 #endif
 	//TanGram:VKRT:END
 

@@ -19,7 +19,19 @@ SRayTracingAccelerationStructSize CDeviceObjectFactory::GetRayTracingBottomLevel
 	return GetRayTracingBottomLevelASSizeImpl(rtBottomLevelCreateInfo);
 }
 
+SRayTracingAccelerationStructSize CDeviceObjectFactory::GetRayTracingTopLevelASSize(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo)
+{
+	return GetRayTracingTopLevelASSizeImpl(rtTopLevelCreateInfo);
+}
+
 void CDeviceGraphicsCommandInterface::BuildRayTracingBottomLevelASs(std::vector<CRayTracingBottomLevelAccelerationStructurePtr>& rtBottomLevelASPtrs)
 {
 	BuildRayTracingBottomLevelASsImpl(rtBottomLevelASPtrs);
 }
+
+void CDeviceGraphicsCommandInterface::BuildRayTracingTopLevelAS(CRayTracingTopLevelAccelerationStructurePtr rtTopLevelASPtr, CGpuBuffer* instanceBuffer, uint32 offset)
+{
+	BuildRayTracingTopLevelASImpl(rtTopLevelASPtr, instanceBuffer, offset);
+}
+
+

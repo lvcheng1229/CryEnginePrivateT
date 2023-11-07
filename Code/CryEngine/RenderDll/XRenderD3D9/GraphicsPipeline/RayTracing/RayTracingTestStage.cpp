@@ -66,6 +66,7 @@ void CRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* p
 
 	SAccelerationStructureInstanceInfo accelerationStructureInstanceInfo;
 	accelerationStructureInstanceInfo.m_transformPerInstance.push_back(transform);
+	accelerationStructureInstanceInfo.m_nCustomIndex.push_back(0);
 	accelerationStructureInstanceInfo.m_blas = m_pRtBottomLevelAS;
 	accelerationStructureInstanceInfo.m_rayMask = 0xFF;
 
@@ -84,13 +85,28 @@ void CRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* p
 
 	m_pRtTopLevelAS = GetDeviceObjectFactory().CreateRayTracingTopLevelAS(rtTopLevelASCreateInfo);
 
-	std::vector<SAccelerationStructureInstanceData> accelerationStructureInstanceData;
-	accelerationStructureInstanceData.resize(accelerationStructureInstanceInfos.size());
-	for(uint32 index = 0)
+	std::vector<SAccelerationStructureInstanceData> accelerationStructureInstanceDatas;
+	accelerationStructureInstanceDatas.resize(accelerationStructureInstanceInfos.size());
+	for (uint32 index = 0; index < accelerationStructureInstanceInfos.size(); index++)
 	{
+		const SAccelerationStructureInstanceInfo& instanceInfo = accelerationStructureInstanceInfos[index];
+		SAccelerationStructureInstanceData& instanceData = accelerationStructureInstanceDatas[index];
+		for (uint32 transformIndex = 0; transformIndex < instanceInfo.m_transformPerInstance.size(); transformIndex++)
+		{
+			memcpy(instanceData.m_aTransform, &instanceInfo.m_transformPerInstance[transformIndex], sizeof(float) * 4 * 3);
+			instanceData.m_nInstanceCustomIndex = instanceInfo.m_nCustomIndex[transformIndex];
+			instanceData.m_nMask = instanceInfo.m_rayMask;
 
+			//@todo fixme
+			instanceData.m_instanceShaderBindingTableRecordOffset = 0;
+			instanceData.m_flags = 0; // Disable face culling ?
+
+			instanceData.accelerationStructureReference = instanceInfo.m_blas->GetAccelerationStructureAddress();
+		}
 	}
 
+	m_instanceBuffer.Create(accelerationStructureInstanceDatas.size(), sizeof(SAccelerationStructureInstanceData), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_SHADER_RESOURCE, accelerationStructureInstanceDatas.data());
+	pCommandInterface->BuildRayTracingTopLevelAS(m_pRtTopLevelAS, &m_instanceBuffer, 0);
 }
 
 void CRayTracingTestStage::Init()

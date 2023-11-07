@@ -133,6 +133,11 @@ CVulkanRayTracingBottomLevelAccelerationStructure::CVulkanRayTracingBottomLevelA
 	accelerationStructureDeviceAddress = Extensions::KHR_acceleration_structure::vkGetAccelerationStructureDeviceAddressKHR(m_pDevice->GetVkDevice(), &deviceAddressInfo);
 }
 
+uint64 CVulkanRayTracingBottomLevelAccelerationStructure::GetAccelerationStructureAddress()
+{
+	return accelerationStructureDeviceAddress;
+}
+
 CRayTracingBottomLevelAccelerationStructurePtr CDeviceObjectFactory::CreateRayTracingBottomLevelASImpl(const SRayTracingBottomLevelASCreateInfo& rtBottomLevelCreateInfo)
 {
 	return std::make_shared<CVulkanRayTracingBottomLevelAccelerationStructure>(rtBottomLevelCreateInfo, GetDevice());
@@ -188,12 +193,98 @@ void CDeviceGraphicsCommandInterfaceImpl::BuildRayTracingBottomLevelASsImpl(std:
 	//todo@ ->reset and ->begin submit at end of pass
 	//GetVKCommandList()->Reset();
 	//GetVKCommandList()->Begin();
+
+	//todo@ bindless
 }
 
 
-CRayTracingTopLevelAccelerationStructurePtr CDeviceObjectFactory::CreateRayTracingTopLevelASImpl(const SRayTracingTopLevelASCreateInfo& rtBottomLevelCreateInfo)
+
+static void GeTopLevelAccelerationStructureBuildInfo(const VkDevice vkDevice, const uint32 nInstance, const VkDeviceAddress instanceBufferAddress, EBuildAccelerationStructureFlag flag, SVulkanRayTracingTLASBuildInfo& outvkRtTLASBuildInfo)
 {
-	return CRayTracingTopLevelAccelerationStructurePtr();
+	outvkRtTLASBuildInfo.m_vkRtGeometryInstancesInfo.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
+	outvkRtTLASBuildInfo.m_vkRtGeometryInstancesInfo.geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
+	outvkRtTLASBuildInfo.m_vkRtGeometryInstancesInfo.geometry.instances.arrayOfPointers = VK_FALSE;
+	outvkRtTLASBuildInfo.m_vkRtGeometryInstancesInfo.geometry.instances.data.deviceAddress = instanceBufferAddress;
+
+	outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+	outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
+	outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.flags = (flag == EBuildAccelerationStructureFlag::eBuild_PreferTrace) ? VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR : VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_KHR;
+	outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.geometryCount = 1;
+	outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.pGeometries = &outvkRtTLASBuildInfo.m_vkRtGeometryInstancesInfo;
+
+	Extensions::KHR_acceleration_structure::vkGetAccelerationStructureBuildSizesKHR(vkDevice, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo, &nInstance, &outvkRtTLASBuildInfo.m_vkAsBuildSizeInfo);
+}
+
+SRayTracingAccelerationStructSize CDeviceObjectFactory::GetRayTracingTopLevelASSizeImpl(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo)
+{
+	SVulkanRayTracingTLASBuildInfo outvkRtTLASBuildInfo;
+	GeTopLevelAccelerationStructureBuildInfo(GetDevice()->GetVkDevice(), rtTopLevelCreateInfo.m_nInstanceTransform, 0, EBuildAccelerationStructureFlag::eBuild_PreferTrace, outvkRtTLASBuildInfo);
+	
+	SRayTracingAccelerationStructSize accelerationStructureSizeInfo;
+	accelerationStructureSizeInfo.m_nAccelerationStructureSize = outvkRtTLASBuildInfo.m_vkAsBuildSizeInfo.accelerationStructureSize;
+	accelerationStructureSizeInfo.m_nBuildScratchSize = outvkRtTLASBuildInfo.m_vkAsBuildSizeInfo.buildScratchSize;
+	accelerationStructureSizeInfo.m_nUpdateScratchSize = outvkRtTLASBuildInfo.m_vkAsBuildSizeInfo.updateScratchSize;
+	return accelerationStructureSizeInfo;
+}
+
+CVulkanRayTracingTopLevelAccelerationStructure::CVulkanRayTracingTopLevelAccelerationStructure(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo, CDevice* pDevice)
+	:CRayTracingTopLevelAccelerationStructure(rtTopLevelCreateInfo)
+	, m_pDevice(pDevice)
+{
+	m_sSizeInfo = GetDeviceObjectFactory().GetRayTracingTopLevelASSize(rtTopLevelCreateInfo);
+	m_accelerationStructureBuffer.Create(1u, static_cast<uint32>(m_sSizeInfo.m_nAccelerationStructureSize), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE, nullptr);
+	
+	VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR };
+	accelerationStructureCreateInfo.buffer = m_accelerationStructureBuffer.GetDevBuffer()->GetBuffer()->GetHandle();
+	accelerationStructureCreateInfo.offset = 0;
+	accelerationStructureCreateInfo.size = m_sSizeInfo.m_nAccelerationStructureSize;
+	accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+
+	Extensions::KHR_acceleration_structure::vkCreateAccelerationStructureKHR(m_pDevice->GetVkDevice(), &accelerationStructureCreateInfo, nullptr, &accelerationStructureHandle);
+
+	//todo@ bindless accelerationStructureDeviceAddress
+
+	VkAccelerationStructureDeviceAddressInfoKHR deviceAddressInfo = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR };
+	deviceAddressInfo.accelerationStructure = accelerationStructureHandle;
+	accelerationStructureDeviceAddress = Extensions::KHR_acceleration_structure::vkGetAccelerationStructureDeviceAddressKHR(m_pDevice->GetVkDevice(), &deviceAddressInfo);
+}
+
+CRayTracingTopLevelAccelerationStructurePtr CDeviceObjectFactory::CreateRayTracingTopLevelASImpl(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo)
+{
+	return std::make_shared<CVulkanRayTracingTopLevelAccelerationStructure>(rtTopLevelCreateInfo, GetDevice());
+}
+
+void CDeviceGraphicsCommandInterfaceImpl::BuildRayTracingTopLevelASImpl(CRayTracingTopLevelAccelerationStructurePtr rtTopLevelASPtr, CGpuBuffer* instanceBuffer, uint32 offset)
+{
+	CGpuBuffer scratchBuffer;
+	scratchBuffer.Create(1u, static_cast<uint32>(rtTopLevelASPtr->m_sSizeInfo.m_nBuildScratchSize), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE, nullptr);
+
+	CVulkanRayTracingTopLevelAccelerationStructure* rtTopLevelAccelerationStructure = static_cast<CVulkanRayTracingTopLevelAccelerationStructure*>(rtTopLevelASPtr.get());
+
+	SVulkanRayTracingTLASBuildInfo outvkRtTLASBuildInfo;
+	{
+		VkBufferDeviceAddressInfo bufferDeviceAddressInfo = { VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
+		bufferDeviceAddressInfo.buffer = instanceBuffer->GetDevBuffer()->GetBuffer()->GetHandle();
+		VkDeviceAddress instanceBufferAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &bufferDeviceAddressInfo) + offset;
+		GeTopLevelAccelerationStructureBuildInfo(GetDevice()->GetVkDevice(), rtTopLevelASPtr->m_sRtTLASCreateInfo.m_nInstanceTransform, 0, EBuildAccelerationStructureFlag::eBuild_PreferTrace, outvkRtTLASBuildInfo);
+		outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.dstAccelerationStructure = rtTopLevelAccelerationStructure->accelerationStructureHandle;
+		outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.scratchData.deviceAddress = instanceBufferAddress;
+	}
+
+	VkAccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo;
+	VkAccelerationStructureBuildRangeInfoKHR buildRangeInfo;
+	buildRangeInfo.primitiveCount = rtTopLevelASPtr->m_sRtTLASCreateInfo.m_nInstanceTransform;
+	buildRangeInfo.primitiveOffset = 0;
+	buildRangeInfo.transformOffset = 0;
+	buildRangeInfo.firstVertex = 0;
+
+	VkAccelerationStructureBuildRangeInfoKHR* pBuildRangeInfo = &buildRangeInfo;
+
+	VkCommandBuffer cmdBuffer = GetVKCommandList()->GetVkCommandList();
+	Extensions::KHR_acceleration_structure::vkCmdBuildAccelerationStructuresKHR(cmdBuffer, 1, &buildGeometryInfo, &pBuildRangeInfo);
+
+	AddAccelerationStructureBuildBarrier(cmdBuffer);
+	GetVKCommandList()->Submit();
 }
 
 

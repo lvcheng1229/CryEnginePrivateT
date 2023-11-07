@@ -149,6 +149,7 @@ public:
 	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
 	void BuildRayTracingBottomLevelASs(std::vector<CRayTracingBottomLevelAccelerationStructurePtr>& rtBottomLevelASPtrs);
+	void BuildRayTracingTopLevelAS(CRayTracingTopLevelAccelerationStructurePtr rtTopLevelASPtrs, CGpuBuffer* instanceBuffer, uint32 offset);
 #endif
 	//TanGram:VKRT:END
 

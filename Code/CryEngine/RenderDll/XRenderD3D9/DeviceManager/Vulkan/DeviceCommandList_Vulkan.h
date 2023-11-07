@@ -155,6 +155,7 @@ protected:
 
 	//TanGram:VKRT:BEGIN
 	void BuildRayTracingBottomLevelASsImpl(std::vector<CRayTracingBottomLevelAccelerationStructurePtr>& rtBottomLevelASPtrs);
+	void BuildRayTracingTopLevelASImpl(CRayTracingTopLevelAccelerationStructurePtr rtTopLevelASPtr, CGpuBuffer* instanceBuffer, uint32 offset);
 	//TanGram:VKRT:END
 protected:
 	void BindNullVertexBuffers();

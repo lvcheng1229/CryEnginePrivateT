@@ -51,4 +51,6 @@ private:
 
 	CRayTracingBottomLevelAccelerationStructurePtr m_pRtBottomLevelAS;
 	CRayTracingTopLevelAccelerationStructurePtr m_pRtTopLevelAS;
+
+	CGpuBuffer m_instanceBuffer;
 };
