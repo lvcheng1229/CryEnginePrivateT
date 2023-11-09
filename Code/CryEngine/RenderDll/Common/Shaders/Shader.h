@@ -1025,6 +1025,13 @@ struct SShaderPass
 	CHWShader*  m_DShader;        // Pointer to the domain shader for the current pass
 	CHWShader*  m_HShader;        // Pointer to the hull shader for the current pass
 	CHWShader*  m_CShader;        // Pointer to the compute shader for the current pass
+
+	//TanGram:VKRT:BEGIN
+	std::vector<CHWShader*> m_RGShaders; // Pointers to ray gen shader
+	std::vector<CHWShader*> m_HGShaders; // Pointers to hit group shader
+	std::vector<CHWShader*> m_RMShaders; // Pointers to miss shader
+	//TanGram:VKRT:END
+
 	SShaderPass();
 
 	int Size()
@@ -1041,6 +1048,23 @@ struct SShaderPass
 		pSizer->AddObject(m_HShader);
 		pSizer->AddObject(m_DShader);
 		pSizer->AddObject(m_CShader);
+
+		//TanGram:VKRT:BEGIN
+		for (uint32 index = 0; index < m_RGShaders.size(); index++)
+		{
+			pSizer->AddObject(m_RGShaders[index]);
+		}
+
+		for (uint32 index = 0; index < m_HGShaders.size(); index++)
+		{
+			pSizer->AddObject(m_HGShaders[index]);
+		}
+
+		for (uint32 index = 0; index < m_RMShaders.size(); index++)
+		{
+			pSizer->AddObject(m_RMShaders[index]);
+		}
+		//TanGram:VKRT:END
 	}
 	void mfFree()
 	{
@@ -1050,6 +1074,26 @@ struct SShaderPass
 		SAFE_RELEASE(m_HShader);
 		SAFE_RELEASE(m_DShader);
 		SAFE_RELEASE(m_CShader);
+
+		//TanGram:VKRT:BEGIN
+		for (uint32 index = 0; index < m_RGShaders.size(); index++)
+		{
+			SAFE_RELEASE(m_RGShaders[index]);
+		}
+		m_RGShaders.clear();
+
+		for (uint32 index = 0; index < m_HGShaders.size(); index++)
+		{
+			SAFE_RELEASE(m_HGShaders[index]);
+		}
+		m_HGShaders.clear();
+
+		for (uint32 index = 0; index < m_RMShaders.size(); index++)
+		{
+			SAFE_RELEASE(m_RMShaders[index]);
+		}
+		m_RMShaders.clear();
+		//TanGram:VKRT:END
 	}
 
 	void AddRefsToShaders()
@@ -1066,6 +1110,26 @@ struct SShaderPass
 			m_HShader->AddRef();
 		if (m_CShader)
 			m_CShader->AddRef();
+
+		//TanGram:VKRT:BEGIN
+		for (uint32 index = 0; index < m_RGShaders.size(); index++)
+		{
+			if (m_RGShaders[index])
+				m_RGShaders[index]->AddRef();
+		}
+
+		for (uint32 index = 0; index < m_HGShaders.size(); index++)
+		{
+			if (m_HGShaders[index])
+				m_HGShaders[index]->AddRef();
+		}
+
+		for (uint32 index = 0; index < m_RMShaders.size(); index++)
+		{
+			if (m_RMShaders[index])
+				m_RMShaders[index]->AddRef();
+		}
+		//TanGram:VKRT:END
 	}
 
 private:

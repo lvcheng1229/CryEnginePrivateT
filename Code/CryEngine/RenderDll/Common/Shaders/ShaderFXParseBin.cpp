@@ -3084,6 +3084,104 @@ bool CShaderManBin::ParseBinFX_Technique_Pass_LoadShader(CParserBin& Parser, FXM
 	return bRes;
 }
 
+//TanGram:VKRT:BEGIN
+bool CShaderManBin::ParseBinFX_Technique_Pass_LoadShaders_RayTracing(CParserBin& Parser, FXMacroBin& Macros, SParserFrame& SHFrame, SShaderTechnique* pShTech, SShaderPass* pPass, EHWShaderClass eSHClass, SShaderFXParams& FXParams)
+{
+	assert(gRenDev->m_pRT->IsRenderThread() || gRenDev->m_pRT->IsLevelLoadingThread());
+	
+	CRY_PROFILE_FUNCTION(PROFILE_LOADING_ONLY)(iSystem);
+	bool bRes = true;
+	
+	assert(!SHFrame.IsEmpty());
+	
+	uint32 dwSHName;
+	uint32 dwSHType = 0;
+	
+	uint32* pTokens = &Parser.m_Tokens[0];
+	if (pTokens[SHFrame.m_nFirstToken] != eT_br_cv_1)
+	{
+		assert(!"ray tracing shaders must use shader group");
+	}
+
+	uint32 nCur = SHFrame.m_nFirstToken + 1;
+	while (true)
+	{
+		dwSHName = pTokens[nCur];
+
+		nCur++;
+		uint32 nTok = pTokens[nCur];
+		nCur++;
+
+		assert(nTok == eT_br_rnd_1);
+		if (nTok == eT_br_rnd_1)
+		{
+			nTok = pTokens[nCur];
+			if (nTok != eT_br_rnd_2)
+			{
+				assert(!"Local function parameters aren't supported anymore");
+			}
+		}
+
+		nCur++;
+
+		enum { SHDATA_BUFFER_SIZE = 48000 };
+
+		uint64 nGenMask = 0;
+		PodArray<uint32> SHDataBuffer(SHDATA_BUFFER_SIZE);
+		const char* szName = Parser.GetString(dwSHName);
+		bRes &= ParseBinFX_Technique_Pass_GenerateShaderData(Parser, Macros, FXParams, dwSHName, eSHClass, nGenMask, dwSHType, SHDataBuffer, pShTech);
+#if defined(_DEBUG)
+		if (SHDataBuffer.size() > SHDATA_BUFFER_SIZE)
+		{
+			CryLogAlways("CShaderManBin::ParseBinFX_Technique_Pass_LoadShader: SHDataBuffer has been exceeded (buffer=%d, count=%u). Adjust buffer size to remove unnecessary allocs", SHDATA_BUFFER_SIZE, SHDataBuffer.Size());
+		}
+#endif
+
+		TArray<uint32> SHData(0, SHDataBuffer.Size());
+		SHData.Copy(SHDataBuffer.GetElements(), SHDataBuffer.size());
+
+		CHWShader* pSH = NULL;
+		bool bValidShader = false;
+
+		assert(Parser.m_pCurShader != nullptr);
+		if (bRes && (!CParserBin::m_bParseFX || !SHData.empty() || szName[0] == '$'))
+		{
+			char str[1024];
+			cry_sprintf(str, "%s@%s", Parser.m_pCurShader->m_NameShader.c_str(), szName);
+			pSH = CHWShader::mfForName(str, Parser.m_pCurShader->m_NameFile, Parser.m_pCurShader->m_CRC32, szName, eSHClass, SHData, Parser.m_TokenTable, dwSHType, Parser.m_pCurShader, nGenMask, Parser.m_pCurShader->m_nMaskGenFX);
+		}
+		if (pSH)
+		{
+			bValidShader = true;
+
+			if (CParserBin::PlatformSupportsRayTracingShaders() && eSHClass == eHWSC_RayGen)
+				pPass->m_RGShaders.push_back(pSH);
+			else if (CParserBin::PlatformSupportsRayTracingShaders() && eSHClass == eHWSC_HitGroup)
+				pPass->m_HGShaders.push_back(pSH);
+			else if (CParserBin::PlatformSupportsRayTracingShaders() && eSHClass == eHWSC_RayMiss)
+				pPass->m_RMShaders.push_back(pSH);
+			else
+				CryLog("Unsupported/unrecognised shader: %s[%d]", pSH->m_Name.c_str(), eSHClass);
+		}
+
+		if (pTokens[nCur] == eT_comma)
+		{
+			nCur++;
+		}
+		else if (pTokens[nCur] == eT_br_cv_2)
+		{
+			break;
+		}
+		else
+		{
+			assert(!"Unsupported format");
+		}
+	}
+
+	return false;
+}
+//TanGram:VKRT:END
+
 bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& Frame, SShaderTechnique* pShTech)
 {
 	SParserFrame OldFrame = Parser.BeginFrame(Frame);
@@ -3341,11 +3439,11 @@ bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& 
 
 	//TanGram:VKRT:BEGIN
 	if (CParserBin::PlatformSupportsRayTracingShaders() && !RayGenShaders.IsEmpty())
-		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, RayGenShadersMacro, RayGenShaders, pShTech, sm, eHWSC_RayGen, FXParams);
+		bRes &= ParseBinFX_Technique_Pass_LoadShaders_RayTracing(Parser, RayGenShadersMacro, RayGenShaders, pShTech, sm, eHWSC_RayGen, FXParams);
 	if (CParserBin::PlatformSupportsRayTracingShaders() && !HitGroupShaders.IsEmpty())
-		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, HitGroupShadersMacro, CS, pShTech, sm, eHWSC_HitGroup, FXParams);
+		bRes &= ParseBinFX_Technique_Pass_LoadShaders_RayTracing(Parser, HitGroupShadersMacro, HitGroupShaders, pShTech, sm, eHWSC_HitGroup, FXParams);
 	if (CParserBin::PlatformSupportsRayTracingShaders() && !MissShaders.IsEmpty())
-		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, MissShadersMacro, CS, pShTech, sm, eHWSC_RayMiss, FXParams);
+		bRes &= ParseBinFX_Technique_Pass_LoadShaders_RayTracing(Parser, MissShadersMacro, MissShaders, pShTech, sm, eHWSC_RayMiss, FXParams);
 	//TanGram:VKRT:END
 
 	Parser.EndFrame(OldFrame);

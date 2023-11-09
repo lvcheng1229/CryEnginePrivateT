@@ -190,6 +190,11 @@ CCryNameTSCRC CHWShader::mfGetClassName(EHWShaderClass eClass)
 	static const auto s_sClassNameDomain = CCryNameTSCRC("CHWShader_DS");
 	static const auto s_sClassNameHull = CCryNameTSCRC("CHWShader_HS");
 	static const auto s_sClassNameCompute = CCryNameTSCRC("CHWShader_CS");
+	//TanGram:VKRT:BEGIN
+	static const auto s_sClassNameRayGen = CCryNameTSCRC("CHWShader_RGS");
+	static const auto s_sClassNameHitGroup = CCryNameTSCRC("CHWShader_HGS");
+	static const auto s_sClassNameRayMiss = CCryNameTSCRC("CHWShader_RMS");
+	//TanGram:VKRT:END
 
 	switch (eClass)
 	{
@@ -203,6 +208,14 @@ CCryNameTSCRC CHWShader::mfGetClassName(EHWShaderClass eClass)
 		return s_sClassNameDomain;
 	case eHWSC_Hull:
 		return s_sClassNameHull;
+	//TanGram:VKRT:BEGIN
+	case eHWSC_RayGen:
+		return s_sClassNameRayGen;
+	case eHWSC_HitGroup:
+		return s_sClassNameHitGroup;
+	case eHWSC_RayMiss:
+		return s_sClassNameRayMiss;
+	//TanGram:VKRT:END
 	default:
 		CRY_ASSERT("WTF");
 	case eHWSC_Compute:
@@ -218,6 +231,11 @@ CCryNameTSCRC CHWShader::mfGetCacheClassName(EHWShaderClass eClass)
 	static const auto s_sClassNameDomain = CCryNameTSCRC("CHWShader_cache_DS");
 	static const auto s_sClassNameHull = CCryNameTSCRC("CHWShader_cache_HS");
 	static const auto s_sClassNameCompute = CCryNameTSCRC("CHWShader_cache_CS");
+	//TanGram:VKRT:BEGIN
+	static const auto s_sClassNameRayGen = CCryNameTSCRC("CHWShader_cache_RGS");
+	static const auto s_sClassNameHitGroup = CCryNameTSCRC("CHWShader_cache_HGS");
+	static const auto s_sClassNameRayMiss = CCryNameTSCRC("CHWShader_cache_RMS");
+	//TanGram:VKRT:END
 
 	switch (eClass)
 	{
@@ -231,6 +249,14 @@ CCryNameTSCRC CHWShader::mfGetCacheClassName(EHWShaderClass eClass)
 		return s_sClassNameDomain;
 	case eHWSC_Hull:
 		return s_sClassNameHull;
+	//TanGram:VKRT:BEGIN
+	case eHWSC_RayGen:
+		return s_sClassNameRayGen;
+	case eHWSC_HitGroup:
+		return s_sClassNameHitGroup;
+	case eHWSC_RayMiss:
+		return s_sClassNameRayMiss;
+	//TanGram:VKRT:END
 	default:
 		CRY_ASSERT("WTF");
 	case eHWSC_Compute:

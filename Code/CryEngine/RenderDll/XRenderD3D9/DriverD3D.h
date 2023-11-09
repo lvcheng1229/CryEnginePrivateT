@@ -783,7 +783,7 @@ private:
 
 	CD3DStereoRenderer*              m_pStereoRenderer;
 
-	//RENDERDOC_API_1_6_0*			 m_pRenderDocAPI;//TanGram:RenderDoc
+	RENDERDOC_API_1_6_0*			 m_pRenderDocAPI;//TanGram:RenderDoc
 
 	volatile int                     m_lockCharCB;
 	util::list<SCharacterInstanceCB> m_CharCBFreeList;

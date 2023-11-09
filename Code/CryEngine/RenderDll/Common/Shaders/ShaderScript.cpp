@@ -941,6 +941,26 @@ void CShaderMan::RT_ParseShader(CShader* pSH, uint64 nMaskGen, uint32 flags, CSh
 						if (pShader)
 							pShader->InvalidateCaches();
 					}
+
+					//TanGram:VKRT:BEGIN
+					for (auto pShader : techPass.m_RGShaders)
+					{
+						if (pShader)
+							pShader->InvalidateCaches();
+					}
+
+					for (auto pShader : techPass.m_HGShaders)
+					{
+						if (pShader)
+							pShader->InvalidateCaches();
+					}
+
+					for (auto pShader : techPass.m_RMShaders)
+					{
+						if (pShader)
+							pShader->InvalidateCaches();
+					}
+					//TanGram:VKRT:BEGIN
 				}
 			}
 		}

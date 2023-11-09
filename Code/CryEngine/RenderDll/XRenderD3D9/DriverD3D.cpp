@@ -70,8 +70,8 @@ CD3D9Renderer::CD3D9Renderer()
 }
 
 //TanGram:RenderDoc:BEGIN
-#define RDC_DLL_PATH L"G:/RenderDocForked/renderdoc/x64/Development/renderdoc.dll"
-#define RDC_SAVE_PATH "H:/CryEngine/CRYENGINE_Source/CryTestProj/Breeze/user/cerdc"
+#define RDC_DLL_PATH L"C:/Program Files/RenderDoc/x86/renderdoc.dll"
+#define RDC_SAVE_PATH "H:/CryEnginePrivateT/CryTestProj/Breeze/user/cerdc"
 
 RENDERDOC_API_1_6_0* GetRenderDocApi()
 {
@@ -104,10 +104,13 @@ void CD3D9Renderer::InitRenderer()
 	CRenderer::InitRenderer();
 
 	//TanGram:RenderDoc:BEGIN
-	//m_pRenderDocAPI = GetRenderDocApi();
-	//RENDERDOC_InputButton captureKeys[2] = { eRENDERDOC_Key_Tab,eRENDERDOC_Key_PrtScrn };
-	//m_pRenderDocAPI->SetCaptureKeys(captureKeys, 2);
-	//m_pRenderDocAPI->SetCaptureFilePathTemplate(RDC_SAVE_PATH);
+	m_pRenderDocAPI = GetRenderDocApi();
+	if (m_pRenderDocAPI)
+	{
+		RENDERDOC_InputButton captureKeys[2] = { eRENDERDOC_Key_Tab,eRENDERDOC_Key_PrtScrn };
+		m_pRenderDocAPI->SetCaptureKeys(captureKeys, 2);
+		m_pRenderDocAPI->SetCaptureFilePathTemplate(RDC_SAVE_PATH);
+	}
 	//TanGram:RenderDoc:END
 
 	m_renderToTexturePipelineKey = SGraphicsPipelineKey::InvalidGraphicsPipelineKey;

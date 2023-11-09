@@ -167,6 +167,7 @@ namespace Extensions
 			extensionsWithFeatures.push_back(CVulkanSpirvExtension());
 			extensionsWithFeatures.push_back(CVulkanShaderFloatControlsExtension());
 		}
+		isDeviceExtensionInit = true;
 		return extensionsWithFeatures;
 	}
 
