@@ -856,10 +856,17 @@ void CShaderMan::RT_ParseShader(CShader* pSH, uint64 nMaskGen, uint32 flags, CSh
 		}
 	}
 #endif
+
+	//TanGram:VKRT:BEGIN
+	if (pSH->m_NameShader == "RayTracingTestShader")
+	{
+		iLog->Log("TanGram:VKRT:ParseRayTracing");
+	}
+	//TanGram:VKRT:END
+
 	if (!bSuccess)
 	{
 		CRY_PROFILE_SECTION(PROFILE_RENDERER, "Renderer: RT_ParseShader");
-
 
 		bool nukeCaches = false;
 

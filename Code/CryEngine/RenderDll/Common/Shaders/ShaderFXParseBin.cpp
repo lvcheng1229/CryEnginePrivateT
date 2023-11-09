@@ -3095,6 +3095,11 @@ bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& 
 		FX_TOKEN(DomainShader)
 		FX_TOKEN(HullShader)
 		FX_TOKEN(ComputeShader)
+		//TanGram:VKRT:BEGIN
+		FX_TOKEN(RayGenShaders)
+		FX_TOKEN(HitGroupShaders)
+		FX_TOKEN(MissShaders)
+		//TanGram:VKRT:END
 		FX_TOKEN(ZEnable)
 		FX_TOKEN(ZWriteEnable)
 		FX_TOKEN(CullMode)
@@ -3108,6 +3113,9 @@ bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& 
 		FX_TOKEN(IgnoreMaterialState)
 	FX_END_TOKENS
 
+
+
+
 	bool bRes = true;
 	int n = pShTech->m_Passes.Num();
 	pShTech->m_Passes.ReserveNew(n + 1);
@@ -3115,8 +3123,8 @@ bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& 
 	sm->m_eCull = -1;
 	sm->m_AlphaRef = ~0;
 
-	SParserFrame VS, PS, GS, DS, HS, CS;
-	FXMacroBin VSMacro, PSMacro, GSMacro, DSMacro, HSMacro, CSMacro;
+	SParserFrame VS, PS, GS, DS, HS, CS, RayGenShaders, HitGroupShaders, MissShaders;
+	FXMacroBin VSMacro, PSMacro, GSMacro, DSMacro, HSMacro, CSMacro, RayGenShadersMacro, HitGroupShadersMacro, MissShadersMacro;//todo@TanGram:VKRT
 
 	byte ZFunc = eCF_LEqual;
 
@@ -3161,6 +3169,21 @@ bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& 
 			CS = Parser.m_Data;
 			CSMacro = Parser.m_Macros[1];
 			break;
+
+		//TanGram:VKRT:BEGIN
+		case eT_RayGenShaders:
+			RayGenShaders = Parser.m_Data;
+			RayGenShadersMacro = Parser.m_Macros[1];
+			break;
+		case eT_HitGroupShaders:
+			HitGroupShaders = Parser.m_Data;
+			HitGroupShadersMacro = Parser.m_Macros[1];
+			break;
+		case eT_MissShaders:
+			MissShaders = Parser.m_Data;
+			MissShadersMacro = Parser.m_Macros[1];
+			break;
+		//TanGram:VKRT:END
 
 		case eT_ZEnable:
 			if (Parser.GetBool(Parser.m_Data))
@@ -3315,6 +3338,15 @@ bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& 
 		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, DSMacro, DS, pShTech, sm, eHWSC_Domain, FXParams);
 	if (CParserBin::PlatformSupportsComputeShaders() && !CS.IsEmpty())
 		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, CSMacro, CS, pShTech, sm, eHWSC_Compute, FXParams);
+
+	//TanGram:VKRT:BEGIN
+	if (CParserBin::PlatformSupportsRayTracingShaders() && !RayGenShaders.IsEmpty())
+		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, RayGenShadersMacro, RayGenShaders, pShTech, sm, eHWSC_RayGen, FXParams);
+	if (CParserBin::PlatformSupportsRayTracingShaders() && !HitGroupShaders.IsEmpty())
+		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, HitGroupShadersMacro, CS, pShTech, sm, eHWSC_HitGroup, FXParams);
+	if (CParserBin::PlatformSupportsRayTracingShaders() && !MissShaders.IsEmpty())
+		bRes &= ParseBinFX_Technique_Pass_LoadShader(Parser, MissShadersMacro, CS, pShTech, sm, eHWSC_RayMiss, FXParams);
+	//TanGram:VKRT:END
 
 	Parser.EndFrame(OldFrame);
 
@@ -3835,6 +3867,15 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 		FX_TOKEN(RWByteAddressBuffer)
 		FX_TOKEN(AppendStructuredBuffer)//TanGram:VSM
 		FX_TOKEN(cbuffer)
+
+		//TanGram:VKRT:BEGIN
+		FX_TOKEN(RaytracingAccelerationStructure)
+		FX_TOKEN(shader)
+		FX_TOKEN(raygeneration)
+		FX_TOKEN(closesthit)
+		FX_TOKEN(miss)
+		//TanGram:VKRT:END
+
 	FX_END_TOKENS
 
 	std::vector<SShaderTechParseParams> techParams;
@@ -4069,6 +4110,7 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 		case eT_ByteAddressBuffer:
 		case eT_RWByteAddressBuffer:
 		case eT_AppendStructuredBuffer://TanGram:VSM
+		case eT_RaytracingAccelerationStructure://TanGram:VKRT
 		case eT_RWTexture2D:
 		case eT_RWTexture2DArray:
 		case eT_RWTexture3D:
@@ -4431,6 +4473,18 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		FX_TOKEN(RWStructuredBuffer)
 		FX_TOKEN(RWByteAddressBuffer)//TanGram:TileBloom
 		FX_TOKEN(AppendStructuredBuffer)//TanGram:VSM
+
+		//TanGram:VKRT:BEGIN
+		FX_TOKEN(RaytracingAccelerationStructure)
+		FX_TOKEN(shader)
+		FX_TOKEN(raygeneration)
+		FX_TOKEN(closesthit)
+		FX_TOKEN(miss)
+		FX_TOKEN(RayGenShaders)
+		FX_TOKEN(HitGroupShaders)
+		FX_TOKEN(MissShaders)
+		//TanGram:VKRT:END
+
 		FX_TOKEN(cbuffer)
 		FX_TOKEN(struct)
 		FX_TOKEN(sampler1D)
@@ -4483,6 +4537,17 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		case eT_SamplerComparisonState:
 		case eT_int:
 		case eT_bool:
+
+		//TanGram:VKRT:BEGIN
+		case eT_RaytracingAccelerationStructure:
+		case eT_shader:
+		case eT_raygeneration:
+		case eT_closesthit:
+		case eT_miss:
+		case eT_RayGenShaders:
+		case eT_HitGroupShaders:
+		case eT_MissShaders:
+		//TanGram:VKRT:END
 
 		case eT_half2:
 		case eT_half3:

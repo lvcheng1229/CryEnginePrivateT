@@ -43,6 +43,7 @@ CShader* CShaderMan::s_ShaderShadowMaskGen;
 CShader* CShaderMan::s_ShaderSVOGI;
 #endif
 CShader* CShaderMan::s_shBloomSetup;//TanGram: TiledBloom
+CShader* CShaderMan::s_shRayTracingTest;//TanGram:VKRT
 CShader* CShaderMan::s_shHDRPostProcess;
 CShader* CShaderMan::s_ShaderDebug;
 CShader* CShaderMan::s_ShaderLensOptics;
@@ -1433,6 +1434,7 @@ void CShaderMan::mfReleaseSystemShaders()
 	SAFE_RELEASE_FORCE(s_ShaderSVOGI);
 #endif
 	SAFE_RELEASE_FORCE(s_shBloomSetup);
+	SAFE_RELEASE_FORCE(s_shRayTracingTest);//TanGram:VKRT
 	SAFE_RELEASE_FORCE(s_shHDRPostProcess);
 	SAFE_RELEASE_FORCE(s_ShaderDebug);
 	SAFE_RELEASE_FORCE(s_ShaderLensOptics);
@@ -1494,6 +1496,7 @@ void CShaderMan::mfLoadDefaultSystemShaders()
 		//sLoadShader("VSMCmdBuild", s_ShaderVSMCmdBuild);
 		//TanGram:VSM:END
 		sLoadShader("BloomSetup", s_shBloomSetup);
+		sLoadShader("RayTracingTestShader", s_shRayTracingTest);
 		sLoadShader("HDRPostProcess", s_shHDRPostProcess);
 		sLoadShader("Hud3D", s_sh3DHUD);
 
@@ -1597,6 +1600,12 @@ bool CShaderMan::mfGatherShadersList(const char* szPath, bool bCheckIncludes, bo
 		if (stricmp(&nmf[len], ".cfx"))
 			continue;
 		cry_strcpy(nmf, fileinfo.name);
+		//TanGram:VKRT:BEGIN
+		if (stricmp(fileinfo.name, "RayTracingTestShader.cfx") == 0)
+		{
+			iLog->Log("RayTracingTestShader.cfx");
+		}
+		//TanGram:VKRT:END
 		PathUtil::RemoveExtension(nmf);
 		mfAddFXShaderNames(nmf, Names, bUpdateCRC);
 	}

@@ -376,11 +376,22 @@ void CParserBin::Init()
 	FX_REGISTER_TOKEN(RWStructuredBuffer);
 	FX_REGISTER_TOKEN(ByteAddressBuffer);
 	FX_REGISTER_TOKEN(RWByteAddressBuffer);
-	FX_REGISTER_TOKEN(AppendStructuredBuffer);//TanGram:VSM
+	FX_REGISTER_TOKEN(AppendStructuredBuffer);
+
+	//TanGram:VKRT:BEGIN
+	FX_REGISTER_TOKEN(RaytracingAccelerationStructure);
+	FX_REGISTER_TOKEN(shader);
+	FX_REGISTER_TOKEN(raygeneration);
+	FX_REGISTER_TOKEN(closesthit);
+	FX_REGISTER_TOKEN(miss);
+	FX_REGISTER_TOKEN(RayGenShaders);
+	FX_REGISTER_TOKEN(HitGroupShaders);
+	FX_REGISTER_TOKEN(MissShaders);
+	//TanGram:VKRT:END
 
 	FX_REGISTER_TOKEN(Position);
 	FX_REGISTER_TOKEN(Allways);
-
+	
 	FX_REGISTER_TOKEN(STANDARDSGLOBAL);
 
 	FX_REGISTER_TOKEN(technique);

@@ -262,6 +262,17 @@ enum EToken
 	eT_RWBuffer,
 	eT_AppendStructuredBuffer,//TanGram:VSM
 
+	//TanGram:VKRT:BEGIN
+	eT_RaytracingAccelerationStructure,
+	eT_shader,
+	eT_raygeneration,
+	eT_closesthit,
+	eT_miss,
+	eT_RayGenShaders,
+	eT_HitGroupShaders,
+	eT_MissShaders,
+	//TanGram:VKRT:END
+
 	eT_color,
 	eT_Position,
 	eT_Allways,
@@ -1004,6 +1015,7 @@ public:
 	static bool          PlatformSupportsHullShaders()     { return (CParserBin::m_nPlatform & (SF_D3D12 | SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_VULKAN)) != 0; }
 	static bool          PlatformSupportsDomainShaders()   { return (CParserBin::m_nPlatform & (SF_D3D12 | SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_VULKAN)) != 0; }
 	static bool          PlatformSupportsComputeShaders()  { return (CParserBin::m_nPlatform & (SF_D3D12 | SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_VULKAN)) != 0; }
+	static bool          PlatformSupportsRayTracingShaders(){ return (CParserBin::m_nPlatform & (SF_D3D12 | SF_VULKAN)) != 0; }//TanGram:VKRT
 	static bool          PlatformIsConsole()               { return (CParserBin::m_nPlatform & (SF_ORBIS | SF_DURANGO)) != 0; }
 
 	static bool m_bEditable;

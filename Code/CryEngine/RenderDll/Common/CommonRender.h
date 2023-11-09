@@ -71,6 +71,13 @@ enum EHWShaderClass : uint8
 	eHWSC_NumGfx   = 5,
 
 	eHWSC_Compute  = 5,
+
+	//TanGram:VKRT:BEGIN
+	eHWSC_RayGen   = 6,
+	eHWSC_HitGroup = 7,
+	eHWSC_RayMiss  = 8,
+	//TanGram:VKRT:END
+
 	eHWSC_Num      = 6
 };
 

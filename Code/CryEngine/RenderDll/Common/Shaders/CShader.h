@@ -334,6 +334,7 @@ public:
 	static CShader*              s_ShaderSVOGI;
 #endif
 	static CShader*				 s_shBloomSetup;//TanGram: TiledBloom
+	static CShader*				 s_shRayTracingTest;//TanGram:VKRT
 	static CShader*              s_shHDRPostProcess;
 	static CShader*              s_shPostEffectsGame; // game specific post process effects
 	static CShader*              s_shPostEffectsRenderModes;
