@@ -1496,7 +1496,7 @@ void CShaderMan::mfLoadDefaultSystemShaders()
 		//sLoadShader("VSMCmdBuild", s_ShaderVSMCmdBuild);
 		//TanGram:VSM:END
 		sLoadShader("BloomSetup", s_shBloomSetup);
-		//sLoadShader("RayTracingTestShader", s_shRayTracingTest);
+		sLoadShader("RayTracingTestShader", s_shRayTracingTest);
 		sLoadShader("HDRPostProcess", s_shHDRPostProcess);
 		sLoadShader("Hud3D", s_sh3DHUD);
 

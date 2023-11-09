@@ -266,9 +266,11 @@ void CDeviceGraphicsCommandInterfaceImpl::BuildRayTracingTopLevelASImpl(CRayTrac
 		VkBufferDeviceAddressInfo bufferDeviceAddressInfo = { VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
 		bufferDeviceAddressInfo.buffer = instanceBuffer->GetDevBuffer()->GetBuffer()->GetHandle();
 		VkDeviceAddress instanceBufferAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &bufferDeviceAddressInfo) + offset;
-		GeTopLevelAccelerationStructureBuildInfo(GetDevice()->GetVkDevice(), rtTopLevelASPtr->m_sRtTLASCreateInfo.m_nInstanceTransform, 0, EBuildAccelerationStructureFlag::eBuild_PreferTrace, outvkRtTLASBuildInfo);
+		GeTopLevelAccelerationStructureBuildInfo(GetDevice()->GetVkDevice(), rtTopLevelASPtr->m_sRtTLASCreateInfo.m_nInstanceTransform, instanceBufferAddress, EBuildAccelerationStructureFlag::eBuild_PreferTrace, outvkRtTLASBuildInfo);
 		outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.dstAccelerationStructure = rtTopLevelAccelerationStructure->accelerationStructureHandle;
-		outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.scratchData.deviceAddress = instanceBufferAddress;
+
+		bufferDeviceAddressInfo.buffer = scratchBuffer.GetDevBuffer()->GetBuffer()->GetHandle();
+		outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo.scratchData.deviceAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &bufferDeviceAddressInfo);
 	}
 
 	VkAccelerationStructureBuildGeometryInfoKHR buildGeometryInfo = outvkRtTLASBuildInfo.m_vkAsBuildGeometryInfo;
@@ -281,8 +283,8 @@ void CDeviceGraphicsCommandInterfaceImpl::BuildRayTracingTopLevelASImpl(CRayTrac
 	VkAccelerationStructureBuildRangeInfoKHR* pBuildRangeInfo = &buildRangeInfo;
 
 	VkCommandBuffer cmdBuffer = GetVKCommandList()->GetVkCommandList();
+	AddAccelerationStructureBuildBarrier(cmdBuffer);
 	Extensions::KHR_acceleration_structure::vkCmdBuildAccelerationStructuresKHR(cmdBuffer, 1, &buildGeometryInfo, &pBuildRangeInfo);
-
 	AddAccelerationStructureBuildBarrier(cmdBuffer);
 	GetVKCommandList()->Submit();
 }
