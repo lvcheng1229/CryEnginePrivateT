@@ -876,6 +876,11 @@ add_sources("CryRenderer_uber_6.cpp"
 		"GraphicsPipeline/Common/SceneRenderPass.cpp"
 		"GraphicsPipeline/Common/UtilityPasses.h"
 		"GraphicsPipeline/Common/UtilityPasses.cpp"
+
+		#TanGram:VKRT:BEGIN
+		"GraphicsPipeline/Common/RayTracingRenderPass.h"
+		"GraphicsPipeline/Common/RayTracingRenderPass.cpp"
+		#TanGram:VKRT:END
 )
 
 add_sources("NoUberFile"

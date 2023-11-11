@@ -2,18 +2,19 @@
 
 #if (CRY_RENDERER_DIRECT3D >= 120)
 #elif (CRY_RENDERER_DIRECT3D >= 110)
-	#if defined(USE_NV_API)
-		#include "D3D11/DeviceResources_D3D11_NVAPI.h"
-	#endif
+#if defined(USE_NV_API)
+#include "D3D11/DeviceResources_D3D11_NVAPI.h"
+#endif
 #endif
 #include <CryRenderer/RenderElements/RendElement.h>
+#include <memory>
 class CGpuBuffer;
 
 // Enum specifying the type of build operation to perform
 enum class EBuildAccelerationStructureMode : uint32
 {
 	eBuild,												// Specifies that the destination acceleration structure will be built using the specified geometries
-	
+
 	//unsupported currently
 	eUpdate,											// Specifies that the destination acceleration structure will be built using data in a source acceleration structure, updated by the specified geometries
 };
@@ -75,7 +76,7 @@ public:
 	CRayTracingBottomLevelAccelerationStructure(const SRayTracingBottomLevelASCreateInfo& sRtBlASCreateInfo)
 		:m_sRtBlASCreateInfo(sRtBlASCreateInfo)
 	{}
-	
+
 	virtual uint64 GetAccelerationStructureAddress() { return 0; };
 
 	SRayTracingBottomLevelASCreateInfo m_sRtBlASCreateInfo;
@@ -132,3 +133,5 @@ public:
 };
 
 typedef std::shared_ptr<CRayTracingTopLevelAccelerationStructure> CRayTracingTopLevelAccelerationStructurePtr;
+
+

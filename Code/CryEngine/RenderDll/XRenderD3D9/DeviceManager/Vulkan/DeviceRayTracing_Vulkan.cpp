@@ -1,6 +1,5 @@
 #include "..\DeviceObjects.h"
 #include "DeviceRayTracing_Vulkan.h"
-
 #include "Vulkan\API\VKExtensions.hpp"
 
 VkDeviceAddress InputStreamGetBufferDeviceAddress(const VkDevice* pVkDevice, const CDeviceInputStream* deviceInputStreaming)

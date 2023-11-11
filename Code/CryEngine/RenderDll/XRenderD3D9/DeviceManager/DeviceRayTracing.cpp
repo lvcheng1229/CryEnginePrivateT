@@ -34,4 +34,11 @@ void CDeviceGraphicsCommandInterface::BuildRayTracingTopLevelAS(CRayTracingTopLe
 	BuildRayTracingTopLevelASImpl(rtTopLevelASPtr, instanceBuffer, offset);
 }
 
+//CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags)
+//{
+//	memset(this, 0, sizeof(CDeviceRayTracingPSODesc));
+//}
+
+
+
 

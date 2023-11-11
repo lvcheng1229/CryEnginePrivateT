@@ -115,7 +115,6 @@ void CRayTracingTestStage::Init()
 	CreateVbIb();
 	CreateAndBuildBLAS(pCommandInterface);
 	CreateAndBuildTLAS(pCommandInterface);
-	
 }
 
 void CRayTracingTestStage::Execute()

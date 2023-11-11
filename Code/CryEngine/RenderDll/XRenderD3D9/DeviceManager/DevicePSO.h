@@ -73,6 +73,20 @@ public:
 	uint32                   m_ShaderFlags_MD;
 };
 
+//TanGram:VKRT:BEGIN
+//class CDeviceRayTracingPSODesc
+//{
+//public:
+//	//CDeviceRayTracingPSODesc(CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags);
+//
+//public:
+//	_smart_ptr<CShader>      m_pShader;
+//	CCryNameTSCRC            m_technique;
+//	uint64                   m_ShaderFlags_RT;
+//	uint32                   m_ShaderFlags_MD;
+//};
+//TanGram:VKRT:END
+
 namespace std
 {
 	template<>
@@ -184,3 +198,17 @@ typedef std::shared_ptr<CDeviceComputePSO>        CDeviceComputePSOPtr;
 typedef std::weak_ptr<CDeviceComputePSO>          CDeviceComputePSOWPtr;
 
 ////////////////////////////////////////////////////////////////////////////
+
+//TanGram:VKRT:BEGIN
+
+//class CDeviceRayTracingPSO : public CDevicePSO
+//{
+//public:
+//	virtual ~CDeviceRayTracingPSO() {}
+//
+//	//virtual bool Init(const CDeviceRayTracingPSODesc& psoDesc) = 0;
+//};
+//
+//typedef std::shared_ptr<CDeviceRayTracingPSO>        CDeviceRayTracingPSOPtr;
+
+//TanGram:VKRT:END
