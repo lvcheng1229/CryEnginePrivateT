@@ -28,11 +28,11 @@ namespace NCryVulkan
 				:CVulkanDeviceExtension(inVkExtensionName) {}
 
 			virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2) {};
-			virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice){};
+			virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice) {};
 			virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) {};
 		};
 
-		std::vector<CVulkanDeviceExtensionWithFeature>& GetVulkanDeviceExtensionWithFeatureList();
+		std::vector<CVulkanDeviceExtensionWithFeature*>& GetVulkanDeviceExtensionWithFeatureList();
 
 		namespace EXT_debug_marker
 		{
@@ -77,6 +77,18 @@ namespace NCryVulkan
 			//typedef void (VKAPI_PTR* PFN_vkCmdBuildAccelerationStructuresKHR)(VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos);
 			extern PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR;
 		}
+
+		namespace KHR_ray_tracing_pipeline
+		{
+			extern  bool                              IsSupported;
+
+			//typedef VkResult(VKAPI_PTR* PFN_vkCreateRayTracingPipelinesKHR)(VkDevice device, VkDeferredOperationKHR deferredOperation, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkRayTracingPipelineCreateInfoKHR* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines);
+			extern	PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR;
+
+			//typedef VkResult(VKAPI_PTR* PFN_vkGetRayTracingShaderGroupHandlesKHR)(VkDevice device, VkPipeline pipeline, uint32_t firstGroup, uint32_t groupCount, size_t dataSize, void* pData);
+			extern PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR;
+		}
+
 		//TanGram:VKRT:END
 
 		void Init(CDevice* pDevice, const std::vector<const char*>& loadedExtensions);

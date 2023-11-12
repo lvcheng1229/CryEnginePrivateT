@@ -127,6 +127,8 @@ public:
 	CRayTracingTopLevelAccelerationStructure(const SRayTracingTopLevelASCreateInfo& sRtTLASCreateInfo)
 		:m_sRtTLASCreateInfo(sRtTLASCreateInfo)
 	{}
+	
+	virtual CGpuBuffer* GetAccelerationStructureBuffer() { return nullptr; };
 
 	SRayTracingTopLevelASCreateInfo m_sRtTLASCreateInfo;
 	SRayTracingAccelerationStructSize m_sSizeInfo;

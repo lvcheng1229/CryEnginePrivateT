@@ -40,18 +40,20 @@ CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(const CDeviceRayTracingPSODes
 	*this = other;
 }
 
-CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags)
+CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(CDeviceResourceLayoutPtr pResourceLayout,::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags)
 {
 	memset(this, 0, sizeof(CDeviceRayTracingPSODesc));
 	m_pShader = pShader;
 	m_technique = technique;
 	m_ShaderFlags_RT = rtFlags;
 	m_ShaderFlags_MD = mdFlags;
+	m_pResourceLayout = pResourceLayout;
 }
 
 CDeviceRayTracingPSODesc& CDeviceRayTracingPSODesc::operator=(const CDeviceRayTracingPSODesc& other)
 {
 	// increment ref counts
+	m_pResourceLayout = other.m_pResourceLayout;
 	m_pShader = other.m_pShader;
 	memcpy(this, &other, sizeof(CDeviceRayTracingPSODesc));
 

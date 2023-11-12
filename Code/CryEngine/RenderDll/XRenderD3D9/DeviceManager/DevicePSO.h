@@ -78,7 +78,7 @@ class CDeviceRayTracingPSODesc
 {
 public:
 	CDeviceRayTracingPSODesc(const CDeviceRayTracingPSODesc& other);
-	CDeviceRayTracingPSODesc(CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags);
+	CDeviceRayTracingPSODesc(CDeviceResourceLayoutPtr pResourceLayout, CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags);
 
 	CDeviceRayTracingPSODesc& operator=(const CDeviceRayTracingPSODesc& other);
 	bool                      operator==(const CDeviceRayTracingPSODesc& other) const;
@@ -90,6 +90,7 @@ public:
 	CCryNameTSCRC            m_technique;
 	uint64                   m_ShaderFlags_RT;
 	uint32                   m_ShaderFlags_MD;
+	CDeviceResourceLayoutPtr m_pResourceLayout;
 };
 //TanGram:VKRT:END
 

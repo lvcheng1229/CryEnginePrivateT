@@ -260,6 +260,7 @@ public:
 
 		// Bits [8, 15] free
 		USAGE_ACCELERATION_STRUCTURE	 = BIT(8),
+		USAGE_SHADER_BINDING_TABLE		 = BIT(9),
 
 		USAGE_UAV_READWRITE              = BIT(16), // Reading from UAVs is only possible through typeless formats under DX11
 		USAGE_UAV_OVERLAP                = BIT(17), // Concurrent access to UAVs should be allowed

@@ -38,11 +38,11 @@ _smart_ptr<CDevice> CDevice::Create(const SPhysicalDeviceInfo* pDeviceInfo, VkAl
 	ZeroStruct(DeviceInfo);
 
 	//TanGram:VKRT:BEGIN
-	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature*>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
 	{
 		for (auto extension : deviceExtensions)
 		{
-			extension.EnablePhysicalDeviceFeatures(DeviceInfo);
+			extension->EnablePhysicalDeviceFeatures(DeviceInfo);
 		}
 
 	}

@@ -44,9 +44,21 @@ CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()
 
 	if ((dirtyMask != eDirty_None) || (m_currentPsoUpdateCount != m_pPipelineState->GetUpdateCount()))
 	{
+		EDirtyFlags revertMask = dirtyMask;
+		if (dirtyMask & (eDirty_Technique | eDirty_ResourceLayout))
+		{
+			int bindSlot = 0;
+			SDeviceResourceLayoutDesc resourceLayoutDesc;
+			resourceLayoutDesc.SetResourceSet(bindSlot++, m_resourceDesc);
+			m_pResourceLayout = GetDeviceObjectFactory().CreateResourceLayout(resourceLayoutDesc);
+
+			if (!m_pResourceLayout)
+				return (EDirtyFlags)(m_dirtyMask |= revertMask);
+		}
+
 		if (dirtyMask & (eDirty_Technique))
 		{
-			CDeviceRayTracingPSODesc psoDesc(m_pShader, m_techniqueName, m_rtMask, 0);
+			CDeviceRayTracingPSODesc psoDesc(m_pResourceLayout, m_pShader, m_techniqueName, m_rtMask, 0);
 			m_pPipelineState = GetDeviceObjectFactory().CreateRayTracingPSO(psoDesc);
 		}
 	}

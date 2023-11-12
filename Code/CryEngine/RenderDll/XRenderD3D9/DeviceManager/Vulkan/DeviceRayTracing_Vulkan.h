@@ -46,16 +46,35 @@ struct SVulkanRayTracingTLASBuildInfo
 	VkAccelerationStructureBuildSizesInfoKHR m_vkAsBuildSizeInfo; // Build size info
 };
 
+
+
+
 class CVulkanRayTracingTopLevelAccelerationStructure : public CRayTracingTopLevelAccelerationStructure
 {
 public:
 	CVulkanRayTracingTopLevelAccelerationStructure(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo, CDevice* pDevice);
 
+	virtual CGpuBuffer* GetAccelerationStructureBuffer() { return &m_accelerationStructureBuffer; };
+
 	VkAccelerationStructureKHR accelerationStructureHandle = nullptr;
 	VkDeviceAddress accelerationStructureDeviceAddress;
 	CGpuBuffer m_accelerationStructureBuffer;
+
 private:
 	CDevice* const  m_pDevice;
+};
+
+class CDeviceRayTracingSBT_Vulkan
+{
+	CDeviceRayTracingSBT_Vulkan(CDevice* pDevice)
+		: m_pDevice(pDevice)
+	{
+
+	}
+
+
+
+	CDevice* m_pDevice;
 };
 
 class CDeviceRayTracingPSO_Vulkan : public CDeviceRayTracingPSO
@@ -72,9 +91,20 @@ public:
 
 	const VkPipeline& GetVkPipeline() const { return m_pipeline; }
 
+	struct SRayTracingSBT
+	{
+		CGpuBuffer m_rtSBTBuffer;
+
+		VkStridedDeviceAddressRegionKHR m_rayGenRegion;
+		VkStridedDeviceAddressRegionKHR m_hitGroupRegion;
+		VkStridedDeviceAddressRegionKHR m_rayMissRegion;
+	};
+	SRayTracingSBT m_sRayTracingSBT;
+
 protected:
 	CDevice* m_pDevice;
 	VkPipeline m_pipeline;
 };
 
 typedef std::shared_ptr<CDeviceRayTracingPSO_Vulkan> CDeviceRayTracingPSO_VulkanPtr;
+

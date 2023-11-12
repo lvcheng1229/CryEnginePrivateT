@@ -118,6 +118,10 @@ void CRayTracingTestStage::Init()
 	
 	//test only
 	m_rayTracingRenderPass.SetTechnique(CShaderMan::s_shRayTracingTest, CCryNameTSCRC("RayTracingTestTech"), 0);
+	m_rayTracingRenderPass.SetBuffer(0, m_pRtTopLevelAS->GetAccelerationStructureBuffer());
+	
+	//Ray Buffer
+	//m_rayTracingRenderPass.SetBuffer(1, );
 	m_rayTracingRenderPass.PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
 }
 

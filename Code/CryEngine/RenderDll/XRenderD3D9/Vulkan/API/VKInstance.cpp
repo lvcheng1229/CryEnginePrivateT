@@ -159,15 +159,16 @@ _smart_ptr<CDevice> CInstance::CreateDevice(size_t physicalDeviceIndex)
 	Extensions::Init(device.get(), extensions);
 
 	//TanGram:VKRT:BEGIN
-	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature*>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
 	// Get physical device properties
 	{
 		VkPhysicalDeviceProperties2 PhysicalDeviceProperties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
 		for (auto extension : deviceExtensions)
 		{
-			extension.GetPhysicalDeviceProperties(PhysicalDeviceProperties2, device.get());
+			extension->GetPhysicalDeviceProperties(PhysicalDeviceProperties2, device.get());
 		}
 		vkGetPhysicalDeviceProperties2(pDeviceInfo.device, &PhysicalDeviceProperties2);
+
 	}
 	//TanGram:VKRT:END
 
@@ -391,14 +392,14 @@ VkResult CInstance::InitializePhysicalDeviceInfos()
 		vkGetPhysicalDeviceMemoryProperties(gpus[i], &info.deviceMemoryProperties);
 
 		//TanGram:VKRT:BEGIN
-		std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+		std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature*>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
 		{
 			// Write physical device features
 			{
 				VkPhysicalDeviceFeatures2 PhysicalDeviceFeatures2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
 				for (auto extension : deviceExtensions)
 				{
-					extension.WritePhysicalDeviceFeatures(PhysicalDeviceFeatures2);
+					extension->WritePhysicalDeviceFeatures(PhysicalDeviceFeatures2);
 				}
 				vkGetPhysicalDeviceFeatures2(info.device, &PhysicalDeviceFeatures2);
 				info.deviceFeatures = PhysicalDeviceFeatures2.features;
@@ -584,10 +585,14 @@ void CInstance::GatherPhysicalDeviceExtensionsToEnable()
 
 	//m_enabledPhysicalDeviceExtensions.emplace_back(VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME, true);//TanGram:VSM
 
-	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
+	m_enabledPhysicalDeviceExtensions.emplace_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, true);
+	m_enabledPhysicalDeviceExtensions.emplace_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME, true);
+	m_enabledPhysicalDeviceExtensions.emplace_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME, true);
+
+	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature*>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
 	for (auto extension : deviceExtensions)
 	{
-		m_enabledPhysicalDeviceExtensions.emplace_back(extension.GetExtensionName(), true);
+		m_enabledPhysicalDeviceExtensions.emplace_back(extension->GetExtensionName(), true);
 	}
 }
 

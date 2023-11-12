@@ -3,16 +3,18 @@
 
 #include "VKExtensions.hpp"
 
-template <typename PreStructType, typename NextStructType>
-static void AddToPNext(PreStructType& preStruct, NextStructType& nextStruct)
-{
-	nextStruct.pNext = (void*)preStruct.pNext;
-	preStruct.pNext = (void*)&nextStruct;
-}
+
 
 namespace NCryVulkan { 
 namespace Extensions 
 {
+	template <typename PreStructType, typename NextStructType>
+	inline void AddToPNext(PreStructType& preStruct, NextStructType& nextStruct)
+	{
+		nextStruct.pNext = (void*)preStruct.pNext;
+		preStruct.pNext = (void*)&nextStruct;
+	}
+
 
 
 	class CVulkanAccelerationStructureExtension :public CVulkanDeviceExtensionWithFeature
@@ -87,6 +89,10 @@ namespace Extensions
 			AddToPNext(PhysicalDeviceFeatures2, m_bufferDeviceAddressFeatures);
 		}
 
+		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override
+		{
+
+		}
 
 		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
 		{
@@ -127,45 +133,23 @@ namespace Extensions
 	//private:
 	//	VkPhysicalDeviceDescriptorBufferFeaturesEXT m_vkDescriptorBufferFeature;
 	//};
-	
-	class CVulkanDefferedHostOperationExtension :public CVulkanDeviceExtensionWithFeature
-	{
-	public:
-		CVulkanDefferedHostOperationExtension()
-			:CVulkanDeviceExtensionWithFeature(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME)
-		{}
-	};
 
-	class CVulkanSpirvExtension :public CVulkanDeviceExtensionWithFeature
-	{
-	public:
-		CVulkanSpirvExtension()
-			:CVulkanDeviceExtensionWithFeature(VK_KHR_SPIRV_1_4_EXTENSION_NAME)
-		{}
-	};
 
-	class CVulkanShaderFloatControlsExtension :public CVulkanDeviceExtensionWithFeature
-	{
-	public:
-		CVulkanShaderFloatControlsExtension()
-			:CVulkanDeviceExtensionWithFeature(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME)
-		{}
-	};
-
-	static std::vector<CVulkanDeviceExtensionWithFeature> extensionsWithFeatures;
+	static std::vector<CVulkanDeviceExtensionWithFeature*> extensionsWithFeatures;
 	static bool isDeviceExtensionInit = false;
 
-	std::vector<CVulkanDeviceExtensionWithFeature>& GetVulkanDeviceExtensionWithFeatureList()
+	std::vector<CVulkanDeviceExtensionWithFeature*>& GetVulkanDeviceExtensionWithFeatureList()
 	{
 		if (!isDeviceExtensionInit)
 		{
-			extensionsWithFeatures.push_back(CVulkanAccelerationStructureExtension());
-			extensionsWithFeatures.push_back(CVulkanRayTracingPipelineExtension());
-			extensionsWithFeatures.push_back(CVulkanKHRBufferDeviceAddressExtension());
+			static CVulkanAccelerationStructureExtension vkAccelerationStructureExtension;
+			static CVulkanRayTracingPipelineExtension vkRayTracingPipelineExtension;
+			static CVulkanKHRBufferDeviceAddressExtension vkKHRBufferDeviceAddressExtension;
+
+			extensionsWithFeatures.push_back(&vkAccelerationStructureExtension);
+			extensionsWithFeatures.push_back(&vkRayTracingPipelineExtension);
+			extensionsWithFeatures.push_back(&vkKHRBufferDeviceAddressExtension);
 			//extensionsWithFeatures.push_back(CVulkanDescriptorBufferExtension());
-			extensionsWithFeatures.push_back(CVulkanDefferedHostOperationExtension());
-			extensionsWithFeatures.push_back(CVulkanSpirvExtension());
-			extensionsWithFeatures.push_back(CVulkanShaderFloatControlsExtension());
 		}
 		isDeviceExtensionInit = true;
 		return extensionsWithFeatures;
@@ -205,6 +189,14 @@ namespace Extensions
 		PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR = nullptr;
 		PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR = nullptr;
 		PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR = nullptr;
+	}
+
+	namespace KHR_ray_tracing_pipeline
+	{
+		bool                              IsSupported = false;
+
+		PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR = nullptr;
+		PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = nullptr;
 	}
 	//TanGram:VKRT:END
 
@@ -246,9 +238,16 @@ namespace Extensions
 				KHR_acceleration_structure::vkGetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkGetAccelerationStructureDeviceAddressKHR");
 				KHR_acceleration_structure::vkCmdBuildAccelerationStructuresKHR = (PFN_vkCmdBuildAccelerationStructuresKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCmdBuildAccelerationStructuresKHR");
 			}
+			else if (strcmp(extensionName, VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME) == 0)
+			{
+				KHR_ray_tracing_pipeline::IsSupported = true;
+				KHR_ray_tracing_pipeline::vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCreateRayTracingPipelinesKHR");
+				KHR_ray_tracing_pipeline::vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkGetRayTracingShaderGroupHandlesKHR");
+			}
 			//TanGram:VKRT:END
 		}
 
+		CRY_ASSERT(KHR_ray_tracing_pipeline::IsSupported == true);
 		CRY_ASSERT(KHR_acceleration_structure::IsSupported == true);
 	}
 

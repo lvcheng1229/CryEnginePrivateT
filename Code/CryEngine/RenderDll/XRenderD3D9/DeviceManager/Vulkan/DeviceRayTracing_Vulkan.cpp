@@ -237,6 +237,7 @@ SRayTracingAccelerationStructSize CDeviceObjectFactory::GetRayTracingTopLevelASS
 	return accelerationStructureSizeInfo;
 }
 
+
 CVulkanRayTracingTopLevelAccelerationStructure::CVulkanRayTracingTopLevelAccelerationStructure(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo, CDevice* pDevice)
 	:CRayTracingTopLevelAccelerationStructure(rtTopLevelCreateInfo)
 	, m_pDevice(pDevice)
@@ -396,6 +397,8 @@ EShaderStage SDeviceObjectHelpers::GetRayTracingShaderInstanceInfo(THwRTShaderIn
 	return EShaderStage_None;
 }
 
+
+
 bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 {
 	m_isValid = false;
@@ -414,6 +417,159 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 	rayTracingShaderInfo[2] = &rayMissShaderInfos;
 
 	EShaderStage validShaderStage = SDeviceObjectHelpers::GetRayTracingShaderInstanceInfo(rayTracingShaderInfo, psoDesc.m_pShader, psoDesc.m_technique, psoDesc.m_ShaderFlags_RT, psoDesc.m_ShaderFlags_MD, MDV_NONE);
+	CRY_ASSERT(validShaderStage != EShaderStage_None);
+
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+	std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups;
+	std::vector<string> entryPointName;
+
+	for (auto& rayGenInfo : rayGenShaderInfos)
+	{
+		entryPointName.push_back(rayGenInfo.pHwShader->m_EntryFunc);
+		
+		VkPipelineShaderStageCreateInfo shaderStage = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+		shaderStage.module = reinterpret_cast<NCryVulkan::CShader*>(rayGenInfo.pDeviceShader)->GetVulkanShader();
+		shaderStage.stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+		shaderStage.pName = entryPointName.back().data();
+		shaderStages.push_back(shaderStage);
+
+		VkRayTracingShaderGroupCreateInfoKHR shaderGroup = { VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
+		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		shaderGroup.generalShader = shaderStages.size() - 1;//store general shader index
+		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+		shaderGroups.push_back(shaderGroup);
+	}
+
+	for (auto& rayMissnInfo : rayMissShaderInfos)
+	{
+		entryPointName.push_back(rayMissnInfo.pHwShader->m_EntryFunc);
+
+		VkPipelineShaderStageCreateInfo shaderStage = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+		shaderStage.module = reinterpret_cast<NCryVulkan::CShader*>(rayMissnInfo.pDeviceShader)->GetVulkanShader();
+		shaderStage.stage = VK_SHADER_STAGE_MISS_BIT_KHR;
+		shaderStage.pName = entryPointName.back().data();
+		shaderStages.push_back(shaderStage);
+
+		VkRayTracingShaderGroupCreateInfoKHR shaderGroup = { VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
+		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		shaderGroup.generalShader = shaderStages.size() - 1;//store general shader index
+		shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+		shaderGroups.push_back(shaderGroup);
+	}
+
+
+	for (auto& hitGroupInfo : rayHitGroupShaderInfos)
+	{
+		entryPointName.push_back(hitGroupInfo.pHwShader->m_EntryFunc);
+
+		VkPipelineShaderStageCreateInfo shaderStage = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+		shaderStage.module = reinterpret_cast<NCryVulkan::CShader*>(hitGroupInfo.pDeviceShader)->GetVulkanShader();
+		shaderStage.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+		shaderStage.pName = entryPointName.back().data();
+		shaderStages.push_back(shaderStage);
+
+		VkRayTracingShaderGroupCreateInfoKHR shaderGroup = { VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
+		shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+		shaderGroup.generalShader = VK_SHADER_UNUSED_KHR;//store general shader index
+		shaderGroup.closestHitShader = shaderStages.size() - 1;
+		shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+		shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+		shaderGroups.push_back(shaderGroup);
+	}
+
+	VkRayTracingPipelineCreateInfoKHR rayTracingPipelineCreateInfo = { VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR };
+	rayTracingPipelineCreateInfo.stageCount = shaderStages.size();
+	rayTracingPipelineCreateInfo.pStages = shaderStages.data();
+	rayTracingPipelineCreateInfo.groupCount = shaderGroups.size();
+	rayTracingPipelineCreateInfo.pGroups = shaderGroups.data();
+	rayTracingPipelineCreateInfo.maxPipelineRayRecursionDepth = 1;//todo:fixme
+	rayTracingPipelineCreateInfo.layout = static_cast<CDeviceResourceLayout_Vulkan*>(psoDesc.m_pResourceLayout.get())->GetVkPipelineLayout();
+	rayTracingPipelineCreateInfo.flags = VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
+	CRY_VERIFY(Extensions::KHR_ray_tracing_pipeline::vkCreateRayTracingPipelinesKHR(GetDevice()->GetVkDevice() , {}, {}, 1, &rayTracingPipelineCreateInfo, nullptr, &m_pipeline) == VK_SUCCESS);
+	
+	{
+		//get handles
+		uint32 nRayGenCount = rayGenShaderInfos.size();
+		uint32 nRayMissCount = rayMissShaderInfos.size();
+		uint32 nHitGroupCount = rayHitGroupShaderInfos.size();
+		uint32 nHandleCount = nRayGenCount + nRayMissCount + nHitGroupCount;
+		
+		VkPhysicalDeviceRayTracingPipelinePropertiesKHR vkRayTracingPipelinePropertie = GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties;
+		uint32 nHandleSize = vkRayTracingPipelinePropertie.shaderGroupHandleSize;
+		assert(nHandleSize < 1452816845);
+
+		uint32 nHandleDataSize = nHandleCount * nHandleSize;
+		std::vector<uint8> handleData;
+		handleData.resize(nHandleDataSize);
+
+		CRY_VERIFY(Extensions::KHR_ray_tracing_pipeline::vkGetRayTracingShaderGroupHandlesKHR(GetDevice()->GetVkDevice(), m_pipeline,0, nHandleCount, nHandleDataSize, handleData.data()) == VK_SUCCESS);
+
+
+		//file sbt buffer
+		uint32 nHandleAlign = alignedValue(nHandleSize, GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties.shaderGroupHandleAlignment);
+		uint32 nBaseAlign = GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties.shaderGroupHandleAlignment;
+
+		m_sRayTracingSBT.m_rayGenRegion.stride = alignedValue(nHandleAlign, nBaseAlign);
+		m_sRayTracingSBT.m_rayGenRegion.size = m_sRayTracingSBT.m_rayGenRegion.stride;// The size member of pRayGenShaderBindingTable must be equal to its stride member
+
+		m_sRayTracingSBT.m_rayMissRegion.stride = nHandleAlign;
+		m_sRayTracingSBT.m_rayMissRegion.size = alignedValue(nRayMissCount * nHandleAlign, nBaseAlign);
+
+		m_sRayTracingSBT.m_hitGroupRegion.stride = nHandleAlign;
+		m_sRayTracingSBT.m_hitGroupRegion.size = alignedValue(nHitGroupCount * nHandleAlign, nBaseAlign);
+
+		VkDeviceSize sbtSize = m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size + m_sRayTracingSBT.m_hitGroupRegion.size;
+		m_sRayTracingSBT.m_rtSBTBuffer.Create(1u, static_cast<buffer_size_t>(sbtSize), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_SHADER_BINDING_TABLE | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::BIND_SHADER_RESOURCE/*for D3D11_MAP_WRITE_NO_OVERWRITE_SR*/, nullptr);
+
+		VkBufferDeviceAddressInfo bufferDeviceAddressInfo = { VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
+		bufferDeviceAddressInfo.buffer = m_sRayTracingSBT.m_rtSBTBuffer.GetDevBuffer()->GetBuffer()->GetHandle();
+		VkDeviceAddress sbtAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &bufferDeviceAddressInfo);
+
+		m_sRayTracingSBT.m_rayGenRegion.deviceAddress = sbtAddress;
+		m_sRayTracingSBT.m_rayMissRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size;
+		m_sRayTracingSBT.m_hitGroupRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size;
+
+		auto getHandle = [&](int i) { return handleData.data() + i * nHandleSize; };
+
+		std::vector<uint8> pSBTBuffer;
+		pSBTBuffer.resize(static_cast<buffer_size_t>(sbtSize));
+		uint8* pData = nullptr;
+		uint32 handleIdx = 0;
+		
+		{
+			pData = pSBTBuffer.data();
+			for (uint32 c = 0; c < nRayGenCount; c++)
+			{
+				memcpy(pData, getHandle(handleIdx), nHandleSize);
+				handleIdx++;
+			}
+		}
+
+		{
+			pData = pSBTBuffer.data() + m_sRayTracingSBT.m_rayGenRegion.size;
+			for (uint32 c = 0; c < nRayMissCount; c++)
+			{
+				memcpy(pData, getHandle(handleIdx), nHandleSize);
+				handleIdx++;
+			}
+		}
+
+		{
+			pData = pSBTBuffer.data() + m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size;
+			for (uint32 c = 0; c < nHitGroupCount; c++)
+			{
+				memcpy(pData, getHandle(handleIdx), nHandleSize);
+				handleIdx++;
+			}
+		}
+
+		m_sRayTracingSBT.m_rtSBTBuffer.UpdateBufferContent(pSBTBuffer.data(), static_cast<buffer_size_t>(sbtSize));
+	}
+
 
 	return validShaderStage != EShaderStage_None;
 }
