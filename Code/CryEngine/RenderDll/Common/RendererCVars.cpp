@@ -2341,7 +2341,7 @@ void CRendererCVars::InitCVars()
 	REGISTER_CVAR3_CB("r_ShadersAllowCompilation", CV_r_shadersAllowCompilation, SHADERS_ALLOW_COMPILATION_DEFAULT_VAL, VF_NULL, "", OnChange_CV_r_ShadersAllowCompiliation);
 
 	REGISTER_CVAR3("r_ShadersRemoteCompiler", CV_r_shadersremotecompiler, 0, VF_DUMPTODISK, "Enables remote shader compilation on dedicated machine");
-	REGISTER_CVAR3("r_ShadersAsyncCompiling", CV_r_shadersasynccompiling, 3, VF_NULL,
+	REGISTER_CVAR3("r_ShadersAsyncCompiling", CV_r_shadersasynccompiling, 0/*TanGram:VKRT*/, VF_NULL,
 	               "Enable asynchronous shader compiling\n"
 	               "Usage: r_ShadersAsyncCompiling [0/1/2/3]\n"
 	               " 0 = off, (stalling) shaders compiling\n"

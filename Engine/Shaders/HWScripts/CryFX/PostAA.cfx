@@ -789,8 +789,8 @@ pixout NeighborhoodBlendingSMAA_PS(vtxOut IN)
 		C  .rgb = REC709ToLinear(C  .rgb);
 		Cop.rgb = REC709ToLinear(Cop.rgb);
 		#else
-		C  .rgb = SRGBToLinear(C  .rgb);
-		Cop.rgb = SRGBToLinear(Cop.rgb);
+		C  .rgb = select((C  .rgb <= 0.0404499993F), C  .rgb / 12.9200001F, pow((C  .rgb + float3(0.0549999997F, 0.0549999997F, 0.0549999997F)) / 1.05499995F, 2.4000001F));
+		Cop.rgb = select((Cop.rgb <= 0.0404499993F), Cop.rgb / 12.9200001F, pow((Cop.rgb + float3(0.0549999997F, 0.0549999997F, 0.0549999997F)) / 1.05499995F, 2.4000001F));
 		#endif
 
 		float s = abs(offset.x) > abs(offset.y) ? abs(offset.x) : abs(offset.y);
@@ -800,7 +800,7 @@ pixout NeighborhoodBlendingSMAA_PS(vtxOut IN)
 		#if DURANGO
 		OUT.Color.rgb = LinearToREC709(OUT.Color.rgb);
 		#else
-		OUT.Color.rgb = LinearToSRGB(OUT.Color.rgb);
+		OUT.Color.rgb = select((OUT.Color.rgb < 0.0031308), 12.9200001F * OUT.Color.rgb, 1.05499995F * pow(OUT.Color.rgb, 1.F / 2.4000001F) - half3(0.0549999997F, 0.0549999997F, 0.0549999997F));
 		#endif
 
 		return OUT;

@@ -2583,6 +2583,12 @@ EHWShaderClass CHWShader::mfStringClass(const char* szClass)
 	if (!strnicmp(szClass, "DS", 2)) return eHWSC_Domain;
 	if (!strnicmp(szClass, "CS", 2)) return eHWSC_Compute;
 
+	//TanGram:VKRT:BEGIN
+	if (!strnicmp(szClass, "RGS", 2)) return eHWSC_RayGen;
+	if (!strnicmp(szClass, "HGS", 2)) return eHWSC_HitGroup;
+	if (!strnicmp(szClass, "RMS", 2)) return eHWSC_RayMiss;
+	//TanGram:VKRT:END
+
 	assert(0);
 	return eHWSC_Num;
 }
@@ -2593,17 +2599,17 @@ const char* CHWShader::mfProfileString(EHWShaderClass eClass)
 	switch (eClass)
 	{
 	case eHWSC_Vertex:
-		if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_VULKAN))
+		if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO))
 			szProfile = "vs_5_0";
-		else if (CParserBin::m_nPlatform & (SF_D3D12))
+		else if (CParserBin::m_nPlatform & (SF_D3D12 | SF_VULKAN))
 			szProfile = "vs_6_0";
 		else
 			assert(0);
 		break;
 	case eHWSC_Pixel:
-		if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_VULKAN))
+		if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO))
 			szProfile = "ps_5_0";
-		else if (CParserBin::m_nPlatform & (SF_D3D12))
+		else if (CParserBin::m_nPlatform & (SF_D3D12 | SF_VULKAN))
 			szProfile = "ps_6_0";
 		else
 			assert(0);
@@ -2611,9 +2617,9 @@ const char* CHWShader::mfProfileString(EHWShaderClass eClass)
 	case eHWSC_Geometry:
 		if (CParserBin::PlatformSupportsGeometryShaders())
 		{
-			if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO | SF_VULKAN))
+			if (CParserBin::m_nPlatform & (SF_D3D11 | SF_ORBIS | SF_DURANGO))
 				szProfile = "gs_5_0";
-			else if (CParserBin::m_nPlatform & (SF_D3D12))
+			else if (CParserBin::m_nPlatform & (SF_D3D12 | SF_VULKAN))
 				szProfile = "gs_6_0";
 		}
 		else
@@ -2652,6 +2658,19 @@ const char* CHWShader::mfProfileString(EHWShaderClass eClass)
 		else
 			assert(0);
 		break;
+
+		//TanGram:VKRT:BEGIN
+	case eHWSC_RayGen:
+	case eHWSC_RayMiss:
+	case eHWSC_HitGroup:
+		if (CParserBin::PlatformSupportsRayTracingShaders())
+		{
+			szProfile = "lib_6_3";
+		}
+		else
+			assert(0);
+		break;
+		//TanGram:VKRT:END
 	default:
 		assert(0);
 	}
@@ -2681,6 +2700,17 @@ const char* CHWShader::mfClassString(EHWShaderClass eClass)
 	case eHWSC_Compute:
 		szClass = "CS";
 		break;
+		//TanGram:VKRT:BEGIN
+	case eHWSC_RayGen:
+		szClass = "RGS";
+		break;
+	case eHWSC_HitGroup:
+		szClass = "HGS";
+		break;
+	case eHWSC_RayMiss:
+		szClass = "RMS";
+		break;
+		//TanGram:VKRT:END
 	default:
 		assert(0);
 	}

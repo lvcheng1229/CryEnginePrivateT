@@ -262,7 +262,7 @@ float2 EncodeMotionVector(float2 vMotion, bool bFastEncode = false, bool bInvert
 		vMotion.y	*=	-1.f;
 
 	if( !bFastEncode )
-		vMotion	=	sqrt(abs(vMotion))* (vMotion.xy>0.0f ? float2(1, 1) : float2(-1, -1));
+		vMotion	=	sqrt(abs(vMotion))* select(vMotion.xy > 0.F, float2(1, 1), float2(-1, -1));
 
 	vMotion	=	vMotion* 0.5h + 127.f/255.f;
 
@@ -278,7 +278,7 @@ float2 DecodeMotionVector(float2 vMotionEncoded, bool bFastEncoded = false)
 	}
 
 	vMotionEncoded.xy = (vMotionEncoded.xy - 127.f/255.f) * 2.0f;
-	return (vMotionEncoded.xy * vMotionEncoded.xy) * (vMotionEncoded.xy>0.0f ? float2(1, 1) : float2(-1, -1));
+	return (vMotionEncoded.xy * vMotionEncoded.xy) * select(vMotionEncoded.xy > 0.F, float2(1, 1), float2(-1, -1));
 } 
 
 float2 OutputVelocityRT(float2 vCurrPos, float2 vPrevPos, float fAlpha = 1.0f)

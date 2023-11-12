@@ -3,6 +3,7 @@
 #include "../Common/FullscreenPass.h"
 #include "../Common/ComputeRenderPass.h"
 #include "../Common/GraphicsPipeline.h"
+#include "../Common/RayTracingRenderPass.h"
 
 class CRayTracingTestStage : public CGraphicsPipelineStage
 {
@@ -11,6 +12,7 @@ public:
 
 	CRayTracingTestStage(CGraphicsPipeline& graphicsPipeline)
 		: CGraphicsPipelineStage(graphicsPipeline)
+		, m_rayTracingRenderPass(&graphicsPipeline)
 	{
 
 	}
@@ -53,4 +55,6 @@ private:
 	CRayTracingTopLevelAccelerationStructurePtr m_pRtTopLevelAS;
 
 	CGpuBuffer m_instanceBuffer;
+
+	CRayTracingRenderPass m_rayTracingRenderPass;
 };

@@ -616,6 +616,7 @@ template<> inline void           safe_release<ID3D11Buffer>(ID3D11Buffer*& ptr);
 	#define     ID3D11PixelShader         CCryDX12Shader
 	#define     ID3D11VertexShader        CCryDX12Shader
 	#define     ID3D11ComputeShader       CCryDX12Shader
+	#define     ID3D11RayTracingShader    CCryDX12Shader
 	#define     ID3D11HullShader          CCryDX12Shader
 	#define     ID3D11DomainShader        CCryDX12Shader
 	#define     ID3D11GeometryShader      CCryDX12Shader
@@ -687,6 +688,7 @@ template<> inline void           safe_release<ID3D11Buffer>(ID3D11Buffer*& ptr);
 	#define     ID3D11HullShader                     NCryVulkan::CShader
 	#define     ID3D11DomainShader                   NCryVulkan::CShader
 	#define     ID3D11ComputeShader                  NCryVulkan::CShader
+	#define     ID3D11RayTracingShader               NCryVulkan::CShader
 	#define     ID3D11UnorderedAccessView            NCryVulkan::CResourceView
 	#define     ID3D11DepthStencilView               NCryVulkan::CImageView
 	#define     ID3D11RenderTargetView               NCryVulkan::CImageView
@@ -727,6 +729,7 @@ template<> inline void           safe_release<ID3D11Buffer>(ID3D11Buffer*& ptr);
 	#define     ID3D11HullShader          CGnmBlob
 	#define     ID3D11DomainShader        CGnmBlob
 	#define     ID3D11ComputeShader       CGnmBlob
+	#define     ID3D11RayTracingShader    CGnmBlob
 	#define     ID3D11UnorderedAccessView CGnmShaderResourceView
 	#define     ID3D11DepthStencilView    CGnmDepthStencilView
 	#define     ID3D11RenderTargetView    CGnmRenderTargetView

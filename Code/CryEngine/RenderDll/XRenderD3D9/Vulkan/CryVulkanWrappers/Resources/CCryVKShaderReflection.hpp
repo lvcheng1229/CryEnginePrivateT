@@ -5,6 +5,7 @@
 #include "Vulkan/API/VKBase.hpp"
 #include <spirv_cross.hpp>
 
+
 class CCryVKShaderReflection;
 class CCryVKShaderReflectionVariable;
 class CCryVKShaderReflectionConstantBuffer;
@@ -81,7 +82,8 @@ private:
 	char                                                         m_name[64];
 	CCryVKShaderReflection* const                                m_pShaderReflection;
 	const spirv_cross::Resource&                                 m_resource;
-	std::vector<spirv_cross::BufferRange>                        m_usedVariables;
+	std::vector<spirv_cross::BufferRange>                        m_usedVariables;//TanGram:VKRT
+	//spirv_cross::SmallVector<spirv_cross::BufferRange>           m_usedVariables;//TanGram:VKRT
 	std::vector<std::unique_ptr<CCryVKShaderReflectionVariable>> m_variables;
 };
 

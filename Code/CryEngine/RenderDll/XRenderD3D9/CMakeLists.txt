@@ -748,7 +748,10 @@ add_sources("CryRenderer_uber_5.cpp"
 		"DeviceManager/DevicePSO.cpp"
 		"DeviceManager/DeviceRenderPass.h"
 		"DeviceManager/DeviceRenderPass.cpp"
-		"DeviceManager/DeviceRayTracing.h"#TanGram:VKRT
+		#TanGram:VKRT:BEGIN
+		"DeviceManager/DeviceRayTracing.cpp"
+		"DeviceManager/DeviceRayTracing.h"
+		#TanGram:VKRT:END
 )
 
 add_sources("CryRenderer_uber_6.cpp"

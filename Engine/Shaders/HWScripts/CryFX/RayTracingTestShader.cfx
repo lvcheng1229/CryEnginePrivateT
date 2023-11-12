@@ -12,25 +12,12 @@ struct FBasicRayData
 	float TFar;
 };
 
-struct FMinimalPayload
+struct FDefaultPayload
 {
 	float HitT; // Distance from ray origin to the intersection point in the ray direction. Negative on miss.
-
-	bool IsMiss() { return HitT < 0; }
-	bool IsHit() { return !IsMiss(); }
-
-	void SetMiss() { HitT = -1; }
-};
-
-struct FIntersectionPayload : FMinimalPayload
-{
 	uint   PrimitiveIndex; // Index of the primitive within the geometry inside the bottom-level acceleration structure instance. Undefined on miss.
 	uint   InstanceIndex;  // Index of the current instance in the top-level structure. Undefined on miss.
 	float2 Barycentrics;   // Primitive barycentric coordinates of the intersection point. Undefined on miss.
-};
-
-struct FDefaultPayload : FIntersectionPayload
-{
 	uint   InstanceID; // Value of FRayTracingGeometryInstance::UserData. Undefined on miss.
 };
 
@@ -49,9 +36,9 @@ struct FRayTracingIntersectionAttributes
 	}
 };
 
-RaytracingAccelerationStructure               TLAS;
-StructuredBuffer<FBasicRayData>               Rays;
-RWStructuredBuffer<uint>                      OcclusionOutput;
+RaytracingAccelerationStructure               TLAS: register(t0); 
+StructuredBuffer<FBasicRayData>               Rays: register(t1); 
+RWStructuredBuffer<uint>                      OcclusionOutput: register(u0);
 
 [shader("raygeneration")] 
 void RayGenMain()
@@ -86,7 +73,7 @@ void RayGenMain()
 
 	// Workaround for DXC bug creating validation error
 	//OcclusionOutput[RayIndex] = Payload.IsHit() ? ~0 : 0;
-	OcclusionOutput[RayIndex] = ((FMinimalPayload)Payload).IsHit() ? ~0 : 0;
+	OcclusionOutput[RayIndex] = (Payload.HitT > 0) ? ~0 : 0;
 }
 
 [shader("closesthit")] 
@@ -103,7 +90,7 @@ void ClostHitMain(
 [shader("miss")] 
 void MissMain(inout FDefaultPayload Payload)
 {
-	Payload.SetMiss();
+	Payload.HitT = -1;
 }
 
 technique RayTracingTestTech

@@ -74,17 +74,23 @@ public:
 };
 
 //TanGram:VKRT:BEGIN
-//class CDeviceRayTracingPSODesc
-//{
-//public:
-//	//CDeviceRayTracingPSODesc(CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags);
-//
-//public:
-//	_smart_ptr<CShader>      m_pShader;
-//	CCryNameTSCRC            m_technique;
-//	uint64                   m_ShaderFlags_RT;
-//	uint32                   m_ShaderFlags_MD;
-//};
+class CDeviceRayTracingPSODesc
+{
+public:
+	CDeviceRayTracingPSODesc(const CDeviceRayTracingPSODesc& other);
+	CDeviceRayTracingPSODesc(CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags);
+
+	CDeviceRayTracingPSODesc& operator=(const CDeviceRayTracingPSODesc& other);
+	bool                      operator==(const CDeviceRayTracingPSODesc& other) const;
+
+	uint64                 GetHash() const;
+
+public:
+	_smart_ptr<CShader>      m_pShader;
+	CCryNameTSCRC            m_technique;
+	uint64                   m_ShaderFlags_RT;
+	uint32                   m_ShaderFlags_MD;
+};
 //TanGram:VKRT:END
 
 namespace std
@@ -124,6 +130,25 @@ namespace std
 			return psoDesc1 == psoDesc2;
 		}
 	};
+
+	template<>
+	struct hash<CDeviceRayTracingPSODesc>
+	{
+		uint64 operator()(const CDeviceRayTracingPSODesc& psoDesc) const
+		{
+			return psoDesc.GetHash();
+		}
+	};
+
+	template<>
+	struct equal_to<CDeviceRayTracingPSODesc>
+	{
+		bool operator()(const CDeviceRayTracingPSODesc& psoDesc1, const CDeviceRayTracingPSODesc& psoDesc2) const
+		{
+			return psoDesc1 == psoDesc2;
+		}
+	};
+
 
 	template<>
 	struct less<SDeviceResourceLayoutDesc>
@@ -201,14 +226,14 @@ typedef std::weak_ptr<CDeviceComputePSO>          CDeviceComputePSOWPtr;
 
 //TanGram:VKRT:BEGIN
 
-//class CDeviceRayTracingPSO : public CDevicePSO
-//{
-//public:
-//	virtual ~CDeviceRayTracingPSO() {}
-//
-//	//virtual bool Init(const CDeviceRayTracingPSODesc& psoDesc) = 0;
-//};
-//
-//typedef std::shared_ptr<CDeviceRayTracingPSO>        CDeviceRayTracingPSOPtr;
+class CDeviceRayTracingPSO : public CDevicePSO
+{
+public:
+	virtual ~CDeviceRayTracingPSO() {}
+
+	virtual bool Init(const CDeviceRayTracingPSODesc& psoDesc) = 0;
+};
+
+typedef std::shared_ptr<CDeviceRayTracingPSO>        CDeviceRayTracingPSOPtr;
 
 //TanGram:VKRT:END

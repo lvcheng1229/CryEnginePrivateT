@@ -902,7 +902,7 @@ void TiledDeferredShadingCS( uint3 GroupID : SV_GroupID,
 
 				// Darkening ambient lights don't use any directionality
 				float lightOccl = 0.3 + 0.7 * (1.0 - saturate( dot( lightVec, occlusionData.xyz ) * SSDOParams.x ));
-				float3 dirFactor = lightColor > 1 ? float3( NdotL, NdotL, NdotL ) * lightOccl : saturate( float3( PdotL, PdotL, PdotL ) );
+				float3 dirFactor = select(lightColor > 1, float3(NdotL, NdotL, NdotL) * lightOccl, saturate(float3(PdotL, PdotL, PdotL)));
 			
 				attenuation *= clipVolumeBlendWeight;
 				float3 lightTerm = lerp( float3( 1, 1, 1 ), lightColor, attenuation * filter * dirFactor );

@@ -16,6 +16,14 @@ add_sources("NoUberFile"
 		"../../SDKs/spirv-cross/spirv_cross.cpp"
 		"../../SDKs/spirv-cross/spirv_cfg.hpp"
 		"../../SDKs/spirv-cross/spirv_cfg.cpp"
+		#TanGram:VKRT:BEGIN
+		"../../SDKs/spirv-cross/spirv_cross_containers.hpp"
+		"../../SDKs/spirv-cross/spirv_cross_parsed_ir.hpp"
+		"../../SDKs/spirv-cross/spirv_cross_parsed_ir.cpp"
+		"../../SDKs/spirv-cross/spirv_parser.hpp"
+		"../../SDKs/spirv-cross/spirv_parser.cpp"
+		"../../SDKs/spirv-cross/spirv_cross_error_handling.hpp"
+		#TanGram:VKRT:END
 )
 
 end_sources()

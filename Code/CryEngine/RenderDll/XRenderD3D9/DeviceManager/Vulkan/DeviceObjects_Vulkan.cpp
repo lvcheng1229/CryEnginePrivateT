@@ -1300,6 +1300,11 @@ ID3D11ComputeShader* CDeviceObjectFactory::CreateComputeShader(const void* pData
 	return CreateShader(GetVKDevice(), pData, bytes);
 }
 
+ID3D11RayTracingShader* CDeviceObjectFactory::CreateRayTraingShader(const void* pData, size_t bytes)
+{
+	return CreateShader(GetVKDevice(), pData, bytes);
+}
+
 // Occlusion Query API
 D3DOcclusionQuery* CDeviceObjectFactory::CreateOcclusionQuery()
 {

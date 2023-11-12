@@ -44,6 +44,7 @@ __pycache__/*
 # These are handled elsewhere.
 /Code/SDKs/*
 
+
 #tropical_toon_island
 #TanGram
 /Code/GameSDK/cbuild/*
@@ -52,3 +53,4 @@ __pycache__/*
 /CryTestProj/Breeze/rc_out_PC_pure/*
 CRYENGINE_v5.7.0_SDKs.zip
 /cbuild/*
+/cbuild2/*

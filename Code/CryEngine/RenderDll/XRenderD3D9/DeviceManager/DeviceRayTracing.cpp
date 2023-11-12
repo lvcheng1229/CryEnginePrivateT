@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include <unordered_map>
 #include "xxhash.h"
 #include "DeviceObjects.h"
 #include "DeviceCommandListCommon.h"
@@ -34,10 +35,61 @@ void CDeviceGraphicsCommandInterface::BuildRayTracingTopLevelAS(CRayTracingTopLe
 	BuildRayTracingTopLevelASImpl(rtTopLevelASPtr, instanceBuffer, offset);
 }
 
-//CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags)
-//{
-//	memset(this, 0, sizeof(CDeviceRayTracingPSODesc));
-//}
+CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(const CDeviceRayTracingPSODesc& other)
+{
+	*this = other;
+}
+
+CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags)
+{
+	memset(this, 0, sizeof(CDeviceRayTracingPSODesc));
+	m_pShader = pShader;
+	m_technique = technique;
+	m_ShaderFlags_RT = rtFlags;
+	m_ShaderFlags_MD = mdFlags;
+}
+
+CDeviceRayTracingPSODesc& CDeviceRayTracingPSODesc::operator=(const CDeviceRayTracingPSODesc& other)
+{
+	// increment ref counts
+	m_pShader = other.m_pShader;
+	memcpy(this, &other, sizeof(CDeviceRayTracingPSODesc));
+
+	return *this;
+}
+
+bool CDeviceRayTracingPSODesc::operator==(const CDeviceRayTracingPSODesc& other) const
+{
+	return memcmp(this, &other, sizeof(CDeviceRayTracingPSODesc)) == 0;
+}
+
+uint64 CDeviceRayTracingPSODesc::GetHash() const
+{
+	uint64 key = XXH64(this, sizeof(CDeviceRayTracingPSODesc), 0);
+	return key;
+}
+
+CDeviceRayTracingPSOPtr CDeviceObjectFactory::CreateRayTracingPSO(const CDeviceRayTracingPSODesc& psoDesc)
+{
+	CDeviceRayTracingPSOPtr pPso;
+
+	auto it = m_RayTracingPsoCache.find(psoDesc);
+	if (it != m_RayTracingPsoCache.end())
+	{
+		pPso = it->second;
+	}
+	else
+	{
+		pPso = CreateRayTracingPSOImpl(psoDesc);
+		m_RayTracingPsoCache.emplace(psoDesc, pPso);
+
+		if (!pPso->IsValid())
+			m_InvalidRayTracingPsos.emplace(psoDesc, pPso);
+	}
+
+	pPso->SetLastUseFrame(gRenDev->GetRenderFrameID());
+	return pPso;
+}
 
 
 

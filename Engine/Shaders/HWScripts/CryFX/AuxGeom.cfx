@@ -55,7 +55,6 @@ struct SAuxVS2PSWithColor
 	float4 col : COLOR0;
 };
 
-
 // Default vertex shader to transform auxiliary 3D geometries
 SAuxVS2PS AuxGeomVS( SAuxGeomApp2VS IN )
 {
@@ -258,7 +257,7 @@ technique AuxText
   pass p0
   {
     VertexShader = AuxTextVS();
-	PixelShader  = AuxTextPS();
+	  PixelShader  = AuxTextPS();
     ZEnable      = true;
     ZWriteEnable = false;
     CullMode     = None;

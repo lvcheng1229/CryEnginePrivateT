@@ -188,6 +188,7 @@ public:
 
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSO(const CDeviceGraphicsPSODesc& psoDesc);
 	CDeviceComputePSOPtr     CreateComputePSO(const CDeviceComputePSODesc& psoDesc);
+	CDeviceRayTracingPSOPtr  CreateRayTracingPSO(const CDeviceRayTracingPSODesc& psoDesc);//TanGram:VKRT
 
 	void GetRhiGpuDrawCmdData(const std::vector<CDeviceGPUDrawCmd>& deviceGpuDrawCmds, uint32& outCmdDataSize, std::vector<uint8>& outCmdData, bool onlyDataSize = false);//TanGram:VSM
 	const CDeviceGraphicsPSODesc GetGraphicsPsoDescByHash(uint64 hash); //TanGram:VSM
@@ -457,6 +458,7 @@ private:
 
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSOImpl(const CDeviceGraphicsPSODesc& psoDesc) const;
 	CDeviceComputePSOPtr     CreateComputePSOImpl(const CDeviceComputePSODesc& psoDesc) const;
+	CDeviceRayTracingPSOPtr  CreateRayTracingPSOImpl(const CDeviceRayTracingPSODesc& psoDesc) const;//TanGram:VKRT
 
 
 
@@ -467,6 +469,11 @@ private:
 
 	std::unordered_map<CDeviceComputePSODesc, CDeviceComputePSOPtr>    m_ComputePsoCache;
 	std::unordered_map<CDeviceComputePSODesc, CDeviceComputePSOWPtr>   m_InvalidComputePsos;
+
+	//TanGram:VKRT:BEGIN
+	std::unordered_map<CDeviceRayTracingPSODesc, CDeviceRayTracingPSOPtr>    m_RayTracingPsoCache;
+	std::unordered_map<CDeviceRayTracingPSODesc, CDeviceRayTracingPSOPtr>   m_InvalidRayTracingPsos;
+	//TanGram:VKRT:END
 
 	////////////////////////////////////////////////////////////////////////////
 	// Input dataset(s) API
@@ -599,6 +606,7 @@ public:
 	ID3D11HullShader*     CreateHullShader(const void* pData, size_t bytes);
 	ID3D11DomainShader*   CreateDomainShader(const void* pData, size_t bytes);
 	ID3D11ComputeShader*  CreateComputeShader(const void* pData, size_t bytes);
+	ID3D11RayTracingShader* CreateRayTraingShader(const void* pData, size_t bytes);
 
 	// Occlusion Query API
 	// Note: Begin()/End() function is on the graphics-command-list

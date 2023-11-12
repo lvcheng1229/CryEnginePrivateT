@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "../../DeviceManager/DeviceResources.h"
+#include "../../DeviceManager/DevicePSO.h"
 using namespace NCryVulkan;
 
 struct SVulkanRayTracingBLASBuildInfo
@@ -56,3 +57,24 @@ public:
 private:
 	CDevice* const  m_pDevice;
 };
+
+class CDeviceRayTracingPSO_Vulkan : public CDeviceRayTracingPSO
+{
+public:
+	CDeviceRayTracingPSO_Vulkan(CDevice* pDevice)
+		: m_pDevice(pDevice)
+		, m_pipeline(VK_NULL_HANDLE)
+	{}
+
+	~CDeviceRayTracingPSO_Vulkan();
+
+	virtual bool      Init(const CDeviceRayTracingPSODesc& desc) final;
+
+	const VkPipeline& GetVkPipeline() const { return m_pipeline; }
+
+protected:
+	CDevice* m_pDevice;
+	VkPipeline m_pipeline;
+};
+
+typedef std::shared_ptr<CDeviceRayTracingPSO_Vulkan> CDeviceRayTracingPSO_VulkanPtr;

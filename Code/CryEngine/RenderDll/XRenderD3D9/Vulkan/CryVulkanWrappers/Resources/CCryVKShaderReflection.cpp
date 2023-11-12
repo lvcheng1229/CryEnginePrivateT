@@ -4,6 +4,7 @@
 #include "CCryVKShaderReflection.hpp"
 #include "../../../../../../../Code/Tools/HLSLCrossCompiler/src/reflect.inl"
 
+
 #include <sstream>
 #include <fstream>
 
@@ -213,21 +214,34 @@ HRESULT D3DCompile(_In_reads_bytes_(SrcDataSize) LPCVOID pSrcData, _In_ SIZE_T S
 		
 		const bool needsInvertingY = strncmp(pTarget, "vs", 2) == 0 || strncmp(pTarget, "ds", 2) == 0 || strncmp(pTarget, "gs", 2) == 0;
 
+		//TanGram:VKRT:BEGIN
+		std::string vkRayTracingArgs = "";
+		std::string sEntrypoint = " -E " + std::string(pEntrypoint);
+		if (strcmp(pTarget, "lib_6_3") == 0)
+		{
+			vkRayTracingArgs = "-fspv-target-env=vulkan1.2 -fspv-extension=SPV_KHR_ray_query -fspv-extension=SPV_KHR_ray_tracing -fspv-extension=SPV_GOOGLE_hlsl_functionality1 -fspv-extension=SPV_GOOGLE_user_type";
+			sEntrypoint = "";
+		}
+		//TanGram:VKRT:END
+
 		char params[1001];
-		cry_sprintf(params, " %s %s -Zpr -spirv %s -E %s -T %s -Fo \"%s%s\" -Fc \"%s%s\" \"%s%s\"",
+		cry_sprintf(params, " %s %s -Zpr -spirv %s %s -T %s %s -Fo \"%s%s\" -Fc \"%s%s\" \"%s%s\"",
 			needsInvertingY ? "-fvk-invert-y" : "",
 			CRenderer::CV_r_shadersdebug == 3 ? "-Od" : "-O3",
 			showWarnings ? "" : "-no-warnings",
-			pEntrypoint,
+			sEntrypoint.c_str(),
 			pTarget,
+			vkRayTracingArgs.c_str(),
 			shaderPathWithoutFormat.c_str(), OUTPUT_SPIRV_FORMAT,
 			shaderPathWithoutFormat.c_str(), OUTPUT_HUMAN_READABLE_SPIRV_FORMAT,
 			shaderPathWithoutFormat.c_str(), INPUT_HLSL_FORMAT);
 
+		//todo@ updata dxc
+
 		//TanGram:Shader:FixVulkanShaderCompileError:[BEGIN]
 		//ShellExecute("%ENGINE%\\..\\Tools\\RemoteShaderCompiler\\Compiler\\SPIRV\\V006\\dxc\\dxc.exe", params);
 		const static std::string enginePath = std::string(PathUtil::GetEnginePath().data(),PathUtil::GetEnginePath().size());
-		const static std::string file = enginePath + "\\Code\\SDKs\\DXC\\bin\\dxc.exe";
+		const static std::string file = enginePath + "\\Code\\SDKs\\DXC\\bin\\x64\\dxc.exe";
 		ShellExecute(file, params);
 		//TanGram:Shader:FixVulkanShaderCompileError:[END]
 	}
@@ -319,11 +333,12 @@ CCryVKShaderReflection::CCryVKShaderReflection(const void* pShaderBytecode, size
 			}
 			else if (vkShaderCompiler == STR_VK_SHADER_COMPILER_DXC)
 			{
-				if(sscanf(input.name.c_str(), "in_var_%[a-zA-Z]%d", inputParam.semanticName, &inputParam.semanticIndex) >= 1)
+				if(sscanf(input.name.c_str(), "in.var.%[a-zA-Z]%d", inputParam.semanticName, &inputParam.semanticIndex) >= 1)//TanGram:VKRT
 				{
 					inputParam.attributeLocation = location;
 					m_shaderInputs.push_back(inputParam);
 				}
+
 			}
 			else if (vkShaderCompiler == STR_VK_SHADER_COMPILER_GLSLANG)
 			{
@@ -342,7 +357,7 @@ CCryVKShaderReflection::CCryVKShaderReflection(const void* pShaderBytecode, size
 	{
 		for (UINT localListIndex = 0; localListIndex < pResourceList->size(); ++localListIndex)
 		{
-			spirv_cross::Resource& resource = pResourceList->at(localListIndex);
+			spirv_cross::Resource& resource = (*pResourceList)[localListIndex];
 			const spirv_cross::SPIRType& resourceType = m_pCompiler->get_type(resource.type_id);
 
 			struct isEqual
@@ -674,7 +689,15 @@ CCryVKShaderReflectionConstantBuffer::CCryVKShaderReflectionConstantBuffer(CCryV
 {
 	spirv_cross::Compiler& compiler = *m_pShaderReflection->m_pCompiler;
 
-	m_usedVariables = compiler.get_active_buffer_ranges(m_resource.id);
+	//TanGram:VKRT:BEGIN
+	spirv_cross::SmallVector<spirv_cross::BufferRange> usedVariables = compiler.get_active_buffer_ranges(m_resource.id);
+	m_usedVariables.resize(usedVariables.size());
+	for (uint32 index = 0; index < usedVariables.size(); index++)
+	{
+		m_usedVariables[index] = usedVariables[index];
+	}
+	usedVariables.clear();
+	//TanGram:VKRT:END
 
 	std::string name = !m_resource.name.empty() ? m_resource.name : compiler.get_fallback_name(m_resource.base_type_id);
 	int bindPoint = compiler.get_decoration(m_resource.id, spv::DecorationBinding);
@@ -692,7 +715,7 @@ CCryVKShaderReflectionConstantBuffer::CCryVKShaderReflectionConstantBuffer(CCryV
 	}
 	else if (vkShaderCompiler == STR_VK_SHADER_COMPILER_DXC)
 	{
-		if (sscanf_s(name.c_str(), "type_%[a-zA-Z_]", m_name, sizeof(m_name)) != 1)
+		if (sscanf_s(name.c_str(), "type.%[a-zA-Z_]", m_name, sizeof(m_name)) != 1)
 		{
 			CRY_ASSERT(false, "Constant buffer name format is not covered.");
 		}

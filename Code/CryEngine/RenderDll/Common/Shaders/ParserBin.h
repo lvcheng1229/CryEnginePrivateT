@@ -612,6 +612,12 @@ enum EToken
 	eT__DS,
 	eT__CS,
 
+		//TanGram:VKRT:BEGIN
+	eT__RGS,
+	eT__HGS,
+	eT__RMS,
+		//TanGram:VKRT:END
+
 	eT_x,
 	eT_y,
 	eT_z,

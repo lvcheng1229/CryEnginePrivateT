@@ -199,6 +199,12 @@ void CParserBin::Init()
 	fxTokenKey("%_DS", eT__DS);
 	fxTokenKey("%_CS", eT__CS);
 
+	//TanGram:VKRT:BEGIN
+	fxTokenKey("%_RGS", eT__RGS);
+	fxTokenKey("%_HGS", eT__HGS);
+	fxTokenKey("%_RMS", eT__RMS);
+	//TanGram:VKRT:END
+
 	FX_REGISTER_TOKEN(tex2D);
 	FX_REGISTER_TOKEN(tex2Dproj);
 	FX_REGISTER_TOKEN(tex3D);

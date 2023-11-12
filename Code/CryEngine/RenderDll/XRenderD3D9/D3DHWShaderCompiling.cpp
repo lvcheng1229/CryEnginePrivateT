@@ -446,6 +446,8 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance* pInst, std::vector<SCGBin
 		nMax = MAX_CONSTANTS_HS;
 	else if (pSH->m_eSHClass == eHWSC_Compute)
 		nMax = MAX_CONSTANTS_CS;
+	else if (pSH->m_eSHClass == eHWSC_RayGen || pSH->m_eSHClass == eHWSC_HitGroup || pSH->m_eSHClass == eHWSC_RayMiss)
+		nMax = MAX_CONSTANTS_CS;
 	assert(pInst->m_nMaxVecs[0] < nMax);
 	assert(pInst->m_nMaxVecs[1] < nMax);
 
@@ -934,7 +936,17 @@ bool CHWShader_D3D::mfGenerateScript(CShader* pSH, SHWSInstance* pInst, std::vec
 	case eHWSC_Domain:
 		eT = eT__DS;
 		break;
-
+		//TanGram:VKRT:BEGIN
+	case eHWSC_RayGen:
+		eT = eT__RGS;
+		break;
+	case eHWSC_HitGroup:
+		eT = eT__HGS;
+		break;
+	case eHWSC_RayMiss:
+		eT = eT__RMS;
+		break;
+		//TanGram:VKRT:END
 	default:
 		assert(0);
 	}
@@ -2581,6 +2593,8 @@ bool CHWShader_D3D::mfUploadHW(SHWSInstance* pInst, const byte* pBuf, uint32 nSi
 			hr = (handle = GetDeviceObjectFactory().CreateComputeShader(pBuf, nSize)) ? S_OK : E_FAIL;
 		else if (m_eSHClass == eHWSC_Domain)
 			hr = (handle = GetDeviceObjectFactory().CreateDomainShader(pBuf, nSize)) ? S_OK : E_FAIL;
+		else if (m_eSHClass == eHWSC_RayGen || m_eSHClass == eHWSC_HitGroup ||  m_eSHClass == eHWSC_RayMiss)
+			hr = (handle = GetDeviceObjectFactory().CreateRayTraingShader(pBuf, nSize)) ? S_OK : E_FAIL;
 		else
 			assert(0);
 
@@ -3543,7 +3557,10 @@ bool CHWShader_D3D::mfCreateShaderEnv(int nThread, SHWSInstance* pInst, D3DBlob*
 	SAFE_RELEASE(pErrorMsgs);
 	if (D3DShaderReflection* pShaderReflection = (D3DShaderReflection*)pConstantTable)
 	{
-		pShaderReflection->Release();
+		//Tangram:VKRT:BEGIN
+		pShaderReflection->Release(); //todo@fixme
+		//Tangram:VKRT:END
+
 		pConstantTable = nullptr;
 	}
 

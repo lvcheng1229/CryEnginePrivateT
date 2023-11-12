@@ -115,6 +115,10 @@ void CRayTracingTestStage::Init()
 	CreateVbIb();
 	CreateAndBuildBLAS(pCommandInterface);
 	CreateAndBuildTLAS(pCommandInterface);
+	
+	//test only
+	m_rayTracingRenderPass.SetTechnique(CShaderMan::s_shRayTracingTest, CCryNameTSCRC("RayTracingTestTech"), 0);
+	m_rayTracingRenderPass.PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
 }
 
 void CRayTracingTestStage::Execute()

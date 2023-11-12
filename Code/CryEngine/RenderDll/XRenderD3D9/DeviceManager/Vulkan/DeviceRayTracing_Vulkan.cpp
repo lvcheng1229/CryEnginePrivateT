@@ -1,6 +1,17 @@
 #include "..\DeviceObjects.h"
+
+#include "Vulkan/API/VKInstance.hpp"
+#include "Vulkan/API/VKBufferResource.hpp"
+#include "Vulkan/API/VKImageResource.hpp"
+#include "Vulkan/API/VKSampler.hpp"
+#include "Vulkan/API/VKExtensions.hpp"
+
+#include <Common/Renderer.h>
+#include <CryCore/Assert/CryAssert.h>
+
 #include "DeviceRayTracing_Vulkan.h"
-#include "Vulkan\API\VKExtensions.hpp"
+#include "DeviceResourceSet_Vulkan.h"	
+#include "DevicePSO_Vulkan.h"	
 
 VkDeviceAddress InputStreamGetBufferDeviceAddress(const VkDevice* pVkDevice, const CDeviceInputStream* deviceInputStreaming)
 {
@@ -33,14 +44,14 @@ static void AddAccelerationStructureBuildBarrier(VkCommandBuffer CommandBuffer)
 // Get build geometry info / build range info / build size info
 static void GetBottomLevelAccelerationStructureBuildInfo(
 	const VkDevice* pVkDevice,
-	const std::vector<SRayTracingGeometryTriangle>& rtGeometryTriangles, 
+	const std::vector<SRayTracingGeometryTriangle>& rtGeometryTriangles,
 	const SRayTracingBottomLevelASCreateInfo::STriangleIndexInfo& sSTriangleIndexInfo,
 	EBuildAccelerationStructureFlag eBuildFlag,
 	EBuildAccelerationStructureMode eBuildMode,
 	SVulkanRayTracingBLASBuildInfo& outvkRtBLASBuildInfo)
 {
 	VkDeviceAddress indexDeviceAddress = sSTriangleIndexInfo.m_sIndexStreaming ? InputStreamGetBufferDeviceAddress(pVkDevice, sSTriangleIndexInfo.m_sIndexStreaming) : 0;
-	
+
 	std::vector<uint32> maxPrimitiveCounts;
 	for (uint32 index = 0; index < rtGeometryTriangles.size(); index++)
 	{
@@ -158,7 +169,7 @@ void CDeviceGraphicsCommandInterfaceImpl::BuildRayTracingBottomLevelASsImpl(std:
 	std::vector<VkAccelerationStructureBuildRangeInfoKHR*> buildRangeInfos;
 
 	uint64 nScratchBufferOffset = 0;
-	for (auto & blas : rtBottomLevelASPtrs)
+	for (auto& blas : rtBottomLevelASPtrs)
 	{
 		tempBuildInfos.push_back(SVulkanRayTracingBLASBuildInfo());
 		SVulkanRayTracingBLASBuildInfo& vkRtBLASBuildInfo = tempBuildInfos[tempBuildInfos.size() - 1];
@@ -178,14 +189,14 @@ void CDeviceGraphicsCommandInterfaceImpl::BuildRayTracingBottomLevelASsImpl(std:
 		vkRtBLASBuildInfo.m_vkAsBuildGeometryInfo.dstAccelerationStructure = vkRtBLAS->accelerationStructureHandle;
 		vkRtBLASBuildInfo.m_vkAsBuildGeometryInfo.srcAccelerationStructure = nullptr;
 		vkRtBLASBuildInfo.m_vkAsBuildGeometryInfo.scratchData.deviceAddress = scratchBufferAddress;
-		
+
 		buildGeometryInfos.push_back(vkRtBLASBuildInfo.m_vkAsBuildGeometryInfo);
 		buildRangeInfos.push_back(vkRtBLASBuildInfo.m_vkAsBuildRangeInfo.data());
 	}
 
 	VkCommandBuffer cmdBuffer = GetVKCommandList()->GetVkCommandList();
 	Extensions::KHR_acceleration_structure::vkCmdBuildAccelerationStructuresKHR(cmdBuffer, rtBottomLevelASPtrs.size(), buildGeometryInfos.data(), buildRangeInfos.data());
-	
+
 	AddAccelerationStructureBuildBarrier(cmdBuffer);
 	GetVKCommandList()->Submit();
 
@@ -218,7 +229,7 @@ SRayTracingAccelerationStructSize CDeviceObjectFactory::GetRayTracingTopLevelASS
 {
 	SVulkanRayTracingTLASBuildInfo outvkRtTLASBuildInfo;
 	GeTopLevelAccelerationStructureBuildInfo(GetDevice()->GetVkDevice(), rtTopLevelCreateInfo.m_nInstanceTransform, 0, EBuildAccelerationStructureFlag::eBuild_PreferTrace, outvkRtTLASBuildInfo);
-	
+
 	SRayTracingAccelerationStructSize accelerationStructureSizeInfo;
 	accelerationStructureSizeInfo.m_nAccelerationStructureSize = outvkRtTLASBuildInfo.m_vkAsBuildSizeInfo.accelerationStructureSize;
 	accelerationStructureSizeInfo.m_nBuildScratchSize = outvkRtTLASBuildInfo.m_vkAsBuildSizeInfo.buildScratchSize;
@@ -232,7 +243,7 @@ CVulkanRayTracingTopLevelAccelerationStructure::CVulkanRayTracingTopLevelAcceler
 {
 	m_sSizeInfo = GetDeviceObjectFactory().GetRayTracingTopLevelASSize(rtTopLevelCreateInfo);
 	m_accelerationStructureBuffer.Create(1u, static_cast<uint32>(m_sSizeInfo.m_nAccelerationStructureSize), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE, nullptr);
-	
+
 	VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR };
 	accelerationStructureCreateInfo.buffer = m_accelerationStructureBuffer.GetDevBuffer()->GetBuffer()->GetHandle();
 	accelerationStructureCreateInfo.offset = 0;
@@ -289,6 +300,120 @@ void CDeviceGraphicsCommandInterfaceImpl::BuildRayTracingTopLevelASImpl(CRayTrac
 }
 
 
+CDeviceRayTracingPSOPtr CDeviceObjectFactory::CreateRayTracingPSOImpl(const CDeviceRayTracingPSODesc& psoDesc) const
+{
+	CDeviceRayTracingPSO_VulkanPtr pDeiveRayTracingPSO = std::make_shared<CDeviceRayTracingPSO_Vulkan>(GetDevice());
+	pDeiveRayTracingPSO->Init(psoDesc);
+	return pDeiveRayTracingPSO;
+}
 
+CDeviceRayTracingPSO_Vulkan::~CDeviceRayTracingPSO_Vulkan()
+{
+	m_pDevice->DeferDestruction(m_pipeline);
+}
 
+EShaderStage SDeviceObjectHelpers::GetRayTracingShaderInstanceInfo(THwRTShaderInfo& result, ::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags, EVertexModifier mdvFlags)
+{
+	if (SShaderTechnique* pShaderTechnique = pShader->mfFindTechnique(technique))
+	{
+		if (pShaderTechnique->m_Passes.empty())
+			return EShaderStage_None;
 
+		SShaderPass& shaderPass = pShaderTechnique->m_Passes[0];
+
+		typedef std::array<std::vector<CHWShader*>*, eHWSC_RayEnd - eHWSC_RayStart> TRTShaderGroups;
+		TRTShaderGroups rayTracingShaderGroups;
+		rayTracingShaderGroups[0] = &shaderPass.m_RGShaders;
+		rayTracingShaderGroups[1] = &shaderPass.m_HGShaders;
+		rayTracingShaderGroups[2] = &shaderPass.m_RMShaders;
+
+		for (uint32 index = 0; index < (eHWSC_RayEnd - eHWSC_RayStart); index++)
+		{
+			if (result[index] == nullptr)
+			{
+				CRY_ASSERT(0);
+			}
+			else
+			{
+				result[index]->resize(rayTracingShaderGroups[index]->size());
+			}
+		}
+
+		EShaderStage validShaderStages = EShaderStage_None;
+		for (uint32 shaderGroupIndex = 0; shaderGroupIndex < (eHWSC_RayEnd - eHWSC_RayStart); shaderGroupIndex++)
+		{
+			for (uint32 shaderIndex = 0; shaderIndex < rayTracingShaderGroups[shaderGroupIndex]->size(); shaderIndex++)
+			{
+				CHWShader_D3D* pHWShaderD3D = reinterpret_cast<CHWShader_D3D*>((*(rayTracingShaderGroups[shaderGroupIndex]))[shaderIndex]);
+				(*result[shaderGroupIndex])[shaderIndex].pHwShader = pHWShaderD3D;
+				(*result[shaderGroupIndex])[shaderIndex].technique = technique;
+
+				if (pHWShaderD3D)
+				{
+					SShaderCombIdent Ident;
+					Ident.m_LightMask = 0;
+					Ident.m_RTMask = (rtFlags & pHWShaderD3D->m_nMaskAnd_RT) | pHWShaderD3D->m_nMaskOr_RT;
+					Ident.m_MDMask = mdFlags & 0xFFFFFFFF;
+					Ident.m_MDVMask = (mdvFlags | CParserBin::m_nPlatform);
+					Ident.m_GLMask = pHWShaderD3D->m_nMaskGenShader;
+					Ident.m_pipelineState = UPipelineState(1);//@todo fixme
+
+					//Ident.m_MDMask = mdFlags & (shaderStage != eHWSC_Pixel ? 0xFFFFFFFF : ~HWMD_TEXCOORD_FLAG_MASK);
+					//Ident.m_MDVMask = ((shaderStage != eHWSC_Pixel) ? mdvFlags : 0) | CParserBin::m_nPlatform;
+					//Ident.m_pipelineState = pipelineState ? pipelineState[shaderStage] : UPipelineState();
+
+					bool isShaderValid = false;
+					if (auto pInstance = pHWShaderD3D->mfGetInstance(Ident, 0))
+					{
+						if (pHWShaderD3D->CheckActivation(pShader, pInstance, 0))
+						{
+							if (pInstance->m_Handle.m_pShader->m_bDisabled)
+							{
+								(*result[shaderGroupIndex])[shaderIndex].pHwShader = nullptr;
+							}
+							else
+							{
+								(*result[shaderGroupIndex])[shaderIndex].pHwShaderInstance = pInstance;
+								(*result[shaderGroupIndex])[shaderIndex].pDeviceShader = pInstance->m_Handle.m_pShader->GetHandle();
+
+								validShaderStages |= EShaderStage_RayGen;
+							}
+
+							isShaderValid = true;
+						}
+					}
+
+					if (!isShaderValid)
+					{
+						return EShaderStage_None;
+					}
+				}
+			}
+		}
+		return validShaderStages;
+	}
+
+	return EShaderStage_None;
+}
+
+bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
+{
+	m_isValid = false;
+	m_updateCount++;
+
+	if (psoDesc.m_pShader == nullptr)
+		return false;
+
+	std::vector<SDeviceObjectHelpers::SShaderInstanceInfo> rayGenShaderInfos;
+	std::vector<SDeviceObjectHelpers::SShaderInstanceInfo> rayHitGroupShaderInfos;
+	std::vector<SDeviceObjectHelpers::SShaderInstanceInfo> rayMissShaderInfos;
+
+	SDeviceObjectHelpers::THwRTShaderInfo rayTracingShaderInfo;
+	rayTracingShaderInfo[0] = &rayGenShaderInfos;
+	rayTracingShaderInfo[1] = &rayHitGroupShaderInfos;
+	rayTracingShaderInfo[2] = &rayMissShaderInfos;
+
+	EShaderStage validShaderStage = SDeviceObjectHelpers::GetRayTracingShaderInstanceInfo(rayTracingShaderInfo, psoDesc.m_pShader, psoDesc.m_technique, psoDesc.m_ShaderFlags_RT, psoDesc.m_ShaderFlags_MD, MDV_NONE);
+
+	return validShaderStage != EShaderStage_None;
+}

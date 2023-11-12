@@ -3178,7 +3178,7 @@ bool CShaderManBin::ParseBinFX_Technique_Pass_LoadShaders_RayTracing(CParserBin&
 		}
 	}
 
-	return false;
+	return bRes;
 }
 //TanGram:VKRT:END
 

@@ -71,14 +71,17 @@ enum EHWShaderClass : uint8
 	eHWSC_NumGfx   = 5,
 
 	eHWSC_Compute  = 5,
+	eHWSC_Num      = 6,
 
 	//TanGram:VKRT:BEGIN
-	eHWSC_RayGen   = 6,
-	eHWSC_HitGroup = 7,
-	eHWSC_RayMiss  = 8,
+	eHWSC_RayStart = 7,
+	eHWSC_RayGen   = 7,
+	eHWSC_HitGroup = 8,
+	eHWSC_RayMiss  = 9,
+	eHWSC_RayEnd   = 10,
 	//TanGram:VKRT:END
 
-	eHWSC_Num      = 6
+	eHWSC_Num_WithRT = 11,
 };
 
 enum EShaderStage : uint8
@@ -94,7 +97,12 @@ enum EShaderStage : uint8
 	EShaderStage_Count             = eHWSC_Num,
 	EShaderStage_None              = 0,
 	EShaderStage_All               = EShaderStage_Vertex | EShaderStage_Pixel | EShaderStage_Geometry | EShaderStage_Domain | EShaderStage_Hull | EShaderStage_Compute,
-	EShaderStage_AllWithoutCompute = EShaderStage_Vertex | EShaderStage_Pixel | EShaderStage_Geometry | EShaderStage_Domain | EShaderStage_Hull
+	EShaderStage_AllWithoutCompute = EShaderStage_Vertex | EShaderStage_Pixel | EShaderStage_Geometry | EShaderStage_Domain | EShaderStage_Hull,
+	
+	EShaderStage_RayGen			   = (1 << 7) | (1 << 1),
+	EShaderStage_HitGroup		   = (1 << 7) | (1 << 2),
+	EShaderStage_RayMiss		   = (1 << 7) | (1 << 3),
+	EShaderStage_RayTracing		   = EShaderStage_RayGen | EShaderStage_HitGroup | EShaderStage_RayMiss,
 };
 DEFINE_ENUM_FLAG_OPERATORS(EShaderStage)
 #define SHADERSTAGE_FROM_SHADERCLASS(SHADERCLASS) ::EShaderStage(BIT(SHADERCLASS))
@@ -704,7 +712,7 @@ struct TMP_RENDER_API SResourceBindPoint
 			ESlotType       slotType;
 		};
 
-		uint32 fastCompare;
+		uint32 fastCompare;//TanGram:VKRT
 	};
 };
 static_assert(sizeof(SResourceBindPoint::fastCompare) == sizeof(SResourceBindPoint), "Size mismatch between fastCompare and bind point struct");

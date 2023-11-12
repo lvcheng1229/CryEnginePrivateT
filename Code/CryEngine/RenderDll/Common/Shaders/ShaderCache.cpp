@@ -536,7 +536,7 @@ void CShaderMan::mfInitShadersCache(byte bForLevel, FXShaderCacheCombinations* C
 			{
 				s++;
 				cmb.eCL = CHWShader::mfStringClass(s);
-				assert(cmb.eCL < eHWSC_Num);
+				assert(cmb.eCL < eHWSC_Num_WithRT);//TanGram:VKRT
 			}
 			else
 			{

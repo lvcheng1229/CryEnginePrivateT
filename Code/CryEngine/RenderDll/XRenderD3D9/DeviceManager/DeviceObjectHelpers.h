@@ -525,6 +525,11 @@ struct SDeviceObjectHelpers
 	// Check if shader has tessellation support
 	static bool CheckTessellationSupport(SShaderItem& shaderItem);
 	static bool CheckTessellationSupport(SShaderItem& shaderItem, EShaderTechniqueID techniqueId);
+
+	//TanGram:VKRT:BEGIN
+	typedef std::array<std::vector<SShaderInstanceInfo>*, eHWSC_RayEnd - eHWSC_RayStart> THwRTShaderInfo;
+	static EShaderStage GetRayTracingShaderInstanceInfo(THwRTShaderInfo& result, ::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags, EVertexModifier mdvFlags);
+	//TanGram:VKRT:END
 };
 
 template<typename T>

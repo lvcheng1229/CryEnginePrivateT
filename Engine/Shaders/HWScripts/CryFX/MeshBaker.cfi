@@ -104,7 +104,7 @@ pixout_mb MeshBakerComplex_PS(v2f IN)
 #endif
 	GatherMaterialAttribs(mTangentToWS, realCoord, vertexColor, commonAttribs);
 	
-	OUT.Color.xyz = LinearToSRGB(commonAttribs.Albedo);
+    OUT.Color.xyz = select((commonAttribs.Albedo < 0.0031308), 12.9200001F * commonAttribs.Albedo, 1.05499995F * pow(commonAttribs.Albedo, 1.F / 2.4000001F) - half3(0.0549999997F, 0.0549999997F, 0.0549999997F));
 #if %DECAL
 	OUT.Color.w = GatherAlpha(realCoord, vertexColor.w);
 #else
@@ -113,7 +113,7 @@ pixout_mb MeshBakerComplex_PS(v2f IN)
 
   if (ZOFFSET.z>1.0f)
   {
-    OUT.Color.xyz = LinearToSRGB(commonAttribs.Reflectance);
+    OUT.Color.xyz =select((commonAttribs.Reflectance < 0.0031308), 12.9200001F * commonAttribs.Reflectance, 1.05499995F * pow(commonAttribs.Reflectance, 1.F / 2.4000001F) - half3(0.0549999997F, 0.0549999997F, 0.0549999997F));
   }
   else if (ZOFFSET.z>0.0f)
   {

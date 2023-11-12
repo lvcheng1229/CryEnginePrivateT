@@ -14,6 +14,8 @@
 #define MAX_CONSTANTS_DS  512
 #define MAX_CONSTANTS_HS  512
 #define MAX_CONSTANTS_CS  512
+#define MAX_CONSTANTS_RS  512
+
 
 #define INST_PARAM_SIZE   sizeof(Vec4)
 

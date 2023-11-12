@@ -1089,7 +1089,7 @@ SamplerState GBufDBG_Sampler                 : register(s0); //pointClamp
 
 float3 ToSRGB( float3 col )
 {
-	return (col.xyz < 0.0031308) ? 12.92 * col.xyz : 1.055 * pow( col.xyz, 1.0 / 2.4 ) - float3( 0.055, 0.055, 0.055 );
+	return select((col < 0.0031308), 12.9200001F * col, 1.05499995F * pow(col, 1.F / 2.4000001F) - half3(0.0549999997F, 0.0549999997F, 0.0549999997F));
 }
 
 pixout DebugGBufferPS( vtxOut IN )

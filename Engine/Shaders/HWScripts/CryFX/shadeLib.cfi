@@ -700,8 +700,8 @@ float3 LTC_Disk(float3 N, float3 P, float3x3 mat, float3 points[4],
         float v = 0.5f * sqrt(tr + 2.0f * det);
         float e_max = (u + v);
         float e_min = (u - v);
-        float e_max2 = e_max * e_max; // e_max²     
-        float e_min2 = e_min * e_min; // e_min²
+        float e_max2 = e_max * e_max; // e_max?    
+        float e_min2 = e_min * e_min; // e_min?
 
         float3 V1_, V2_;
 
@@ -1328,7 +1328,7 @@ void CubemapBoxParallaxCorrection(inout half3 vReflVec, in half3 vPosLightDist, 
 	half3 vBoxIntersectionMin = (vPosLightDist + vBoxExtentsMin) / vReflVecN;
 	
 	// Intersection test
-	half3 vFurthestPlane = vReflVecN > 0.0f ? vBoxIntersectionMax : vBoxIntersectionMin;
+	half3 vFurthestPlane = select(vReflVecN > 0.F, vBoxIntersectionMax, vBoxIntersectionMin);
 	half fDistance = min(min(vFurthestPlane.x, vFurthestPlane.y), vFurthestPlane.z);
 
 	// Apply new reflection position
