@@ -507,8 +507,7 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 		handleData.resize(nHandleDataSize);
 
 		CRY_VERIFY(Extensions::KHR_ray_tracing_pipeline::vkGetRayTracingShaderGroupHandlesKHR(GetDevice()->GetVkDevice(), m_pipeline,0, nHandleCount, nHandleDataSize, handleData.data()) == VK_SUCCESS);
-
-
+		
 		//file sbt buffer
 		uint32 nHandleAlign = alignedValue(nHandleSize, GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties.shaderGroupHandleAlignment);
 		uint32 nBaseAlign = GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties.shaderGroupHandleAlignment;
@@ -523,15 +522,6 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 		m_sRayTracingSBT.m_hitGroupRegion.size = alignedValue(nHitGroupCount * nHandleAlign, nBaseAlign);
 
 		VkDeviceSize sbtSize = m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size + m_sRayTracingSBT.m_hitGroupRegion.size;
-		m_sRayTracingSBT.m_rtSBTBuffer.Create(1u, static_cast<buffer_size_t>(sbtSize), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_SHADER_BINDING_TABLE | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::BIND_SHADER_RESOURCE/*for D3D11_MAP_WRITE_NO_OVERWRITE_SR*/, nullptr);
-
-		VkBufferDeviceAddressInfo bufferDeviceAddressInfo = { VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
-		bufferDeviceAddressInfo.buffer = m_sRayTracingSBT.m_rtSBTBuffer.GetDevBuffer()->GetBuffer()->GetHandle();
-		VkDeviceAddress sbtAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &bufferDeviceAddressInfo);
-
-		m_sRayTracingSBT.m_rayGenRegion.deviceAddress = sbtAddress;
-		m_sRayTracingSBT.m_rayMissRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size;
-		m_sRayTracingSBT.m_hitGroupRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size;
 
 		auto getHandle = [&](int i) { return handleData.data() + i * nHandleSize; };
 
@@ -539,7 +529,7 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 		pSBTBuffer.resize(static_cast<buffer_size_t>(sbtSize));
 		uint8* pData = nullptr;
 		uint32 handleIdx = 0;
-		
+
 		{
 			pData = pSBTBuffer.data();
 			for (uint32 c = 0; c < nRayGenCount; c++)
@@ -567,7 +557,19 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 			}
 		}
 
-		m_sRayTracingSBT.m_rtSBTBuffer.UpdateBufferContent(pSBTBuffer.data(), static_cast<buffer_size_t>(sbtSize));
+
+		m_sRayTracingSBT.m_rtSBTBuffer.Create(1u, static_cast<buffer_size_t>(sbtSize), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_SHADER_BINDING_TABLE, pSBTBuffer.data());
+		
+		VkBufferDeviceAddressInfo bufferDeviceAddressInfo = { VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
+		bufferDeviceAddressInfo.buffer = m_sRayTracingSBT.m_rtSBTBuffer.GetDevBuffer()->GetBuffer()->GetHandle();
+		VkDeviceAddress sbtAddress = vkGetBufferDeviceAddress(GetDevice()->GetVkDevice(), &bufferDeviceAddressInfo);
+		
+		m_sRayTracingSBT.m_rayGenRegion.deviceAddress = sbtAddress;
+		m_sRayTracingSBT.m_rayMissRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size;
+		m_sRayTracingSBT.m_hitGroupRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size;
+		
+		
+
 	}
 
 
