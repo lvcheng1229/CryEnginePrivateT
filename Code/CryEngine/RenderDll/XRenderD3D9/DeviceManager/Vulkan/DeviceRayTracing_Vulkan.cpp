@@ -146,8 +146,6 @@ CVulkanRayTracingBottomLevelAccelerationStructure::CVulkanRayTracingBottomLevelA
 	VkAccelerationStructureDeviceAddressInfoKHR deviceAddressInfo = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR };
 	deviceAddressInfo.accelerationStructure = accelerationStructureHandle;
 	accelerationStructureDeviceAddress = Extensions::KHR_acceleration_structure::vkGetAccelerationStructureDeviceAddressKHR(m_pDevice->GetVkDevice(), &deviceAddressInfo);
-
-	m_accelerationStructureBuffer.GetDevBuffer()->GetBuffer()->TempSetTLASView(*(uint64*)(&accelerationStructureHandle));
 }
 
 uint64 CVulkanRayTracingBottomLevelAccelerationStructure::GetAccelerationStructureAddress()
@@ -265,6 +263,8 @@ CVulkanRayTracingTopLevelAccelerationStructure::CVulkanRayTracingTopLevelAcceler
 	VkAccelerationStructureDeviceAddressInfoKHR deviceAddressInfo = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR };
 	deviceAddressInfo.accelerationStructure = accelerationStructureHandle;
 	accelerationStructureDeviceAddress = Extensions::KHR_acceleration_structure::vkGetAccelerationStructureDeviceAddressKHR(m_pDevice->GetVkDevice(), &deviceAddressInfo);
+
+	m_accelerationStructureBuffer.GetDevBuffer()->GetBuffer()->TempSetTLASView(*(uint64*)(&accelerationStructureHandle));
 }
 
 CRayTracingTopLevelAccelerationStructurePtr CDeviceObjectFactory::CreateRayTracingTopLevelASImpl(const SRayTracingTopLevelASCreateInfo& rtTopLevelCreateInfo)
@@ -520,7 +520,7 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 		
 		//file sbt buffer
 		uint32 nHandleAlign = alignedValue(nHandleSize, GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties.shaderGroupHandleAlignment);
-		uint32 nBaseAlign = GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties.shaderGroupHandleAlignment;
+		uint32 nBaseAlign = GetDevice()->GetVulkanDeviceExtensionProperties().m_vkRayTracingPipelineProperties.shaderGroupBaseAlignment;
 
 		m_sRayTracingSBT.m_rayGenRegion.stride = alignedValue(nHandleAlign, nBaseAlign);
 		m_sRayTracingSBT.m_rayGenRegion.size = m_sRayTracingSBT.m_rayGenRegion.stride;// The size member of pRayGenShaderBindingTable must be equal to its stride member
@@ -530,6 +530,9 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 
 		m_sRayTracingSBT.m_hitGroupRegion.stride = nHandleAlign;
 		m_sRayTracingSBT.m_hitGroupRegion.size = alignedValue(nHitGroupCount * nHandleAlign, nBaseAlign);
+
+		m_sRayTracingSBT.m_callAbleRegion.stride = nHandleAlign;
+		m_sRayTracingSBT.m_callAbleRegion.size = 0;
 
 		VkDeviceSize sbtSize = m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size + m_sRayTracingSBT.m_hitGroupRegion.size;
 
@@ -577,8 +580,10 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 		m_sRayTracingSBT.m_rayGenRegion.deviceAddress = sbtAddress;
 		m_sRayTracingSBT.m_rayMissRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size;
 		m_sRayTracingSBT.m_hitGroupRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size;
+		m_sRayTracingSBT.m_callAbleRegion.deviceAddress = sbtAddress + m_sRayTracingSBT.m_rayGenRegion.size + m_sRayTracingSBT.m_rayMissRegion.size + m_sRayTracingSBT.m_hitGroupRegion.size;
 	}
 
+	m_isValid = true;
 
 	return validShaderStage != EShaderStage_None;
 }
@@ -588,5 +593,34 @@ void CDeviceGraphicsCommandInterfaceImpl::SetRayTracingPipelineStateImpl(const C
 	const CDeviceRayTracingPSO_Vulkan* pVkDevicePSO = reinterpret_cast<const CDeviceRayTracingPSO_Vulkan*>(pDevicePSO);
 
 	vkCmdBindPipeline(GetVKCommandList()->GetVkCommandList(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pVkDevicePSO->GetVkPipeline());
+	//m_raytracingState.pPipelineState = nullptr;
+}
+
+void CDeviceGraphicsCommandInterfaceImpl::SetRayTracingResourcesImpl(uint32 bindSlot, const CDeviceResourceSet* pResources)
+{
+	const CDeviceResourceSet_Vulkan* pVkResources = reinterpret_cast<const CDeviceResourceSet_Vulkan*>(pResources);
+	CRY_ASSERT(pVkResources->GetVKDescriptorSet() != VK_NULL_HANDLE);
+
+	m_raytracingState.custom.pendingBindings.AppendDescriptorSet(bindSlot, pVkResources->GetVKDescriptorSet(), nullptr);
+}
+
+void CDeviceGraphicsCommandInterfaceImpl::DispatchRayTracingImpl(uint32 width, uint32 height)
+{
+	const CDeviceResourceLayout_Vulkan* pVkLayout = reinterpret_cast<const CDeviceResourceLayout_Vulkan*>(m_raytracingState.pResourceLayout.cachedValue);
+	const CDeviceRayTracingPSO_Vulkan* pVkPipeline = reinterpret_cast<const CDeviceRayTracingPSO_Vulkan*>(m_raytracingState.pPipelineState.cachedValue);
+
+	ApplyPendingBindings(GetVKCommandList()->GetVkCommandList(), pVkLayout->GetVkPipelineLayout(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, m_raytracingState.custom.pendingBindings);
+	//m_raytracingState.custom.pendingBindings.Reset();
+	m_raytracingState.pPipelineState = nullptr;
+
+	GetVKCommandList()->PendingResourceBarriers();
+	Extensions::KHR_ray_tracing_pipeline::vkCmdTraceRaysKHR(GetVKCommandList()->GetVkCommandList(), 
+		&pVkPipeline->m_sRayTracingSBT.m_rayGenRegion, 
+		&pVkPipeline->m_sRayTracingSBT.m_rayMissRegion, 
+		&pVkPipeline->m_sRayTracingSBT.m_hitGroupRegion, 
+		&pVkPipeline->m_sRayTracingSBT.m_callAbleRegion,
+		width, height, 1);
+	GetVKCommandList()->m_nCommands += CLCOUNT_DISPATCH;
+
 	m_raytracingState.pPipelineState = nullptr;
 }

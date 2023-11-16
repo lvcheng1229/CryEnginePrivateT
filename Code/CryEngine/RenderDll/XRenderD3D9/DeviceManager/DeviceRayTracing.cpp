@@ -101,6 +101,45 @@ void CDeviceGraphicsCommandInterface::SetRayTracingPipelineState(const CDeviceRa
 	}
 }
 
+void CDeviceGraphicsCommandInterface::SetRayTracingResourceLayout(const CDeviceResourceLayout* pResourceLayout)
+{
+	if (m_raytracingState.pResourceLayout.Set(pResourceLayout))
+	{
+		// If a root signature is changed on a command list, all previous root signature bindings
+		// become stale and all newly expected bindings must be set before Draw/Dispatch
+		ZeroArray(m_raytracingState.pResourceSets);
+
+		m_raytracingState.requiredResourceBindings = pResourceLayout->GetRequiredResourceBindings();
+		m_raytracingState.validResourceBindings = 0;  // invalidate all resource bindings
+
+		m_raytracingState.custom.pendingBindings.Reset();
+		//SetResourceLayoutImpl(pResourceLayout);
+
+#if defined(ENABLE_PROFILING_CODE)
+		++m_profilingStats.numLayoutSwitches;
+#endif
+	}
+}
+
+void CDeviceGraphicsCommandInterface::SetRayTracingResources(uint32 bindSlot, const CDeviceResourceSet* pResources)
+{
+	if (m_raytracingState.pResourceSets[bindSlot].Set(pResources))
+	{
+		m_raytracingState.validResourceBindings[bindSlot] = pResources->IsValid();
+
+		SetRayTracingResourcesImpl(bindSlot, pResources);
+
+#if defined(ENABLE_PROFILING_CODE)
+		++m_profilingStats.numResourceSetSwitches;
+#endif
+	}
+}
+
+void CDeviceGraphicsCommandInterface::DispatchRayTracing(uint32 width, uint32 height)
+{
+	DispatchRayTracingImpl(width, height);
+}
+
 
 
 

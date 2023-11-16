@@ -290,7 +290,7 @@ void CStandardGraphicsPipeline::Execute()
 	//TanGram: VkRT:BEGIN
 	if (GetStage<CRayTracingTestStage>()->IsStageActive(m_renderingFlags))
 	{
-		pRenderer->ForceFlushRTCommands();
+		//pRenderer->ForceFlushRTCommands();
 		GetStage<CRayTracingTestStage>()->Execute();
 	}
 	//TanGram: VkRT:END

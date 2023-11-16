@@ -3,7 +3,9 @@
 CRayTracingRenderPass::CRayTracingRenderPass(CGraphicsPipeline* pGraphicsPipeline)
 	: m_dirtyMask(eDirty_All)
 	, m_bCompiled(false)
+	, m_resourceDesc()
 {
+	m_pResourceSet = GetDeviceObjectFactory().CreateResourceSet(CDeviceResourceSet::EFlags_ForceSetAllState);
 }
 
 void CRayTracingRenderPass::SetTechnique(CShader* pShader, const CCryNameTSCRC& techName, uint64 rtMask)
@@ -80,14 +82,15 @@ CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()
 	return dirtyMask;
 }
 
-void CRayTracingRenderPass::DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList)
+void CRayTracingRenderPass::DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList, uint32 width, uint32 height)
 {
 	if (m_dirtyMask == eDirty_None)
 	{
-		//int bindSlot = 0;
+		int bindSlot = 0;
 		CDeviceGraphicsCommandInterface* pCommandInterface = commandList.GetGraphicsInterface();
 		pCommandInterface->SetRayTracingPipelineState(m_pPipelineState.get());
-		//pComputeInterface->SetResources(bindSlot++, m_pResourceSet.get());
-		//pComputeInterface->Dispatch
+		pCommandInterface->SetRayTracingResourceLayout(m_pResourceLayout.get());
+		pCommandInterface->SetRayTracingResources(bindSlot++, m_pResourceSet.get());
+		pCommandInterface->DispatchRayTracing(width, height);
 	}
 }

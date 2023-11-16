@@ -99,7 +99,7 @@ void CRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* p
 
 			//@todo fixme
 			instanceData.m_instanceShaderBindingTableRecordOffset = 0;
-			instanceData.m_flags = 0; // Disable face culling ?
+			instanceData.m_flags = 0x00000002; // Flip Face
 
 			instanceData.accelerationStructureReference = instanceInfo.m_blas->GetAccelerationStructureAddress();
 		}
@@ -125,19 +125,30 @@ void CRayTracingTestStage::Init()
 	rayTracingRays[2] = SRayTracingRay{ { 0.75f, 0.0f,  1.0f}, 0xFFFFFFFF, {0.0f, 0.0f, -1.0f}, 100000.0f }; // expected to hit  (should hit back face)
 	rayTracingRays[3] = SRayTracingRay{ {-0.75f, 0.0f, -1.0f}, 0xFFFFFFFF, {0.0f, 0.0f,  1.0f}, 100000.0f }; // expected to miss (doesn't intersect)
 	m_rayBuffer.Create(4, sizeof(SRayTracingRay), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_SHADER_RESOURCE, rayTracingRays.data());
+	m_rayBuffer.SetDebugName("RayBuffer");
 
-	m_resultBuffer.Create(NumRays, sizeof(uint32) * NumRays, DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::USAGE_CPU_READ | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+	m_resultBuffer.Create(NumRays, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+	m_resultBuffer.SetDebugName("RayTracingResultBuffer");
 
+}
+
+void CRayTracingTestStage::Execute()
+{
 	m_rayTracingRenderPass.SetTechnique(CShaderMan::s_shRayTracingTest, CCryNameTSCRC("RayTracingTestTech"), 0);
 	m_rayTracingRenderPass.SetBuffer(0, m_pRtTopLevelAS->GetAccelerationStructureBuffer());
 	m_rayTracingRenderPass.SetBuffer(1, &m_rayBuffer);
 	m_rayTracingRenderPass.SetOutputUAV(2, &m_resultBuffer);
 	m_rayTracingRenderPass.PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
-	//m_rayTracingRenderPass.DispatchRayTracing(GetDeviceObjectFactory().GetCoreCommandList());
-	//todo@ transition
-}
-
-void CRayTracingTestStage::Execute()
-{
+	m_rayTracingRenderPass.DispatchRayTracing(GetDeviceObjectFactory().GetCoreCommandList(), 4, 1);
+	
+	//{
+	//	gcpRendD3D->ForceFlushRTCommands();
+	//	uint32* result = (uint32*)m_resultBuffer.Lock();
+	//	CRY_ASSERT(result[0] != 0);
+	//	CRY_ASSERT(result[1] == 0);
+	//	CRY_ASSERT(result[2] != 0);
+	//	CRY_ASSERT(result[3] == 0);
+	//	m_resultBuffer.Unlock(sizeof(uint32) * 4);
+	//}
 }
 

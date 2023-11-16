@@ -98,6 +98,7 @@ public:
 		VkStridedDeviceAddressRegionKHR m_rayGenRegion;
 		VkStridedDeviceAddressRegionKHR m_hitGroupRegion;
 		VkStridedDeviceAddressRegionKHR m_rayMissRegion;
+		VkStridedDeviceAddressRegionKHR m_callAbleRegion;
 	};
 	SRayTracingSBT m_sRayTracingSBT;
 

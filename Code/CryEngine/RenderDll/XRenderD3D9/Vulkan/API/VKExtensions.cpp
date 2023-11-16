@@ -225,6 +225,7 @@ namespace Extensions
 
 		PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR = nullptr;
 		PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = nullptr;
+		PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR = nullptr;
 	}
 	//TanGram:VKRT:END
 
@@ -271,6 +272,7 @@ namespace Extensions
 				KHR_ray_tracing_pipeline::IsSupported = true;
 				KHR_ray_tracing_pipeline::vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCreateRayTracingPipelinesKHR");
 				KHR_ray_tracing_pipeline::vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkGetRayTracingShaderGroupHandlesKHR");
+				KHR_ray_tracing_pipeline::vkCmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)vkGetDeviceProcAddr(pDevice->GetVkDevice(), "vkCmdTraceRaysKHR");
 			}
 			//TanGram:VKRT:END
 		}

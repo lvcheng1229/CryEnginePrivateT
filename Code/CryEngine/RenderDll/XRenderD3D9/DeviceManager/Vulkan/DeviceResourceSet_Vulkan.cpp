@@ -222,9 +222,12 @@ bool CDeviceResourceSet_Vulkan::FillDescriptors(const CDeviceResourceSetDesc& de
 			case SResourceBinding::EResourceType::Buffer:
 			{
 				CBufferView* const pView = static_cast<CBufferView*>(resource.pBuffer->GetDevBuffer()->LookupResourceView(resource.view).second);
+				if (descriptorWrites[descriptorWriteIndex].descriptorType != VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR)
+				{
+					const bool bBindAsSrv = it.first.slotType == SResourceBindPoint::ESlotType::TextureAndBuffer;
+					m_inUseResources.emplace_back(pView->GetResource(), !bBindAsSrv);
+				}
 
-				const bool bBindAsSrv = it.first.slotType == SResourceBindPoint::ESlotType::TextureAndBuffer;
-				m_inUseResources.emplace_back(pView->GetResource(), !bBindAsSrv);
 
 				if (IsTexelBuffer(descriptorWrites[descriptorWriteIndex].descriptorType))
 				{

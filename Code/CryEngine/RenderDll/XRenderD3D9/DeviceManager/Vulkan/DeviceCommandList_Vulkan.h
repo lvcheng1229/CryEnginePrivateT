@@ -130,6 +130,7 @@ protected:
 	void SetRayTracingPipelineStateImpl(const CDeviceRayTracingPSO* pDevicePSO); // TanGram:VKRT
 	void SetResourceLayoutImpl(const CDeviceResourceLayout* pResourceLayout);
 	void SetResourcesImpl(uint32 bindSlot, const CDeviceResourceSet* pResources);
+	void SetRayTracingResourcesImpl(uint32 bindSlot, const CDeviceResourceSet* pResources); // TanGram:VKRT
 	void SetInlineConstantBufferImpl(uint32 bindSlot, const CConstantBuffer* pBuffer, EConstantBufferShaderSlot shaderSlot, EHWShaderClass shaderClass);
 	void SetInlineConstantBufferImpl(uint32 bindSlot, const CConstantBuffer* pBuffer, EConstantBufferShaderSlot shaderSlot, EShaderStage shaderStages);
 	void SetInlineShaderResourceImpl(uint32 bindSlot, const CDeviceBuffer* pBuffer, EShaderResourceShaderSlot shaderSlot, EHWShaderClass shaderClass, ResourceViewHandle resourceViewID);
@@ -155,6 +156,7 @@ protected:
 	void EndOcclusionQueryImpl(D3DOcclusionQuery* pQuery);
 
 	//TanGram:VKRT:BEGIN
+	void DispatchRayTracingImpl(uint32 width, uint32 height);
 	void BuildRayTracingBottomLevelASsImpl(std::vector<CRayTracingBottomLevelAccelerationStructurePtr>& rtBottomLevelASPtrs);
 	void BuildRayTracingTopLevelASImpl(CRayTracingTopLevelAccelerationStructurePtr rtTopLevelASPtr, CGpuBuffer* instanceBuffer, uint32 offset);
 	//TanGram:VKRT:END

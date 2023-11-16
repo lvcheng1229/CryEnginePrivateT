@@ -21,7 +21,7 @@ public:
 
 	void SetTechnique(CShader* pShader, const CCryNameTSCRC& techName, uint64 rtMask);
 	void PrepareResourcesForUse(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
-	void DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
+	void DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList,uint32 width,uint32 height);
 
 	void SetBuffer(uint32 slot, CGpuBuffer* pBuffer);
 	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);

@@ -138,9 +138,11 @@ public:
 	void SetScissorRects(uint32 rcCount, const D3DRectangle* pRects);
 	void SetDepthBounds(float fMin, float fMax);
 	void SetPipelineState(const CDeviceGraphicsPSO* devicePSO);
-	void SetRayTracingPipelineState(const CDeviceRayTracingPSO* deviceRayTracingPSO); // TanGram:VKRT
 	void SetResourceLayout(const CDeviceResourceLayout* resourceLayout);
 	void SetResources(uint32 bindSlot, const CDeviceResourceSet* pResources);
+	void SetRayTracingPipelineState(const CDeviceRayTracingPSO* deviceRayTracingPSO); // TanGram:VKRT
+	void SetRayTracingResourceLayout(const CDeviceResourceLayout* resourceLayout);
+	void SetRayTracingResources(uint32 bindSlot, const CDeviceResourceSet* pResources); // TanGram:VKRT
 	void SetInlineConstantBuffer(uint32 bindSlot, const CConstantBuffer* pBuffer, EConstantBufferShaderSlot shaderSlot, EHWShaderClass shaderClass);
 	void SetInlineConstantBuffer(uint32 bindSlot, const CConstantBuffer* pBuffer, EConstantBufferShaderSlot shaderSlot, ::EShaderStage shaderStages);
 	void SetInlineShaderResource(uint32 bindSlot, const CDeviceBuffer* pBuffer, EShaderResourceShaderSlot shaderSlot, EHWShaderClass shaderClass, ResourceViewHandle resourceViewID = EDefaultResourceViews::Default);
@@ -158,6 +160,7 @@ public:
 
 	//TanGram:VKRT:BEGIN
 #if ENABLE_RAY_TRACING
+	void DispatchRayTracing(uint32 width, uint32 height);
 	void BuildRayTracingBottomLevelASs(std::vector<CRayTracingBottomLevelAccelerationStructurePtr>& rtBottomLevelASPtrs);
 	void BuildRayTracingTopLevelAS(CRayTracingTopLevelAccelerationStructurePtr rtTopLevelASPtrs, CGpuBuffer* instanceBuffer, uint32 offset);
 #endif
