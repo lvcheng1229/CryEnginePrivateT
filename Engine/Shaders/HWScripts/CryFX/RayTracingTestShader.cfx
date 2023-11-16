@@ -12,6 +12,7 @@ struct FBasicRayData
 	float TFar;
 };
 
+
 struct FDefaultPayload
 {
 	float HitT; // Distance from ray origin to the intersection point in the ray direction. Negative on miss.
@@ -37,8 +38,8 @@ struct FRayTracingIntersectionAttributes
 };
 
 RaytracingAccelerationStructure               TLAS: register(t0); 
-StructuredBuffer<FBasicRayData>               Rays: register(t1); 
-RWStructuredBuffer<uint>                      OcclusionOutput: register(u0);
+StructuredBuffer<FBasicRayData>            Rays: register(t1); 
+RWStructuredBuffer<uint>                       OcclusionOutput: register(u2);
 
 [shader("raygeneration")] 
 void RayGenMain()

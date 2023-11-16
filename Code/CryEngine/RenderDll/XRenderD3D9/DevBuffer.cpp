@@ -1749,6 +1749,14 @@ struct CBufferPoolImpl final
 		{
 			DB_MEMREPLAY_SCOPE(EMemReplayAllocClass::UserPointer, EMemReplayUserPointerClass::CryMalloc);
 
+			//TanGram:VKRT:BEGIN
+			uint32 eAcceleratinFlag = 0;
+			if ((BIND_FLAGS & CDeviceObjectFactory::USAGE_CPU_WRITE) == 0)
+			{
+				eAcceleratinFlag = CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE;
+			}
+			//TanGram:VKRT:END
+
 			const SBufferLayout Layout =
 			{
 				DXGI_FORMAT_UNKNOWN, s_PoolConfig.m_pool_bank_size, 1,
@@ -1759,8 +1767,10 @@ struct CBufferPoolImpl final
 #if !BUFFER_USE_STAGED_UPDATES && (BUFFER_ENABLE_DIRECT_ACCESS == 1) // UMA || PersistentMap
 				CDeviceObjectFactory::USAGE_CPU_WRITE |
 #endif
-				USAGE_FLAGS | BIND_FLAGS
+				USAGE_FLAGS | BIND_FLAGS | eAcceleratinFlag
 			};
+
+
 
 			if (!(buffer = CDeviceBuffer::Create(Layout, nullptr)))
 			{

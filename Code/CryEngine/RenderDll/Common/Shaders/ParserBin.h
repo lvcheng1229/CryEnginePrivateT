@@ -271,6 +271,8 @@ enum EToken
 	eT_RayGenShaders,
 	eT_HitGroupShaders,
 	eT_MissShaders,
+	eT_vk,
+	eT_binding,
 	//TanGram:VKRT:END
 
 	eT_color,
@@ -725,7 +727,8 @@ enum ETokenStorageClass
 	eTS_static,
 	eTS_const,
 	eTS_shared,
-	eTS_groupshared
+	eTS_groupshared,
+	eTS_vkExtension,
 };
 
 struct SFXTokenBin

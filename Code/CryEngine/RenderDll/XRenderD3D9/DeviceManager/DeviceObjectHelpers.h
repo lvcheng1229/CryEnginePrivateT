@@ -528,7 +528,7 @@ struct SDeviceObjectHelpers
 
 	//TanGram:VKRT:BEGIN
 	typedef std::array<std::vector<SShaderInstanceInfo>*, eHWSC_RayEnd - eHWSC_RayStart> THwRTShaderInfo;
-	static EShaderStage GetRayTracingShaderInstanceInfo(THwRTShaderInfo& result, ::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags, EVertexModifier mdvFlags);
+	static EShaderStage GetRayTracingShaderInstanceInfo(THwRTShaderInfo& result, ::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags, const UPipelineState pipelineState[eHWSC_RayEnd - eHWSC_RayStart],EVertexModifier mdvFlags);
 	//TanGram:VKRT:END
 };
 

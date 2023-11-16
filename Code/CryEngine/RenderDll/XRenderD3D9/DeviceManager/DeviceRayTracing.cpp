@@ -93,6 +93,14 @@ CDeviceRayTracingPSOPtr CDeviceObjectFactory::CreateRayTracingPSO(const CDeviceR
 	return pPso;
 }
 
+void CDeviceGraphicsCommandInterface::SetRayTracingPipelineState(const CDeviceRayTracingPSO* deviceRayTracingPSO)
+{
+	if (m_raytracingState.pPipelineState.Set(deviceRayTracingPSO))
+	{
+		SetRayTracingPipelineStateImpl(deviceRayTracingPSO);
+	}
+}
+
 
 
 

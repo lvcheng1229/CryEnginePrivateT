@@ -79,26 +79,26 @@ static inline VkBufferUsageFlagBits ConvertToVKBufferUsageBits(const T& desc)
 
 	// *INDENT-OFF*
 	return VkBufferUsageFlagBits(
-		((desc & CDeviceObjectFactory::BIND_VERTEX_BUFFER   ) ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT           : 0) |
-		((desc & CDeviceObjectFactory::BIND_INDEX_BUFFER    ) ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT            : 0) |
-		((desc & CDeviceObjectFactory::BIND_CONSTANT_BUFFER ) ? VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT          : 0) |
-		
-		((desc & CDeviceObjectFactory::USAGE_STRUCTURED     ) ? // Constant buffer are structured buffers by definition
-		((desc & CDeviceObjectFactory::BIND_SHADER_RESOURCE ) ? VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT               |
-		                              /* Workaround for >64k */ VK_BUFFER_USAGE_STORAGE_BUFFER_BIT          : 0) |
-		((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT          : 0) : 0)
-		
+		((desc & CDeviceObjectFactory::BIND_VERTEX_BUFFER) ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : 0) |
+		((desc & CDeviceObjectFactory::BIND_INDEX_BUFFER) ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT : 0) |
+		((desc & CDeviceObjectFactory::BIND_CONSTANT_BUFFER) ? VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT : 0) |
+
+		((desc & CDeviceObjectFactory::USAGE_STRUCTURED) ? // Constant buffer are structured buffers by definition
+			((desc & CDeviceObjectFactory::BIND_SHADER_RESOURCE) ? VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+				/* Workaround for >64k */ VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0) |
+			((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0) : 0)
+
 		|
-		((desc & CDeviceObjectFactory::BIND_SHADER_RESOURCE ) ? VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT         |
-		                              /* Workaround for >64k */ VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT    : 0) |
-		((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT    : 0) |
-		((desc & CDeviceObjectFactory::USAGE_INDIRECTARGS   ) ? VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT         : 0) |
-		                                                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT                 |
-		                                                        VK_BUFFER_USAGE_TRANSFER_DST_BIT                 |
+		((desc & CDeviceObjectFactory::BIND_SHADER_RESOURCE) ? VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT |
+			/* Workaround for >64k */ VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT : 0) |
+		((desc & CDeviceObjectFactory::BIND_UNORDERED_ACCESS) ? VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT : 0) |
+		((desc & CDeviceObjectFactory::USAGE_INDIRECTARGS) ? VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT : 0) |
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 
 		//TanGram:VKRT:BEGIN
-																VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT		 |
-		((desc & CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE) ? (VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR) : 0)|
+		VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+		((desc & CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE) ? (VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR) : 0) | 
 		((desc & CDeviceObjectFactory::USAGE_SHADER_BINDING_TABLE) ? (VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR) : 0)
 		//TanGram:VKRT:END
 		

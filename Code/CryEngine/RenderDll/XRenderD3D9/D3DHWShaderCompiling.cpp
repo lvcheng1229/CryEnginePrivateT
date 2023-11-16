@@ -1345,9 +1345,13 @@ struct SRegisterRangeDesc
 		, shaderStageMask(0)
 	{}
 
-	void setTypeAndStage(uint8_t typeAndStageByte)
+	void setStagemask(uint32 stageValue)
 	{
-		shaderStageMask = typeAndStageByte & 0x3F;
+		shaderStageMask = stageValue;//TanGram:VKRT
+	}
+
+	void setType(uint8_t typeAndStageByte)
+	{
 		type = (SResourceBindPoint::ESlotType)(typeAndStageByte >> 6);
 	}
 
@@ -1383,9 +1387,13 @@ RegisterRanges ExtractRegisterRanges(const std::vector<uint8>& RsrcLayoutEncodin
 
 			for (int j = 0; j < rangeCount; j++)
 			{
-				uint8_t slotTypeStagesByte = *pLayoutData++;
+				uint32 stageType = *pLayoutData;
+				pLayoutData += 4;
+
+				uint8_t slotType = *pLayoutData++;
 				uint8_t slotNumberDescCountByte = *pLayoutData++;
-				registerRanges[i][j].setTypeAndStage(slotTypeStagesByte);
+				registerRanges[i][j].setStagemask(stageType);//TanGram:VKRT
+				registerRanges[i][j].setType(slotType);
 				registerRanges[i][j].setSlotNumberAndDescCount(slotNumberDescCountByte);
 			}
 		}

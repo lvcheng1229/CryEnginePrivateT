@@ -47,6 +47,18 @@ VkShaderStageFlags GetShaderStageFlags(EShaderStage shaderStages)
 	if (shaderStages & EShaderStage_Hull)
 		shaderStageFlags |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 
+	if (shaderStages & EShaderStage_RayTracingBit)
+	{
+		if (shaderStages & EShaderStage_RayGen)
+			shaderStageFlags |= VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+	
+		if (shaderStages & EShaderStage_RayMiss)
+			shaderStageFlags |= VK_SHADER_STAGE_MISS_BIT_KHR;
+	
+		if (shaderStages & EShaderStage_HitGroup)
+			shaderStageFlags |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+	}
+
 	return shaderStageFlags;
 }
 
@@ -137,12 +149,15 @@ bool CDeviceResourceSet_Vulkan::FillDescriptors(const CDeviceResourceSetDesc& de
 	CryStackAllocWithSizeVector(VkDescriptorImageInfo, descriptorCount, descriptorImageInfos, NoAlign);
 	CryStackAllocWithSizeVector(VkDescriptorBufferInfo, descriptorCount, descriptorBufferInfos, NoAlign);
 	CryStackAllocWithSizeVector(VkBufferView, descriptorCount, descriptorBufferViews, NoAlign);
+	CryStackAllocWithSizeVector(VkWriteDescriptorSetAccelerationStructureKHR, descriptorCount, descriptorASInfo, NoAlign);//TanGram:VKRT
+
 
 	unsigned int descriptorIndex = 0;
 	unsigned int descriptorWriteIndex = 0;
 	unsigned int imageInfoIndex = 0;
 	unsigned int bufferInfoIndex = 0;
 	unsigned int bufferViewIndex = 0;
+	unsigned int acclerationStructIndex = 0;
 
 	for (const auto& it : desc.GetResources())
 	{
@@ -220,6 +235,18 @@ bool CDeviceResourceSet_Vulkan::FillDescriptors(const CDeviceResourceSetDesc& de
 
 					++bufferViewIndex;
 				}
+				//TanGram:VKRT:BEGIN
+				else if (descriptorWrites[descriptorWriteIndex].descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR)
+				{
+					descriptorASInfo[acclerationStructIndex] = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR };
+					descriptorASInfo[acclerationStructIndex].accelerationStructureCount = 1;
+					descriptorASInfo[acclerationStructIndex].pAccelerationStructures = (VkAccelerationStructureKHR*)resource.pBuffer->GetDevBuffer()->GetBuffer()->TempGetTLASView();;
+					descriptorASInfo[acclerationStructIndex].pNext = nullptr;
+
+					descriptorWrites[descriptorWriteIndex].pNext = &descriptorASInfo[acclerationStructIndex];
+					++acclerationStructIndex;
+				}
+				//TanGram:VKRT:END
 				else
 				{
 					pView->FillInfo(descriptorBufferInfos[bufferInfoIndex]);
@@ -378,7 +405,7 @@ CDeviceResourceLayout_Vulkan::~CDeviceResourceLayout_Vulkan()
 std::vector<uint8> CDeviceResourceLayout_Vulkan::EncodeDescriptorSet(const VectorMap<SResourceBindPoint, SResourceBinding>& resources)
 {
 	std::vector<uint8> result;
-	result.reserve(1 + resources.size() * 2);
+	result.reserve(1 + resources.size() * (2 + sizeof(uint32)));
 
 	result.push_back(resources.size());
 	for (auto it : resources)
@@ -389,7 +416,7 @@ std::vector<uint8> CDeviceResourceLayout_Vulkan::EncodeDescriptorSet(const Vecto
 
 #ifndef _RELEASE
 		if (
-			(stages & 0x3F) != stages                                      ||
+			(stages & 0xFFFFFFFF) != stages                                      ||
 			((uint8)bindPoint.slotType & 0x3) != (uint8)bindPoint.slotType ||
 			(descriptorCount & 0x3) != descriptorCount                     ||
 			(bindPoint.slotNumber & 0x3F) != bindPoint.slotNumber
@@ -398,7 +425,15 @@ std::vector<uint8> CDeviceResourceLayout_Vulkan::EncodeDescriptorSet(const Vecto
 			CryFatalError("Encoding need to be changed. Stages flags, slot type, Descriptor count, and slot number are not fitting to two bytes anymore.");
 		}
 #endif
-		uint8 slotTypeStageByte = ((uint8)bindPoint.slotType << 6) | (uint8)stages;
+		//TanGram:VKRT:BEGIN
+		uint8* stagesByte = (uint8*)(&stages);
+		for (uint32 index = 0; index < 4; index++)
+		{
+			result.push_back(stagesByte[index]);
+		}
+		//TanGram:VKRT:END
+		
+		uint8 slotTypeStageByte = ((uint8)bindPoint.slotType << 6);
 		result.push_back(slotTypeStageByte);              // 6-bits for stages + 2-bits for slotType
 		uint8 slotNumberDescriptorCountByte = (descriptorCount << 6) | bindPoint.slotNumber;
 		result.push_back(slotNumberDescriptorCountByte);  // 6-bits for slot number + 2-bits for descriptor count

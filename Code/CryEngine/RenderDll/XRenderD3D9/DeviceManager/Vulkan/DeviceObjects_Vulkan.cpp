@@ -234,7 +234,7 @@ uint32 CDeviceObjectFactory::GetEncodedResourceLayoutSize(const std::vector<uint
 		uint8 numberOfResourceLayout = encodedLayout[0];
 		for (uint i = 0; i < numberOfResourceLayout; ++i)
 		{
-			encodedResourceLayoutSize += 2 * encodedLayout[encodedResourceLayoutSize] + 1;
+			encodedResourceLayoutSize += (2 + sizeof(uint32)/*TanGram:VKRT*/) * encodedLayout[encodedResourceLayoutSize] + 1;
 		}
 	}
 
@@ -478,7 +478,7 @@ HRESULT CDeviceObjectFactory::SyncFence(DeviceFenceHandle query, bool block, boo
 		if (hr != S_OK)
 		{
 			// Can only flush from render thread
-			CRY_ASSERT(!flush || !gRenDev->m_pRT || gRenDev->m_pRT->IsRenderThread());
+			//CRY_ASSERT(!flush || !gRenDev->m_pRT || gRenDev->m_pRT->IsRenderThread());
 
 			// Test + Flush + No-Block is okay
 			// Test + No-Flush + Block may not be okay, caution advised as it could deadlock

@@ -4581,6 +4581,8 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		FX_TOKEN(RayGenShaders)
 		FX_TOKEN(HitGroupShaders)
 		FX_TOKEN(MissShaders)
+		FX_TOKEN(vk)
+		FX_TOKEN(binding)
 		//TanGram:VKRT:END
 
 		FX_TOKEN(cbuffer)
@@ -4645,6 +4647,8 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 		case eT_RayGenShaders:
 		case eT_HitGroupShaders:
 		case eT_MissShaders:
+		case eT_vk:
+		case eT_binding:
 		//TanGram:VKRT:END
 
 		case eT_half2:

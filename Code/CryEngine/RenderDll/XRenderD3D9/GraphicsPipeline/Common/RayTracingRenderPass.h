@@ -21,10 +21,11 @@ public:
 
 	void SetTechnique(CShader* pShader, const CCryNameTSCRC& techName, uint64 rtMask);
 	void PrepareResourcesForUse(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
+	void DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
 
 	void SetBuffer(uint32 slot, CGpuBuffer* pBuffer);
-	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_Compute);
-	void SetOutputUAV(uint32 slot, CGpuBuffer* pBuffer, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_Compute);
+	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
+	void SetOutputUAV(uint32 slot, CGpuBuffer* pBuffer, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
 
 private:
 
@@ -52,7 +53,7 @@ DEFINE_ENUM_FLAG_OPERATORS(CRayTracingRenderPass::EDirtyFlags);
 
 inline void CRayTracingRenderPass::SetBuffer(uint32 slot, CGpuBuffer* pBuffer)
 {
-	m_resourceDesc.SetBuffer(slot, pBuffer, EDefaultResourceViews::Default, EShaderStage_Compute);
+	m_resourceDesc.SetBuffer(slot, pBuffer, EDefaultResourceViews::Default, EShaderStage_RayTracing);
 }
 
 inline void CRayTracingRenderPass::SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID, ::EShaderStage shaderStages)

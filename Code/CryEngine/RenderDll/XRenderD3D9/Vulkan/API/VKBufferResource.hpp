@@ -28,7 +28,13 @@ public:
 	CAutoHandle<VkBufferView> CreateView(VkFormat format, VkDeviceSize offset, VkDeviceSize bytes);
 
 	VkBuffer                  GetHandle() const       { return m_hVkBufferResource; }
+	
 	const VkBufferCreateInfo& GetCreateInfo() const   { return m_VkCreateInfo; }
+
+	//TanGram:VKRT:BEGIN
+	const uint64* TempGetTLASView() { return &m_tempTLASView; }
+	void TempSetTLASView(uint64 tempTLASView) { m_tempTLASView = tempTLASView; }
+	//TanGram:VKRT:END
 
 	void                      SetStrideAndElementCount(uint32_t stride, uint32_t elementCount)
 	{ 
@@ -58,6 +64,8 @@ protected:
 	uint32_t              m_elements = 0; // Number of elements
 
 	VkBufferCreateInfo    m_VkCreateInfo;
+
+	uint64				  m_tempTLASView = 0;
 };
 
 static_assert(std::is_nothrow_move_constructible<CBufferResource>::value, "CBufferResource must be movable");

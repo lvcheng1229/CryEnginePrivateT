@@ -412,6 +412,8 @@ void CDeviceGraphicsCommandInterfaceImpl::SetPipelineStateImpl(const CDeviceGrap
 	m_computeState.pPipelineState = nullptr;
 }
 
+
+
 void CDeviceGraphicsCommandInterfaceImpl::SetResourceLayoutImpl(const CDeviceResourceLayout* pResourceLayout)
 {
 	m_graphicsState.custom.pendingBindings.Reset();

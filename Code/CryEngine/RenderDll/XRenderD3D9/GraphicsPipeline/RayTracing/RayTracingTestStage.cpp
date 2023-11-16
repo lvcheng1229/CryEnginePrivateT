@@ -105,7 +105,7 @@ void CRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* p
 		}
 	}
 
-	m_instanceBuffer.Create(accelerationStructureInstanceDatas.size(), sizeof(SAccelerationStructureInstanceData), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_SHADER_RESOURCE, accelerationStructureInstanceDatas.data());
+	m_instanceBuffer.Create(accelerationStructureInstanceDatas.size(), sizeof(SAccelerationStructureInstanceData), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE, accelerationStructureInstanceDatas.data());
 	pCommandInterface->BuildRayTracingTopLevelAS(m_pRtTopLevelAS, &m_instanceBuffer, 0);
 }
 
@@ -116,13 +116,25 @@ void CRayTracingTestStage::Init()
 	CreateAndBuildBLAS(pCommandInterface);
 	CreateAndBuildTLAS(pCommandInterface);
 	
-	//test only
+	constexpr uint32 NumRays = 4;
+
+	std::vector<SRayTracingRay> rayTracingRays;
+	rayTracingRays.resize(NumRays);
+	rayTracingRays[0] = SRayTracingRay{ { 0.75f, 0.0f, -1.0f}, 0xFFFFFFFF, {0.0f, 0.0f,  1.0f}, 100000.0f }; // expected to hit
+	rayTracingRays[1] = SRayTracingRay{ { 0.75f, 0.0f, -1.0f}, 0xFFFFFFFF, {0.0f, 0.0f,  1.0f},      0.5f }; // expected to miss (short ray)
+	rayTracingRays[2] = SRayTracingRay{ { 0.75f, 0.0f,  1.0f}, 0xFFFFFFFF, {0.0f, 0.0f, -1.0f}, 100000.0f }; // expected to hit  (should hit back face)
+	rayTracingRays[3] = SRayTracingRay{ {-0.75f, 0.0f, -1.0f}, 0xFFFFFFFF, {0.0f, 0.0f,  1.0f}, 100000.0f }; // expected to miss (doesn't intersect)
+	m_rayBuffer.Create(4, sizeof(SRayTracingRay), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_SHADER_RESOURCE, rayTracingRays.data());
+
+	m_resultBuffer.Create(NumRays, sizeof(uint32) * NumRays, DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::USAGE_CPU_READ | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
+
 	m_rayTracingRenderPass.SetTechnique(CShaderMan::s_shRayTracingTest, CCryNameTSCRC("RayTracingTestTech"), 0);
 	m_rayTracingRenderPass.SetBuffer(0, m_pRtTopLevelAS->GetAccelerationStructureBuffer());
-	
-	//Ray Buffer
-	//m_rayTracingRenderPass.SetBuffer(1, );
+	m_rayTracingRenderPass.SetBuffer(1, &m_rayBuffer);
+	m_rayTracingRenderPass.SetOutputUAV(2, &m_resultBuffer);
 	m_rayTracingRenderPass.PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
+	//m_rayTracingRenderPass.DispatchRayTracing(GetDeviceObjectFactory().GetCoreCommandList());
+	//todo@ transition
 }
 
 void CRayTracingTestStage::Execute()

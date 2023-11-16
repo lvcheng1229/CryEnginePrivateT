@@ -103,6 +103,33 @@ namespace Extensions
 		VkPhysicalDeviceBufferDeviceAddressFeaturesKHR m_bufferDeviceAddressFeatures;
 	};
 
+	class CVulkanKHRRayQueryExtension : public CVulkanDeviceExtensionWithFeature
+	{
+	public:
+
+		CVulkanKHRRayQueryExtension()
+			: CVulkanDeviceExtensionWithFeature(VK_KHR_RAY_QUERY_EXTENSION_NAME) {}
+
+		virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2)override
+		{
+			m_rayQueryFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR };
+			AddToPNext(PhysicalDeviceFeatures2, m_rayQueryFeatures);
+		}
+
+		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override
+		{
+
+		}
+
+		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
+		{
+			AddToPNext(DeviceInfo, m_rayQueryFeatures);
+		}
+
+	private:
+		VkPhysicalDeviceRayQueryFeaturesKHR m_rayQueryFeatures;
+	};
+
 	//https://github.com/KhronosGroup/Vulkan-Samples/blob/main/samples/extensions/descriptor_buffer_basic/descriptor_buffer_basic.cpp
 
 	//class CVulkanDescriptorBufferExtension :public CVulkanDeviceExtensionWithFeature
@@ -145,10 +172,11 @@ namespace Extensions
 			static CVulkanAccelerationStructureExtension vkAccelerationStructureExtension;
 			static CVulkanRayTracingPipelineExtension vkRayTracingPipelineExtension;
 			static CVulkanKHRBufferDeviceAddressExtension vkKHRBufferDeviceAddressExtension;
-
+			static CVulkanKHRRayQueryExtension vulkanKHRRayQueryExtension;
 			extensionsWithFeatures.push_back(&vkAccelerationStructureExtension);
 			extensionsWithFeatures.push_back(&vkRayTracingPipelineExtension);
 			extensionsWithFeatures.push_back(&vkKHRBufferDeviceAddressExtension);
+			extensionsWithFeatures.push_back(&vulkanKHRRayQueryExtension);
 			//extensionsWithFeatures.push_back(CVulkanDescriptorBufferExtension());
 		}
 		isDeviceExtensionInit = true;

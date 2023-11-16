@@ -40,11 +40,18 @@ void CRayTracingRenderPass::PrepareResourcesForUse(CDeviceCommandListRef RESTRIC
 
 CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()
 {
-	EDirtyFlags dirtyMask = m_dirtyMask;
+	EDirtyFlags dirtyMask = m_dirtyMask | (EDirtyFlags)m_resourceDesc.GetDirtyFlags();
 
 	if ((dirtyMask != eDirty_None) || (m_currentPsoUpdateCount != m_pPipelineState->GetUpdateCount()))
 	{
 		EDirtyFlags revertMask = dirtyMask;
+
+		if (dirtyMask & (eDirty_Resources))
+		{
+			if (!m_pResourceSet->Update(m_resourceDesc))
+				return (EDirtyFlags)(m_dirtyMask |= revertMask);
+		}
+
 		if (dirtyMask & (eDirty_Technique | eDirty_ResourceLayout))
 		{
 			int bindSlot = 0;
@@ -56,12 +63,31 @@ CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()
 				return (EDirtyFlags)(m_dirtyMask |= revertMask);
 		}
 
-		if (dirtyMask & (eDirty_Technique))
+		if (dirtyMask & (eDirty_Technique | eDirty_ResourceLayout))
 		{
 			CDeviceRayTracingPSODesc psoDesc(m_pResourceLayout, m_pShader, m_techniqueName, m_rtMask, 0);
 			m_pPipelineState = GetDeviceObjectFactory().CreateRayTracingPSO(psoDesc);
+
+			if (!m_pPipelineState || !m_pPipelineState->IsValid())
+			{
+				return (EDirtyFlags)(m_dirtyMask |= revertMask);
+			}
 		}
+
+		m_dirtyMask = dirtyMask = eDirty_None;
 	}
 
 	return dirtyMask;
+}
+
+void CRayTracingRenderPass::DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList)
+{
+	if (m_dirtyMask == eDirty_None)
+	{
+		//int bindSlot = 0;
+		CDeviceGraphicsCommandInterface* pCommandInterface = commandList.GetGraphicsInterface();
+		pCommandInterface->SetRayTracingPipelineState(m_pPipelineState.get());
+		//pComputeInterface->SetResources(bindSlot++, m_pResourceSet.get());
+		//pComputeInterface->Dispatch
+	}
 }

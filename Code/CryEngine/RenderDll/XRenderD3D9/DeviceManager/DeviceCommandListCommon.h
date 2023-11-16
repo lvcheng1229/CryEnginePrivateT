@@ -79,9 +79,18 @@ protected:
 		CustomComputeState                     custom;
 	};
 
+	//TanGram:VKRT:BEGIN
+	struct SCachedRayTracingState : SCachedResourceState
+	{
+		SCachedValue<const CDeviceRayTracingPSO*> pPipelineState;
+		CustomComputeState                     custom;
+	};
+	//TanGram:VKRT:END
+
 protected:
 	SCachedGraphicsState m_graphicsState;
 	SCachedComputeState  m_computeState;
+	SCachedRayTracingState  m_raytracingState;//TanGram:VKRT
 	CustomSharedState    m_sharedState;
 
 #if defined(ENABLE_PROFILING_CODE)
@@ -129,6 +138,7 @@ public:
 	void SetScissorRects(uint32 rcCount, const D3DRectangle* pRects);
 	void SetDepthBounds(float fMin, float fMax);
 	void SetPipelineState(const CDeviceGraphicsPSO* devicePSO);
+	void SetRayTracingPipelineState(const CDeviceRayTracingPSO* deviceRayTracingPSO); // TanGram:VKRT
 	void SetResourceLayout(const CDeviceResourceLayout* resourceLayout);
 	void SetResources(uint32 bindSlot, const CDeviceResourceSet* pResources);
 	void SetInlineConstantBuffer(uint32 bindSlot, const CConstantBuffer* pBuffer, EConstantBufferShaderSlot shaderSlot, EHWShaderClass shaderClass);

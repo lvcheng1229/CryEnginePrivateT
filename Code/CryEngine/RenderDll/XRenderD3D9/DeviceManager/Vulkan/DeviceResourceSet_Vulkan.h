@@ -71,12 +71,19 @@ protected:
 			{
 				return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 			}
+			//TanGram:VKRT:BEGIN
+			else if (uint8(bindPoint.flags & SResourceBindPoint::EFlags::IsAccelerationStructured))
+			{
+				return VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+			}
+			//TanGram:VKRT:END
 			else
 			{
 				return uint8(bindPoint.flags & SResourceBindPoint::EFlags::IsStructured)
 					? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER        // StructuredBuffer<*> : register(t*)
 					: VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER; // Buffer<*> : register(t*)
 			}
+
 		}
 
 		case SResourceBindPoint::ESlotType::UnorderedAccessView:

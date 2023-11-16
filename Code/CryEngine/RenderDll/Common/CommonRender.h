@@ -99,6 +99,7 @@ enum EShaderStage : uint8
 	EShaderStage_All               = EShaderStage_Vertex | EShaderStage_Pixel | EShaderStage_Geometry | EShaderStage_Domain | EShaderStage_Hull | EShaderStage_Compute,
 	EShaderStage_AllWithoutCompute = EShaderStage_Vertex | EShaderStage_Pixel | EShaderStage_Geometry | EShaderStage_Domain | EShaderStage_Hull,
 	
+	EShaderStage_RayTracingBit	   = (1 << 7),
 	EShaderStage_RayGen			   = (1 << 7) | (1 << 1),
 	EShaderStage_HitGroup		   = (1 << 7) | (1 << 2),
 	EShaderStage_RayMiss		   = (1 << 7) | (1 << 3),
@@ -669,7 +670,8 @@ struct TMP_RENDER_API SResourceBindPoint
 	{
 		None         = 0,
 		IsTexture    = BIT(0), // need to distinguish between textures and buffers on vulkan
-		IsStructured = BIT(1)  // need to distinguish between structured and typed resources on vulkan as they produce different descriptors
+		IsStructured = BIT(1),  // need to distinguish between structured and typed resources on vulkan as they produce different descriptors
+		IsAccelerationStructured = BIT(2)
 	};
 
 	enum class ESlotType : uint8 // NOTE: enum values need to match ResourceGroup enum from hlslcc and request enum from hlsl2spirv

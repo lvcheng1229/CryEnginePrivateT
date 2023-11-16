@@ -103,8 +103,9 @@ CDevice::CDevice(const SPhysicalDeviceInfo* pDeviceInfo, VkAllocationCallbacks* 
 	const uint32 uniformTexelBufferCount   = 8192;
 	const uint32 storageTexelBufferCount   = 8192;
 	const uint32 samplerCount              = 2  * 65536;
+	const uint32 accelerationStructureCount= 32 * 1024;
 
-	VkDescriptorPoolSize poolSizes[8];
+	VkDescriptorPoolSize poolSizes[9];
 
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 	poolSizes[0].descriptorCount = sampledImageCount;
@@ -129,6 +130,11 @@ CDevice::CDevice(const SPhysicalDeviceInfo* pDeviceInfo, VkAllocationCallbacks* 
 
 	poolSizes[7].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
 	poolSizes[7].descriptorCount = storageTexelBufferCount;
+
+	//TanGram:VKRT:BEGIN
+	poolSizes[8].type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+	poolSizes[8].descriptorCount = accelerationStructureCount;
+	//TanGram:VKRT:END
 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

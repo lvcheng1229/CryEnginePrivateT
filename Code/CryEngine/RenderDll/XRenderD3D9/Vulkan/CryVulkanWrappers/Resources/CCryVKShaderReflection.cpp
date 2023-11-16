@@ -167,7 +167,7 @@ static const char* GetGLSLANGTargetName(const char* pDxTarget)
 }
 
 #define INPUT_HLSL_FORMAT                    ".in"
-#define OUTPUT_SPIRV_FORMAT                  ".out"
+#define OUTPUT_SPIRV_FORMAT                  ".spv"//TanGram:VKRT
 #define OUTPUT_HUMAN_READABLE_SPIRV_FORMAT   ".h_spv"
 HRESULT D3DCompile(_In_reads_bytes_(SrcDataSize) LPCVOID pSrcData, _In_ SIZE_T SrcDataSize, _In_opt_ LPCSTR pSourceName, CONST D3D_SHADER_MACRO* pDefines,
                    _In_opt_ ID3DInclude* pInclude, _In_opt_ LPCSTR pEntrypoint, _In_ LPCSTR pTarget, _In_ UINT Flags1, _In_ UINT Flags2, _Out_ ID3DBlob** ppCode,
@@ -219,7 +219,8 @@ HRESULT D3DCompile(_In_reads_bytes_(SrcDataSize) LPCVOID pSrcData, _In_ SIZE_T S
 		std::string sEntrypoint = " -E " + std::string(pEntrypoint);
 		if (strcmp(pTarget, "lib_6_3") == 0)
 		{
-			vkRayTracingArgs = "-fspv-target-env=vulkan1.2 -fspv-extension=SPV_KHR_ray_query -fspv-extension=SPV_KHR_ray_tracing -fspv-extension=SPV_GOOGLE_hlsl_functionality1 -fspv-extension=SPV_GOOGLE_user_type";
+			vkRayTracingArgs = "-fspv-target-env=vulkan1.2 -fspv-extension=SPV_KHR_ray_query -fspv-extension=SPV_KHR_ray_tracing -fvk-use-scalar-layout -fspv-extension=SPV_GOOGLE_hlsl_functionality1 -fspv-extension=SPV_GOOGLE_user_type";
+			//vkRayTracingArgs = "-fspv-target-env=vulkan1.2 -fspv-extension=SPV_KHR_ray_tracing -fspv-extension=SPV_GOOGLE_hlsl_functionality1 -fspv-extension=SPV_GOOGLE_user_type";
 			sEntrypoint = "";
 		}
 		//TanGram:VKRT:END

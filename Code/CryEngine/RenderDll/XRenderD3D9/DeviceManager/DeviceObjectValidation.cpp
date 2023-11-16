@@ -132,6 +132,8 @@ bool CDeviceObjectValidator::ValidateResourceLayout(const SDeviceResourceLayoutD
 	std::map<int16, SResourceBinding> usedShaderBindSlotsS[(uint8)SResourceBindPoint::ESlotType::Count][eHWSC_Num]; // used slot numbers per slot type and shader stage
 	std::map<int16, SResourceBinding> usedShaderBindSlotsL[(uint8)SResourceBindPoint::ESlotType::Count][EResourceLayoutSlot_Max + 1];
 
+	std::map<int16, SResourceBinding> usedShaderBindSlotsRS[(uint8)SResourceBindPoint::ESlotType::Count][eHWSC_RayEnd - eHWSC_RayStart]; // TanGram:VKRT
+
 	auto validateLayoutSlot = [&](uint32 layoutSlot)
 	{
 		if (usedLayoutBindSlots.insert(layoutSlot).second == false)
@@ -172,36 +174,62 @@ bool CDeviceObjectValidator::ValidateResourceLayout(const SDeviceResourceLayoutD
 
 		// Shader stages are ordered by usage-frequency and loop exists according to usage-frequency (VS+PS fast, etc.)
 		int validShaderStages = bindPoint.stages;
-		for (EHWShaderClass shaderClass = eHWSC_Vertex; validShaderStages; shaderClass = EHWShaderClass(shaderClass + 1), validShaderStages >>= 1)
+		if (validShaderStages & EShaderStage_RayTracingBit)
 		{
-			if (validShaderStages & 1)
+			int rayTracingvalidShaderStages = validShaderStages;
+			for (EHWShaderClass shaderClass = eHWSC_RayGen; shaderClass < eHWSC_RayEnd; shaderClass = EHWShaderClass(shaderClass + 1))
 			{
-				// Across all layouts, no stage-local slot can be referenced twice
-				auto insertResultS = usedShaderBindSlotsS[uint8(bindPoint.slotType)][shaderClass].insert(std::make_pair(bindPoint.slotNumber, resource));
-				if (insertResultS.second == false)
+				if (rayTracingvalidShaderStages & ((1 << 7) + (1 << (eHWSC_RayGen - eHWSC_RayStart + 1))))
 				{
-#if defined(USE_CRY_ASSERT)
-					auto& existingResource = insertResultS.first->second;
-					auto& currentResource = resource;
-
-					CRY_ASSERT(false, ("Invalid Resource Layout : Multiple resources bound to shader slot %s across multiple layoutSlots: A: %s - B: %s",
-						GetBindPointName(bindPoint), GetResourceName(existingResource), GetResourceName(currentResource)));
-#endif
-
-					SDeviceLimits::SPerDraw::SPerStageLimits& shadeStageResource = perStageResources[shaderClass];
-					// *INDENT-OFF*
-					switch (resource.type)
+					// Across all layouts, no stage-local slot can be referenced twice
+					auto insertResultS = usedShaderBindSlotsRS[uint8(bindPoint.slotType)][shaderClass - eHWSC_RayStart].insert(std::make_pair(bindPoint.slotNumber, resource));
+					if (insertResultS.second == false)
 					{
-					case SResourceBinding::EResourceType::Texture:          ++shadeStageResource.NumTextures; isUAV(bindPoint) ? (++shadeStageResource.NumTextureUAVs, ++shadeStageResource.NumUAVs) : (++shadeStageResource.NumTextureSRVs, ++shadeStageResource.NumSRVs);     break;
-					case SResourceBinding::EResourceType::Buffer:           ++shadeStageResource.NumBuffers;  isUAV(bindPoint) ? (++shadeStageResource.NumBufferUAVs,  ++shadeStageResource.NumUAVs) : (++shadeStageResource.NumBufferSRVs,  ++shadeStageResource.NumSRVs);     break;
-					case SResourceBinding::EResourceType::ConstantBuffer:   ++shadeStageResource.NumConstantBuffers; break;
-					case SResourceBinding::EResourceType::ShaderResource:   ++shadeStageResource.NumShaderResources; break;
-					case SResourceBinding::EResourceType::Sampler:          ++shadeStageResource.NumSamplers;        break;
+#if defined(USE_CRY_ASSERT)
+						auto& existingResource = insertResultS.first->second;
+						auto& currentResource = resource;
+
+						CRY_ASSERT(false, ("Invalid Resource Layout : Multiple resources bound to shader slot %s across multiple layoutSlots: A: %s - B: %s",
+							GetBindPointName(bindPoint), GetResourceName(existingResource), GetResourceName(currentResource)));
+#endif
 					}
-					// *INDENT-ON*
 				}
 			}
 		}
+		else
+		{
+			for (EHWShaderClass shaderClass = eHWSC_Vertex; validShaderStages; shaderClass = EHWShaderClass(shaderClass + 1), validShaderStages >>= 1)
+			{
+				if (validShaderStages & 1)
+				{
+					// Across all layouts, no stage-local slot can be referenced twice
+					auto insertResultS = usedShaderBindSlotsS[uint8(bindPoint.slotType)][shaderClass].insert(std::make_pair(bindPoint.slotNumber, resource));
+					if (insertResultS.second == false)
+					{
+#if defined(USE_CRY_ASSERT)
+						auto& existingResource = insertResultS.first->second;
+						auto& currentResource = resource;
+
+						CRY_ASSERT(false, ("Invalid Resource Layout : Multiple resources bound to shader slot %s across multiple layoutSlots: A: %s - B: %s",
+							GetBindPointName(bindPoint), GetResourceName(existingResource), GetResourceName(currentResource)));
+#endif
+
+						SDeviceLimits::SPerDraw::SPerStageLimits& shadeStageResource = perStageResources[shaderClass];
+						// *INDENT-OFF*
+						switch (resource.type)
+						{
+						case SResourceBinding::EResourceType::Texture:          ++shadeStageResource.NumTextures; isUAV(bindPoint) ? (++shadeStageResource.NumTextureUAVs, ++shadeStageResource.NumUAVs) : (++shadeStageResource.NumTextureSRVs, ++shadeStageResource.NumSRVs);     break;
+						case SResourceBinding::EResourceType::Buffer:           ++shadeStageResource.NumBuffers;  isUAV(bindPoint) ? (++shadeStageResource.NumBufferUAVs, ++shadeStageResource.NumUAVs) : (++shadeStageResource.NumBufferSRVs, ++shadeStageResource.NumSRVs);     break;
+						case SResourceBinding::EResourceType::ConstantBuffer:   ++shadeStageResource.NumConstantBuffers; break;
+						case SResourceBinding::EResourceType::ShaderResource:   ++shadeStageResource.NumShaderResources; break;
+						case SResourceBinding::EResourceType::Sampler:          ++shadeStageResource.NumSamplers;        break;
+						}
+						// *INDENT-ON*
+					}
+				}
+			}
+		}
+
 
 		// Across all stages, no layout-local slot can be referenced twice
 		auto insertResultL = usedShaderBindSlotsL[uint8(bindPoint.slotType)][layoutSlot].insert(std::make_pair(bindPoint.slotNumber, resource));

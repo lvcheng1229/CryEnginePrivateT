@@ -393,6 +393,8 @@ void CParserBin::Init()
 	FX_REGISTER_TOKEN(RayGenShaders);
 	FX_REGISTER_TOKEN(HitGroupShaders);
 	FX_REGISTER_TOKEN(MissShaders);
+	FX_REGISTER_TOKEN(vk);
+	FX_REGISTER_TOKEN(binding);
 	//TanGram:VKRT:END
 
 	FX_REGISTER_TOKEN(Position);
@@ -2188,6 +2190,47 @@ int CParserBin::GetNextToken(uint32& nStart, ETokenStorageClass& nTokenStorageCl
 
 			continue;
 		}
+
+		//TanGram:VKRT:BEGIN
+		//if (nToken == eT_br_sq_1)
+		//{
+		//	if (m_CurFrame.m_nCurToken + 1 <= m_CurFrame.m_nLastToken)
+		//	{
+		//		if (pTokens[m_CurFrame.m_nCurToken + 1] == eT_br_sq_1)
+		//		{
+		//			int32 nLast1 = m_CurFrame.m_nCurToken + 2;
+		//			if (nLast1 <= m_CurFrame.m_nLastToken && pTokens[nLast1] == eT_vk)
+		//			{
+		//				while (nLast1 <= m_CurFrame.m_nLastToken && pTokens[nLast1] != eT_br_sq_2)
+		//				{
+		//					nLast1++;
+		//				}
+		//
+		//				nLast1++;
+		//
+		//				if (nLast1 <= m_CurFrame.m_nLastToken && pTokens[nLast1] == eT_br_sq_2)
+		//				{
+		//					SCodeFragment Fr;
+		//					Fr.m_eType = eFT_StorageClass;
+		//					Fr.m_nFirstToken = m_CurFrame.m_nCurToken;
+		//					m_CurFrame.m_nCurToken = nLast1 + 1;
+		//					while (pTokens[m_CurFrame.m_nCurToken] != eT_semicolumn)
+		//					{
+		//						if (m_CurFrame.m_nCurToken + 1 == nTokensSize)
+		//							break;
+		//						m_CurFrame.m_nCurToken++;
+		//					}
+		//					Fr.m_nLastToken = m_CurFrame.m_nCurToken++;
+		//					Fr.m_dwName = pTokens[Fr.m_nLastToken - 1];
+		//					m_CodeFragments.push_back(Fr);
+		//					nNewTokenStorageClass = eTS_vkExtension;
+		//					continue;
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//TanGram:VKRT:END
 
 		// if preprocessor
 		if (nToken >= eT_include && nToken <= eT_elifcvar)

@@ -37,6 +37,14 @@ private:
 		Vec3 m_Pos;
 	};
 
+	struct SRayTracingRay
+	{
+		float m_origin[3];
+		uint32 m_mask;
+		float m_irection[3];
+		float m_TFar;
+	};
+
 	using SRtIndex = uint16;
 
 	std::vector<SRtVertex>m_RtVertices;
@@ -55,6 +63,7 @@ private:
 	CRayTracingTopLevelAccelerationStructurePtr m_pRtTopLevelAS;
 
 	CGpuBuffer m_instanceBuffer;
-
+	CGpuBuffer m_rayBuffer;
+	CGpuBuffer m_resultBuffer;
 	CRayTracingRenderPass m_rayTracingRenderPass;
 };

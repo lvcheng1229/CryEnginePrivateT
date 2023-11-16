@@ -13,10 +13,10 @@ class CGpuBuffer;
 // Enum specifying the type of build operation to perform
 enum class EBuildAccelerationStructureMode : uint32
 {
-	eBuild,												// Specifies that the destination acceleration structure will be built using the specified geometries
+	eBuild = 1 << 1, 												// Specifies that the destination acceleration structure will be built using the specified geometries
 
 	//unsupported currently
-	eUpdate,											// Specifies that the destination acceleration structure will be built using data in a source acceleration structure, updated by the specified geometries
+	eUpdate = 1 << 2,											// Specifies that the destination acceleration structure will be built using data in a source acceleration structure, updated by the specified geometries
 };
 DEFINE_ENUM_FLAG_OPERATORS(EBuildAccelerationStructureMode);
 

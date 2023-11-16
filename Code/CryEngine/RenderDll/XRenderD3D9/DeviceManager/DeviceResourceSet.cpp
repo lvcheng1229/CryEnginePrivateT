@@ -118,9 +118,14 @@ SResourceBindPoint::SResourceBindPoint(const SResourceBinding& resource, uint8 _
 		CRY_ASSERT(resource.view == EDefaultResourceViews::Default || resource.pBuffer->GetDevBuffer());
 		const bool bSrv = resource.view == EDefaultResourceViews::Default || SResourceView::IsShaderResourceView(resource.pBuffer->GetDevBuffer()->LookupResourceView(resource.view).first.m_Desc.Key);
 		const bool bStructured = !!(resource.pBuffer->GetFlags() & CDeviceObjectFactory::USAGE_STRUCTURED);
+		const bool bAccelerationStructured = !!(resource.pBuffer->GetFlags() & CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE); //TanGram:VKRT
 
 		slotType = bSrv ? ESlotType::TextureAndBuffer : ESlotType::UnorderedAccessView;
 		flags = bStructured ? EFlags::IsStructured : EFlags::None;
+		if (bAccelerationStructured)
+		{
+			flags = EFlags::IsAccelerationStructured;
+		}
 	}
 	break;
 
