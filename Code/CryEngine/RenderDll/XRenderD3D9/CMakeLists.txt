@@ -779,6 +779,8 @@ add_sources("CryRenderer_uber_6.cpp"
 		#TanGram:VKRT:[BEGIN]
 		"GraphicsPipeline/RayTracing/RayTracingTestStage.h"
         "GraphicsPipeline/RayTracing/RayTracingTestStage.cpp"
+        "GraphicsPipeline/RayTracing/BindlessRayTracingTestStage.cpp"
+        "GraphicsPipeline/RayTracing/BindlessRayTracingTestStage.h"
         #TanGram:VKRT:[BEGIN]
 
 		"GraphicsPipeline/CharacterToolGraphicsPipeline.h"

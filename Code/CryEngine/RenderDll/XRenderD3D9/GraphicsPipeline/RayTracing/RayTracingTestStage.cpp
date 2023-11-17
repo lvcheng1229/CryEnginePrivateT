@@ -140,15 +140,5 @@ void CRayTracingTestStage::Execute()
 	m_rayTracingRenderPass.SetOutputUAV(2, &m_resultBuffer);
 	m_rayTracingRenderPass.PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
 	m_rayTracingRenderPass.DispatchRayTracing(GetDeviceObjectFactory().GetCoreCommandList(), 4, 1);
-	
-	//{
-	//	gcpRendD3D->ForceFlushRTCommands();
-	//	uint32* result = (uint32*)m_resultBuffer.Lock();
-	//	CRY_ASSERT(result[0] != 0);
-	//	CRY_ASSERT(result[1] == 0);
-	//	CRY_ASSERT(result[2] != 0);
-	//	CRY_ASSERT(result[3] == 0);
-	//	m_resultBuffer.Unlock(sizeof(uint32) * 4);
-	//}
 }
 
