@@ -4,3 +4,93 @@
 #include "../Common/ComputeRenderPass.h"
 #include "../Common/GraphicsPipeline.h"
 #include "../Common/RayTracingRenderPass.h"
+
+struct SObjVertex
+{
+	SObjVertex() = default;
+
+	SObjVertex(const Vec3& pos, const Vec3& normal)
+		: m_pos(pos)
+		, m_normal(normal)
+	{
+	}
+
+	Vec3 m_pos;
+	Vec3 m_normal;
+};
+
+using ObjVertexBuffer = std::vector<SObjVertex>;
+using ObjIndexBuffer = std::vector<vtx_idx>;
+
+struct SObjectGeometry
+{
+	ObjVertexBuffer m_objectVB;
+	ObjIndexBuffer m_objectIB;
+
+	buffer_handle_t m_pObjectVB;
+	buffer_handle_t m_pObjectIB;
+
+	SStreamInfo objectVertexStreamInfo;
+	SStreamInfo objectIndexStreamInfo;
+
+	const CDeviceInputStream* m_pObjectVertexInputSet = nullptr;
+	const CDeviceInputStream* m_pObjectIndexInputSet = nullptr;
+
+	std::vector<SRayTracingInstanceTransform> m_rayTracingTransforms;
+	CRayTracingBottomLevelAccelerationStructurePtr m_pRtBottomLevelAS;
+};
+
+struct SRayCameraMatrix
+{
+	Matrix44A m_viewProj;
+	Matrix44A m_viewInverse;
+	Matrix44A m_projInverse;
+};
+
+class CBindlessRayTracingTestStage : public CGraphicsPipelineStage
+{
+public:
+	static const EGraphicsPipelineStage StageID = eStage_BindlessRayTracingTest;
+
+	CBindlessRayTracingTestStage(CGraphicsPipeline& graphicsPipeline)
+		: CGraphicsPipelineStage(graphicsPipeline)
+		, m_bindlessRayTracingRenderPass(&graphicsPipeline)
+	{
+
+	}
+	void Init()   final;
+	void Execute(CTexture* RayTracingResultTexture);
+	bool IsStageActive(EShaderRenderingFlags flags) const final
+	{
+		return true;
+	}
+
+private:
+
+	void CreateVBAndIB();
+	void CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* pCommandInterface);
+	void CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* pCommandInterface);
+	void CreateUniformBuffer();
+
+private:
+	static constexpr uint32 m_nObjectNum = 2;
+
+	SObjectGeometry m_objectSphere;
+	SObjectGeometry m_objectCylinder;
+	SObjectGeometry m_objectPlane;
+
+	SObjectGeometry* m_objectGeometry[m_nObjectNum];
+
+	CRayTracingTopLevelAccelerationStructurePtr m_pRtTopLevelAS;
+
+	CGpuBuffer m_instanceBuffer;
+
+	CRayTracingRenderPass m_bindlessRayTracingRenderPass;
+
+	CConstantBufferPtr  m_pRayTracingCB;
+
+	bool bInit = false;
+};
+
+
+

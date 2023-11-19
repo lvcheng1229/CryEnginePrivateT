@@ -37,9 +37,9 @@ struct FRayTracingIntersectionAttributes
 	}
 };
 
-RaytracingAccelerationStructure               TLAS: register(t0); 
+RaytracingAccelerationStructure            tlas: register(t0); 
 StructuredBuffer<FBasicRayData>            Rays: register(t1); 
-RWStructuredBuffer<uint>                       OcclusionOutput: register(u2);
+RWStructuredBuffer<uint>                   OcclusionOutput: register(u2);
 
 [shader("raygeneration")] 
 void RayGenMain()
@@ -59,7 +59,7 @@ void RayGenMain()
 	FDefaultPayload Payload = (FDefaultPayload)0;
 
 	TraceRay(
-		TLAS,   // AccelerationStructure
+		tlas,   // AccelerationStructure
 		RayFlags,
 		InstanceInclusionMask,
 		RAY_TRACING_SHADER_SLOT_MATERIAL, // RayContributionToHitGroupIndex

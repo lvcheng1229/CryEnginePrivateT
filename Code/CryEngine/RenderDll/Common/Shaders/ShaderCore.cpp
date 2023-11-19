@@ -43,7 +43,10 @@ CShader* CShaderMan::s_ShaderShadowMaskGen;
 CShader* CShaderMan::s_ShaderSVOGI;
 #endif
 CShader* CShaderMan::s_shBloomSetup;//TanGram: TiledBloom
-CShader* CShaderMan::s_shRayTracingTest;//TanGram:VKRT
+//TanGram:VKRT:BEGIN
+CShader* CShaderMan::s_shRayTracingTest;
+CShader* CShaderMan::s_shBindlessRayTracingTest;
+//TanGram:VKRT:END
 CShader* CShaderMan::s_shHDRPostProcess;
 CShader* CShaderMan::s_ShaderDebug;
 CShader* CShaderMan::s_ShaderLensOptics;
@@ -1434,7 +1437,10 @@ void CShaderMan::mfReleaseSystemShaders()
 	SAFE_RELEASE_FORCE(s_ShaderSVOGI);
 #endif
 	SAFE_RELEASE_FORCE(s_shBloomSetup);
-	SAFE_RELEASE_FORCE(s_shRayTracingTest);//TanGram:VKRT
+	//TanGram:VKRT:BEGIN
+	SAFE_RELEASE_FORCE(s_shRayTracingTest);
+	SAFE_RELEASE_FORCE(s_shBindlessRayTracingTest);
+	//TanGram:VKRT:END
 	SAFE_RELEASE_FORCE(s_shHDRPostProcess);
 	SAFE_RELEASE_FORCE(s_ShaderDebug);
 	SAFE_RELEASE_FORCE(s_ShaderLensOptics);
@@ -1496,7 +1502,10 @@ void CShaderMan::mfLoadDefaultSystemShaders()
 		//sLoadShader("VSMCmdBuild", s_ShaderVSMCmdBuild);
 		//TanGram:VSM:END
 		sLoadShader("BloomSetup", s_shBloomSetup);
+		//TanGram:VKRT:BEGIN
 		sLoadShader("RayTracingTestShader", s_shRayTracingTest);
+		sLoadShader("BindlessRayTracingTestShader", s_shBindlessRayTracingTest);
+		//TanGram:VKRT:BEGIN
 		sLoadShader("HDRPostProcess", s_shHDRPostProcess);
 		sLoadShader("Hud3D", s_sh3DHUD);
 

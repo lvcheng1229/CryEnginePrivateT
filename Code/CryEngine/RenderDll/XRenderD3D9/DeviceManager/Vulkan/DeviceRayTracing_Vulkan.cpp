@@ -73,7 +73,7 @@ static void GetBottomLevelAccelerationStructureBuildInfo(
 		accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
 
 		accelerationStructureGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
-		accelerationStructureGeometry.geometry.triangles.vertexFormat = GetVkVertexFormat(rayTracingGeometryTriangle.m_sTriangVertexleInfo.m_hVertexFormat);
+		accelerationStructureGeometry.geometry.triangles.vertexFormat = GetVkVertexFormat(rayTracingGeometryTriangle.m_sTriangVertexleInfo.m_hVertexPositionFormat);
 		accelerationStructureGeometry.geometry.triangles.vertexData.deviceAddress = vertexDeviceAddress;
 		accelerationStructureGeometry.geometry.triangles.vertexStride = ((SStreamInfo*)rayTracingGeometryTriangle.m_sTriangVertexleInfo.m_sVertexStreaming)->nStride;
 		accelerationStructureGeometry.geometry.triangles.indexData.deviceAddress = indexDeviceAddress;

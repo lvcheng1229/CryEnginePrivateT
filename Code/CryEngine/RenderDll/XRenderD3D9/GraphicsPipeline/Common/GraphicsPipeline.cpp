@@ -20,7 +20,10 @@
 
 #include "../VirtualShadowMap/VirtualShadowMap.h"
 
-#include "../RayTracing/RayTracingTestStage.h"//TanGram:VkRayTracing
+//TanGram:VkRayTracing:BEGIN
+#include "../RayTracing/RayTracingTestStage.h"
+#include "../RayTracing/BindlessRayTracingTestStage.h"
+//TanGram:VkRayTracing:END
 
 void CGraphicsPipelineResources::Init()
 {
@@ -236,6 +239,8 @@ void CGraphicsPipelineResources::CreateHDRMaps(int resourceWidth, int resourceHe
 	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$BloomTiled0").c_str(), &m_pTexTiledBloom[0], FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
 	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$BloomTiled1").c_str(), &m_pTexTiledBloom[1], FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
 	//TanGram: TiledBloom:[END]
+
+	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, eTF_R16G16B16A16F, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$RayTracingResult").c_str(), &m_pTexRayTracingResult, FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
 
 	//TanGram:VSM:[BEGIN]
 	m_renderTargetPool.AddRenderTarget(1024, 1024, Clr_Unknown, eTF_R16G16B16A16F, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$VSMBufferVisualize").c_str(), &m_pTexVSMVisualize, FT_DONT_RELEASE);
@@ -537,6 +542,7 @@ void CGraphicsPipelineResources::Shutdown()
 
 	SAFE_RELEASE_FORCE(m_pTexTiledBloom[0]);//TanGram:TiledBloom
 	SAFE_RELEASE_FORCE(m_pTexTiledBloom[1]);//TanGram:TiledBloom
+	SAFE_RELEASE_FORCE(m_pTexRayTracingResult);//TanGram:VKRT
 	SAFE_RELEASE_FORCE(m_pTexVSMVisualize);//TanGram:VSM
 	
 	m_resourceWidth  = 0;
@@ -668,7 +674,10 @@ void CGraphicsPipeline::Init()
 	RegisterStage<CShadowMapStage>();
 	RegisterStage<CVirtualShadowMapStage>();//Speedengine: VSM
 
-	RegisterStage<CRayTracingTestStage>();//TanGram:VkRT
+	//TanGram:VkRT:BEGIN
+	RegisterStage<CRayTracingTestStage>();
+	RegisterStage<CBindlessRayTracingTestStage>();
+	//TanGram:VkRT:END
 
 	// Register all other stages that don't need the global PSO cache
 	RegisterStage<CTiledLightVolumesStage>();

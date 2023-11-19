@@ -25,7 +25,11 @@ enum EGraphicsPipelineStage
 	eStage_TiledShading,
 	eStage_VolumetricClouds,
 	eStage_BloomSetup,//TanGram:BloomSetup
-	eStage_RayTracingTest,//TanGram:VkRT
+	
+	//TanGram:VkRT:BEGIN
+	eStage_RayTracingTest,
+	eStage_BindlessRayTracingTest,
+	//TanGram:VkRT:BEGIN
 
 	// Regular stages
 	eStage_SceneDepth, // TODO: pure compute
@@ -92,6 +96,9 @@ public:
 	//TanGram :TiledBloom:[BEGIN]
 	CTexture* m_pTexTiledBloom[2] = {nullptr,nullptr};
 	//TanGram :TiledBloom:[END]
+
+	
+	CTexture* m_pTexRayTracingResult = nullptr;//TanGram:VKRT
 
 	//TanGram:VSM:[BEGIN]
 	CTexture* m_pTexVSMVisualize = nullptr;

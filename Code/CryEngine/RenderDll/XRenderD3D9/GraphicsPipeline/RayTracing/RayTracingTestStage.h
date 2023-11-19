@@ -24,10 +24,12 @@ public:
 		return true;
 	}
 
+	~CRayTracingTestStage();
 	
 	void CreateVbIb();
 	void CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* pCommandInterface);
 	void CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* pCommandInterface);
+	void CreateRayAndResultBuffer();
 
 private:
 

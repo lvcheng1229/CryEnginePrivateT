@@ -35,12 +35,12 @@ void CRayTracingTestStage::CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* p
 	SRayTracingBottomLevelASCreateInfo rtBottomLevelCreateInfo;
 	rtBottomLevelCreateInfo.m_eBuildFlag = EBuildAccelerationStructureFlag::eBuild_PreferBuild;
 	rtBottomLevelCreateInfo.m_sSTriangleIndexInfo.m_sIndexStreaming = m_pIndexInputSet;
-	rtBottomLevelCreateInfo.m_sSTriangleIndexInfo.m_nIndexBufferOffset;;
+	rtBottomLevelCreateInfo.m_sSTriangleIndexInfo.m_nIndexBufferOffset = 0;
 
 	SRayTracingGeometryTriangle rtGeometryTriangle;
 	rtGeometryTriangle.m_sTriangVertexleInfo.m_sVertexStreaming = m_pVertexInputSet;
 	rtGeometryTriangle.m_sTriangVertexleInfo.m_nMaxVertex = m_RtVertices.size();
-	rtGeometryTriangle.m_sTriangVertexleInfo.m_hVertexFormat = EDefaultInputLayouts::P3F;
+	rtGeometryTriangle.m_sTriangVertexleInfo.m_hVertexPositionFormat = EDefaultInputLayouts::P3F;
 	rtGeometryTriangle.m_sRangeInfo.m_nFirstVertex = 0;
 	rtGeometryTriangle.m_sRangeInfo.m_nPrimitiveCount = 1;
 	rtGeometryTriangle.m_sRangeInfo.m_nPrimitiveOffset = 0;
@@ -93,7 +93,7 @@ void CRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* p
 		SAccelerationStructureInstanceData& instanceData = accelerationStructureInstanceDatas[index];
 		for (uint32 transformIndex = 0; transformIndex < instanceInfo.m_transformPerInstance.size(); transformIndex++)
 		{
-			memcpy(instanceData.m_aTransform, &instanceInfo.m_transformPerInstance[transformIndex], sizeof(float) * 4 * 3);
+			instanceData.m_aTransform = instanceInfo.m_transformPerInstance[transformIndex].m_aTransform;
 			instanceData.m_nInstanceCustomIndex = instanceInfo.m_nCustomIndex[transformIndex];
 			instanceData.m_nMask = instanceInfo.m_rayMask;
 
@@ -109,13 +109,8 @@ void CRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* p
 	pCommandInterface->BuildRayTracingTopLevelAS(m_pRtTopLevelAS, &m_instanceBuffer, 0);
 }
 
-void CRayTracingTestStage::Init()
+void CRayTracingTestStage::CreateRayAndResultBuffer()
 {
-	CDeviceGraphicsCommandInterface* pCommandInterface = GetDeviceObjectFactory().GetCoreCommandList().GetGraphicsInterface();
-	CreateVbIb();
-	CreateAndBuildBLAS(pCommandInterface);
-	CreateAndBuildTLAS(pCommandInterface);
-	
 	constexpr uint32 NumRays = 4;
 
 	std::vector<SRayTracingRay> rayTracingRays;
@@ -129,7 +124,21 @@ void CRayTracingTestStage::Init()
 
 	m_resultBuffer.Create(NumRays, sizeof(uint32), DXGI_FORMAT_R32_UINT, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::USAGE_CPU_WRITE | CDeviceObjectFactory::BIND_UNORDERED_ACCESS, NULL);
 	m_resultBuffer.SetDebugName("RayTracingResultBuffer");
+}
 
+CRayTracingTestStage::~CRayTracingTestStage()
+{
+	delete m_pVertexInputSet;
+	delete m_pIndexInputSet;
+}
+
+void CRayTracingTestStage::Init()
+{
+	CDeviceGraphicsCommandInterface* pCommandInterface = GetDeviceObjectFactory().GetCoreCommandList().GetGraphicsInterface();
+	CreateVbIb();
+	CreateAndBuildBLAS(pCommandInterface);
+	CreateAndBuildTLAS(pCommandInterface);
+	CreateRayAndResultBuffer();
 }
 
 void CRayTracingTestStage::Execute()

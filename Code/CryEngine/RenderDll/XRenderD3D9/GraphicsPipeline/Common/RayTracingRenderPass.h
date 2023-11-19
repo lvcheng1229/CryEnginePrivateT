@@ -26,6 +26,7 @@ public:
 	void SetBuffer(uint32 slot, CGpuBuffer* pBuffer);
 	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
 	void SetOutputUAV(uint32 slot, CGpuBuffer* pBuffer, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
+	void SetConstantBuffer(uint32 slot, CConstantBuffer* pConstantBuffer);
 
 private:
 
@@ -33,16 +34,12 @@ private:
 
 private:
 	EDirtyFlags              m_dirtyMask;
-
 	CShader*				 m_pShader;
 	CCryNameTSCRC            m_techniqueName;
 	uint64                   m_rtMask;
-
 	CDeviceResourceSetDesc   m_resourceDesc;
 	CDeviceResourceSetPtr    m_pResourceSet;
-
 	CDeviceResourceLayoutPtr m_pResourceLayout;
-
 	CDeviceRayTracingPSOPtr  m_pPipelineState;
 	int                      m_currentPsoUpdateCount;
 
@@ -64,4 +61,9 @@ inline void CRayTracingRenderPass::SetOutputUAV(uint32 slot, CTexture* pTexture,
 inline void CRayTracingRenderPass::SetOutputUAV(uint32 slot, CGpuBuffer* pBuffer, ResourceViewHandle resourceViewID, ::EShaderStage shaderStages)
 {
 	m_resourceDesc.SetBuffer(slot, pBuffer, resourceViewID, shaderStages);
+}
+
+inline void CRayTracingRenderPass::SetConstantBuffer(uint32 slot, CConstantBuffer* pConstantBuffer)
+{
+	m_resourceDesc.SetConstantBuffer(slot, pConstantBuffer, EShaderStage_RayTracing);
 }

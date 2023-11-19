@@ -42,7 +42,7 @@ struct SRayTracingGeometryTriangle
 	struct STriangleVertexInfo
 	{
 		const CDeviceInputStream* m_sVertexStreaming;
-		InputLayoutHandle m_hVertexFormat = EDefaultInputLayouts::P3F;		// The VkFormat of each vertex element
+		InputLayoutHandle m_hVertexPositionFormat = EDefaultInputLayouts::P3F;		// The VkFormat of each vertex element
 		uint32 m_nMaxVertex = 0;											// The highest index of a vertex that will be addressed by a build command using this structure.
 	}m_sTriangVertexleInfo;													// Triangle info: Structure specifying a triangle geometry in a bottom-level acceleration structure
 
@@ -88,7 +88,7 @@ typedef std::shared_ptr<CRayTracingBottomLevelAccelerationStructure> CRayTracing
 // Top level acceleration structure
 struct SAccelerationStructureInstanceData
 {
-	float m_aTransform[3][4];									// A transformation to be applied to the acceleration structure
+	Matrix34 m_aTransform;									// A transformation to be applied to the acceleration structure
 	uint32 m_nInstanceCustomIndex : 24;							// A 24-bit user-specified index value accessible to ray shaders in the InstanceCustomIndexKHR built-in
 	uint32 m_nMask : 8;											// An 8-bit visibility mask for the geometry. The instance may only be hit if Cull Mask & instance.mask != 0
 	uint32 m_instanceShaderBindingTableRecordOffset : 24;		// A 24-bit offset used in calculating the hit shader binding table index
@@ -98,7 +98,7 @@ struct SAccelerationStructureInstanceData
 
 struct SRayTracingInstanceTransform
 {
-	float m_aTransform[3][4];
+	Matrix34 m_aTransform;
 };
 
 struct SAccelerationStructureInstanceInfo
