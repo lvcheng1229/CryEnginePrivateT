@@ -5,7 +5,7 @@
 using namespace NCryVulkan;
 
 struct SVulkanRayTracingBLASBuildInfo
-{
+{ 
 	SVulkanRayTracingBLASBuildInfo()
 	{
 		m_vkAsBuildGeometryInfo = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR };

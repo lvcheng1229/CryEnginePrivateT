@@ -36,8 +36,20 @@ struct SObjectGeometry
 	const CDeviceInputStream* m_pObjectVertexInputSet = nullptr;
 	const CDeviceInputStream* m_pObjectIndexInputSet = nullptr;
 
+	uint32 m_vbBindlessIndex = 0;
+	uint32 m_ibBindlessIndex = 0;
+
 	std::vector<SRayTracingInstanceTransform> m_rayTracingTransforms;
 	CRayTracingBottomLevelAccelerationStructurePtr m_pRtBottomLevelAS;
+
+	~SObjectGeometry();
+	
+};
+
+struct SBindlessIndex
+{
+	uint32 m_vbIndex;
+	uint32 m_ibIndex;
 };
 
 struct SRayCameraMatrix
@@ -84,11 +96,12 @@ private:
 	CRayTracingTopLevelAccelerationStructurePtr m_pRtTopLevelAS;
 
 	CGpuBuffer m_instanceBuffer;
+	CGpuBuffer m_pBindlessIndexBuffer;
 
 	CRayTracingRenderPass m_bindlessRayTracingRenderPass;
 
 	CConstantBufferPtr  m_pRayTracingCB;
-
+	
 	bool bInit = false;
 };
 

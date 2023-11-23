@@ -16,6 +16,16 @@ cbuffer cbRayCameraMatrix : register(b0)
 
 RaytracingAccelerationStructure             topLevelAS: register(t1); 
 RWTexture2D<float4>                         image: register(u2); 
+StructuredBuffer<uint2>                     bindlessBufferIndex: register(t3); 
+
+struct SObjVertex
+{
+	float3 m_pos;
+	float3 m_normal;
+};
+
+StructuredBuffer<SObjVertex>  	vertices[]: register(t0,space1); 
+StructuredBuffer<uint>  		    indices[] : register(t1,space1); 
 
 struct SHitPayload
 {
@@ -78,11 +88,14 @@ void RayGenMain()
 }
 
 [shader("closesthit")] 
-void ClostHitMain(
-	inout SHitPayload payload,
-  in SRayTracingIntersectionAttributes attributes)
+void ClostHitMain(inout SHitPayload payload, in SRayTracingIntersectionAttributes attributes)
 {
-	payload.hitValue = float3(0.5,0.5,0.0);
+  uint vbIndex = bindlessBufferIndex[InstanceIndex()].x;
+  uint ibIndex = bindlessBufferIndex[InstanceIndex()].y;
+  StructuredBuffer<SObjVertex> vertexBuffer = vertices[NonUniformResourceIndex(vbIndex)];
+	StructuredBuffer<uint>  indexBuffer = indices[NonUniformResourceIndex(ibIndex)];
+	SObjVertex vertex = vertexBuffer[indexBuffer[PrimitiveIndex()]];
+	payload.hitValue = float3(vertex.m_pos.xyz);
 }
 
 [shader("miss")] 

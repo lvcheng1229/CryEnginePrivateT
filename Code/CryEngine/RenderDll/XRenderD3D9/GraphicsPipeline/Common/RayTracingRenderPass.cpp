@@ -4,6 +4,7 @@ CRayTracingRenderPass::CRayTracingRenderPass(CGraphicsPipeline* pGraphicsPipelin
 	: m_dirtyMask(eDirty_All)
 	, m_bCompiled(false)
 	, m_resourceDesc()
+	, m_needBindless(false)
 {
 	m_pResourceSet = GetDeviceObjectFactory().CreateResourceSet(CDeviceResourceSet::EFlags_ForceSetAllState);
 }
@@ -43,7 +44,7 @@ void CRayTracingRenderPass::PrepareResourcesForUse(CDeviceCommandListRef RESTRIC
 CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()
 {
 	EDirtyFlags dirtyMask = m_dirtyMask | (EDirtyFlags)m_resourceDesc.GetDirtyFlags();
-
+	m_resourceDesc.m_needBindless = m_needBindless;
 	if ((dirtyMask != eDirty_None) || (m_currentPsoUpdateCount != m_pPipelineState->GetUpdateCount()))
 	{
 		EDirtyFlags revertMask = dirtyMask;
@@ -58,6 +59,7 @@ CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()
 		{
 			int bindSlot = 0;
 			SDeviceResourceLayoutDesc resourceLayoutDesc;
+			resourceLayoutDesc.m_needBindlessLayout = m_needBindless;
 			resourceLayoutDesc.SetResourceSet(bindSlot++, m_resourceDesc);
 			m_pResourceLayout = GetDeviceObjectFactory().CreateResourceLayout(resourceLayoutDesc);
 

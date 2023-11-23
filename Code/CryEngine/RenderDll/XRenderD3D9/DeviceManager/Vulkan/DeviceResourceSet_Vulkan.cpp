@@ -69,7 +69,7 @@ bool CDeviceResourceSet_Vulkan::UpdateImpl(const CDeviceResourceSetDesc& desc, C
 	if (uint8(dirtyFlags & CDeviceResourceSetDesc::EDirtyFlags::eDirtyBindPoint) || m_descriptorSetLayout == VK_NULL_HANDLE)
 	{
 		m_descriptorSetLayout.Destroy(vkDestroyDescriptorSetLayout, m_pDevice->GetVkDevice());
-		m_descriptorSetLayout = CreateLayout(desc.GetResources());
+		m_descriptorSetLayout = CreateLayout(desc.GetResources(), desc.m_needBindless);
 
 		if (m_descriptorSetLayout == VK_NULL_HANDLE)
 			return false;
@@ -93,7 +93,7 @@ bool CDeviceResourceSet_Vulkan::UpdateImpl(const CDeviceResourceSetDesc& desc, C
 
 static const inline size_t NoAlign(size_t nSize) { return nSize; }
 
-VkDescriptorSetLayout CDeviceResourceSet_Vulkan::CreateLayout(const VectorMap<SResourceBindPoint, SResourceBinding>& resources)
+VkDescriptorSetLayout CDeviceResourceSet_Vulkan::CreateLayout(const VectorMap<SResourceBindPoint, SResourceBinding>& resources, bool needBindless)
 {
 	CryStackAllocWithSizeVector(VkSampler, 16, immutableSamplers, NoAlign);
 	CryStackAllocWithSizeVector(VkDescriptorSetLayoutBinding, resources.size(), layoutBindings, NoAlign);
@@ -127,6 +127,7 @@ VkDescriptorSetLayout CDeviceResourceSet_Vulkan::CreateLayout(const VectorMap<SR
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo;
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	
 	layoutInfo.pNext = nullptr;
 	layoutInfo.flags = 0;
 	layoutInfo.bindingCount = descriptorCount;
@@ -276,6 +277,9 @@ bool CDeviceResourceSet_Vulkan::FillDescriptors(const CDeviceResourceSetDesc& de
 	}
 
 	vkUpdateDescriptorSets(m_pDevice->GetVkDevice(), descriptorWriteIndex, descriptorWrites, 0, nullptr);
+
+
+
 	return true;
 }
 
@@ -511,6 +515,16 @@ bool CDeviceResourceLayout_Vulkan::Init(const SDeviceResourceLayoutDesc& desc)
 		pushRanges.push_back(VkPushConstantRange{ shaderStageFlag ,iter->offset,iter->size });
 	}
 	//TanGram:VSM:END
+
+	//TanGram:BINDLESS:BEGIN
+	if (desc.m_needBindlessLayout)
+	{
+		descriptorSetCount++;
+		descriptorSets[descriptorSetCount] = static_cast<CDeviceBindlessDescriptorManager_Vulkan*>(
+			GetDeviceObjectFactory().GetDeviceBindlessDescriptorManager())->m_bindlessDescriptorSetLayout;
+		//descriptorSetCount++;
+	}
+	//TanGram:BINDLESS:END
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

@@ -136,10 +136,14 @@ CDevice::CDevice(const SPhysicalDeviceInfo* pDeviceInfo, VkAllocationCallbacks* 
 	poolSizes[8].descriptorCount = accelerationStructureCount;
 	//TanGram:VKRT:END
 
+
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = nullptr;
+	
 	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Allocated descriptor sets will release their allocations back to the pool
+	//descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;//TanGram:BINDLESS
+
 	descriptorPoolCreateInfo.maxSets = setCount;
 	descriptorPoolCreateInfo.poolSizeCount = CRY_ARRAY_COUNT(poolSizes);
 	descriptorPoolCreateInfo.pPoolSizes = poolSizes;

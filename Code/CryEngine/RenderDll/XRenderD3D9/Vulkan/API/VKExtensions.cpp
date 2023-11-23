@@ -89,11 +89,7 @@ namespace Extensions
 			AddToPNext(PhysicalDeviceFeatures2, m_bufferDeviceAddressFeatures);
 		}
 
-		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override
-		{
-
-		}
-
+		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override {}
 		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
 		{
 			AddToPNext(DeviceInfo, m_bufferDeviceAddressFeatures);
@@ -116,11 +112,7 @@ namespace Extensions
 			AddToPNext(PhysicalDeviceFeatures2, m_rayQueryFeatures);
 		}
 
-		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override
-		{
-
-		}
-
+		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override {}
 		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
 		{
 			AddToPNext(DeviceInfo, m_rayQueryFeatures);
@@ -130,36 +122,63 @@ namespace Extensions
 		VkPhysicalDeviceRayQueryFeaturesKHR m_rayQueryFeatures;
 	};
 
-	//https://github.com/KhronosGroup/Vulkan-Samples/blob/main/samples/extensions/descriptor_buffer_basic/descriptor_buffer_basic.cpp
+	class CVulkanEXTDescriptorIndexingExtension : public CVulkanDeviceExtensionWithFeature
+	{
+	public:
 
-	//class CVulkanDescriptorBufferExtension :public CVulkanDeviceExtensionWithFeature
-	//{
-	//public:
-	//	CVulkanDescriptorBufferExtension()
-	//		:CVulkanDeviceExtensionWithFeature(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME)
-	//	{}
-	//
-	//	virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2)override
-	//	{
-	//		m_vkDescriptorBufferFeature = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT };
-	//		AddToPNext(PhysicalDeviceFeatures2, m_vkDescriptorBufferFeature);
-	//	}
-	//
-	//	virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override
-	//	{
-	//		SVulkanDeviceExtensionProperties& vkDeviceExtensionProperties = pDevice->GetVulkanDeviceExtensionProperties();
-	//		VkPhysicalDeviceDescriptorBufferPropertiesEXT& descriptorBufferProperties = vkDeviceExtensionProperties.m_vkDescriptorBufferPropsProperties;
-	//		descriptorBufferProperties = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR };
-	//		AddToPNext(PhysicalDeviceProperties2, descriptorBufferProperties);
-	//	}
-	//
-	//	virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
-	//	{
-	//		AddToPNext(DeviceInfo, m_vkDescriptorBufferFeature);
-	//	}
-	//private:
-	//	VkPhysicalDeviceDescriptorBufferFeaturesEXT m_vkDescriptorBufferFeature;
-	//};
+		CVulkanEXTDescriptorIndexingExtension()
+			: CVulkanDeviceExtensionWithFeature(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME) {}
+
+		virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2)override
+		{
+			m_descriptorIndexingFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES };
+			AddToPNext(PhysicalDeviceFeatures2, m_descriptorIndexingFeatures);
+		}
+
+		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override 
+		{
+
+		}
+
+		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
+		{
+			AddToPNext(DeviceInfo, m_descriptorIndexingFeatures);
+		}
+
+	private:
+		VkPhysicalDeviceDescriptorIndexingFeaturesEXT m_descriptorIndexingFeatures;
+	};
+
+	//https://github.com/KhronosGroup/Vulkan-Samples/blob/main/samples/extensions/descriptor_buffer_basic/descriptor_buffer_basic.cpp
+	class CVulkanEXTDescriptorBufferExtension : public CVulkanDeviceExtensionWithFeature
+	{
+	public:
+
+		CVulkanEXTDescriptorBufferExtension()
+			: CVulkanDeviceExtensionWithFeature(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME) {}
+
+		virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2)override
+		{
+			m_descriptorBufferFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT };
+			AddToPNext(PhysicalDeviceFeatures2, m_descriptorBufferFeatures);
+		}
+
+		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override 
+		{
+			SVulkanDeviceExtensionProperties& vkDeviceExtensionProperties = pDevice->GetVulkanDeviceExtensionProperties();
+			VkPhysicalDeviceDescriptorBufferPropertiesEXT& rayTracingPipelineProperties = vkDeviceExtensionProperties.m_vkDescriptorBufferPropsProperties;
+			rayTracingPipelineProperties = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT };
+			AddToPNext(PhysicalDeviceProperties2, rayTracingPipelineProperties);
+		}
+
+		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
+		{
+			AddToPNext(DeviceInfo, m_descriptorBufferFeatures);
+		}
+
+	private:
+		VkPhysicalDeviceDescriptorBufferFeaturesEXT m_descriptorBufferFeatures;
+	};
 
 
 	static std::vector<CVulkanDeviceExtensionWithFeature*> extensionsWithFeatures;
@@ -173,11 +192,14 @@ namespace Extensions
 			static CVulkanRayTracingPipelineExtension vkRayTracingPipelineExtension;
 			static CVulkanKHRBufferDeviceAddressExtension vkKHRBufferDeviceAddressExtension;
 			static CVulkanKHRRayQueryExtension vulkanKHRRayQueryExtension;
+			static CVulkanEXTDescriptorIndexingExtension vulkanEXTDescriptorIndexingExtension;
+			static CVulkanEXTDescriptorBufferExtension vulkanEXTDescriptorBufferExtension;
 			extensionsWithFeatures.push_back(&vkAccelerationStructureExtension);
 			extensionsWithFeatures.push_back(&vkRayTracingPipelineExtension);
 			extensionsWithFeatures.push_back(&vkKHRBufferDeviceAddressExtension);
 			extensionsWithFeatures.push_back(&vulkanKHRRayQueryExtension);
-			//extensionsWithFeatures.push_back(CVulkanDescriptorBufferExtension());
+			extensionsWithFeatures.push_back(&vulkanEXTDescriptorIndexingExtension);
+			//extensionsWithFeatures.push_back(&vulkanEXTDescriptorBufferExtension);
 		}
 		isDeviceExtensionInit = true;
 		return extensionsWithFeatures;

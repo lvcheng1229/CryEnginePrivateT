@@ -35,7 +35,7 @@ public:
 	VkDescriptorSetLayout GetVkDescriptorSetLayout() const { VK_ASSERT(m_descriptorSetLayout != VK_NULL_HANDLE, "Set not built"); return m_descriptorSetLayout; }
 	VkDescriptorSet       GetVKDescriptorSet()       const { return m_descriptorSetHandle; }
 
-	static VkDescriptorSetLayout CreateLayout(const VectorMap<SResourceBindPoint, SResourceBinding>& resources);
+	static VkDescriptorSetLayout CreateLayout(const VectorMap<SResourceBindPoint, SResourceBinding>& resources, bool needBindless = false);
 
 
 	// Calls specified functor with signature "void (CMemoryResource* pResource, bool bWritable)" for all resources used by the resource-set.

@@ -2392,7 +2392,7 @@ CHWShader_D3D::SHWSInstance* CHWShader_D3D::mfGetInstance(SShaderCombIdent& Iden
 	SHWSInstance* pInst = m_pCurInst;
 	if (pInst && !pInst->m_bFallback)
 	{
-		assert(pInst->m_eClass < eHWSC_Num);
+		assert(pInst->m_eClass < eHWSC_Num_WithRT);/*TanGram:VKRT*/
 
 		const SShaderCombIdent& other = pInst->m_Ident;
 		// other will have been through PostCreate, and so won't have the platform mask set anymore

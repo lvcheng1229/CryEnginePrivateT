@@ -218,6 +218,12 @@ public:
 #endif
 	//TanGram:VKRT:END
 
+	//TanGram:BINDLESS:BEGIN
+	uint32 SetBindlessUniformBuffer(const CDeviceInputStream* DeviceStreaming,uint32 bindingIndex);
+	void UnBindBindlessResource(uint32 descriptorIndex, uint32 unBindIndex);
+	CDeviceBindlessDescriptorManager* GetDeviceBindlessDescriptorManager();
+	//TanGram:BINDLESS:END
+
 #if CRY_RENDERER_VULKAN
 	SDeviceResourceLayoutDesc LookupResourceLayoutDesc(uint64 layoutHash);
 	const std::vector<uint8>* LookupResourceLayoutEncoding(uint64 layoutHash);
@@ -491,6 +497,12 @@ private:
 #endif
 	//TanGram:VKRT:END
 
+	//TanGram:BINDLESS:BEGIN
+	uint32 SetBindlessUniformBufferImpl(const CDeviceInputStream* DeviceStreaming, uint32 bindingIndex);
+	void UnBindBindlessResourceImpl(uint32 descriptorIndex, uint32 unBindIndex);
+	CDeviceBindlessDescriptorManager* InitBindlessDescriptorManagerImpl();
+	//TanGram:BINDLESS:END
+
 	VectorMap<SDeviceResourceLayoutDesc, CDeviceResourceLayoutPtr>     m_ResourceLayoutCache;
 
 	struct SDeviceStreamInfoHash
@@ -595,7 +607,7 @@ private:
 	CryCriticalSectionNonRecursive m_RenderPassCacheLock;
 
 	CDeviceObjectValidator m_objectValidator;
-
+	CDeviceBindlessDescriptorManager* m_pDeviceBindlessDescriptorManager;//TanGram:BINDLESS
 public:
 	////////////////////////////////////////////////////////////////////////////
 	// Shader blob API

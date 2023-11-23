@@ -69,6 +69,8 @@ void CDeviceObjectFactory::AssignDevice(D3DDevice* pDevice)
 	m_pVKScheduler->AddQueueEventCallback(m_pCoreCommandList.get(), lambdaResumeCallback, NCryVulkan::CCommandScheduler::CMDQUEUE_EVENT_RESUME);
 
 	m_pCoreCommandList->m_sharedState.pCommandList = m_pVKScheduler->GetCommandList(CMDQUEUE_GRAPHICS);
+
+	m_pDeviceBindlessDescriptorManager = InitBindlessDescriptorManagerImpl();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

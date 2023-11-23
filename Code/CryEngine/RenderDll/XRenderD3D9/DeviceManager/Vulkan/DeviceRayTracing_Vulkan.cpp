@@ -12,6 +12,7 @@
 #include "DeviceRayTracing_Vulkan.h"
 #include "DeviceResourceSet_Vulkan.h"	
 #include "DevicePSO_Vulkan.h"	
+#include "DeviceBindless_Vulkan.h"
 
 VkDeviceAddress InputStreamGetBufferDeviceAddress(const VkDevice* pVkDevice, const CDeviceInputStream* deviceInputStreaming)
 {
@@ -610,6 +611,17 @@ void CDeviceGraphicsCommandInterfaceImpl::DispatchRayTracingImpl(uint32 width, u
 	const CDeviceRayTracingPSO_Vulkan* pVkPipeline = reinterpret_cast<const CDeviceRayTracingPSO_Vulkan*>(m_raytracingState.pPipelineState.cachedValue);
 
 	ApplyPendingBindings(GetVKCommandList()->GetVkCommandList(), pVkLayout->GetVkPipelineLayout(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, m_raytracingState.custom.pendingBindings);
+	CDeviceBindlessDescriptorManager_Vulkan* pDeviceBindlessDescriptorManager = static_cast<CDeviceBindlessDescriptorManager_Vulkan*>(GetDeviceObjectFactory().GetDeviceBindlessDescriptorManager());
+	pDeviceBindlessDescriptorManager->UpdatePendingDescriptorSets();
+
+	vkCmdBindDescriptorSets(
+		GetVKCommandList()->GetVkCommandList(),
+		VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+		pVkLayout->GetVkPipelineLayout(),
+		1, /*TODO:FixMe*/
+		1,
+		&pDeviceBindlessDescriptorManager->m_bindlessDescriptorSet, 0, nullptr);
+	
 	//m_raytracingState.custom.pendingBindings.Reset();
 	m_raytracingState.pPipelineState = nullptr;
 

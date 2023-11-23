@@ -23,6 +23,7 @@ public:
 	void PrepareResourcesForUse(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
 	void DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList,uint32 width,uint32 height);
 
+	void SetNeedBindless(bool needBindless);
 	void SetBuffer(uint32 slot, CGpuBuffer* pBuffer);
 	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
 	void SetOutputUAV(uint32 slot, CGpuBuffer* pBuffer, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
@@ -44,9 +45,15 @@ private:
 	int                      m_currentPsoUpdateCount;
 
 	bool                     m_bCompiled;
+	bool					 m_needBindless;
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(CRayTracingRenderPass::EDirtyFlags);
+
+inline void CRayTracingRenderPass::SetNeedBindless(bool needBindless)
+{
+	m_needBindless = needBindless;
+}
 
 inline void CRayTracingRenderPass::SetBuffer(uint32 slot, CGpuBuffer* pBuffer)
 {

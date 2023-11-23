@@ -410,6 +410,13 @@ void SDeviceResourceLayoutDesc::SetShaderResource(uint32 bindSlot, EShaderResour
 
 bool SDeviceResourceLayoutDesc::operator<(const SDeviceResourceLayoutDesc& other) const
 {
+	//TanGram:BINDLESS:BEGIN
+	if (m_needBindlessLayout != other.m_needBindlessLayout)
+	{
+		return m_needBindlessLayout;
+	}
+	//TanGram:BINDLESS:END
+
 	//TanGram:VSM:BEGIN
 	if (m_pushconstantrages.size() != other.m_pushconstantrages.size())
 	{
@@ -482,6 +489,11 @@ uint64 SDeviceResourceLayoutDesc::GetHash() const
 {
 	XXH64_state_t hashState;
 	XXH64_reset(&hashState, 0);
+
+	//TanGram:BINDLESS:BEGIN
+	uint64 hashBindless = m_needBindlessLayout ? 1 : 0;
+	XXH64_update(&hashState, &hashBindless, sizeof(uint64));
+	//TanGram:BINDLESS:END
 
 	for (auto& itLayoutBinding : m_resourceBindings)
 	{

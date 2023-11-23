@@ -540,6 +540,7 @@ void CInstance::GatherInstanceExtensionsToEnable()
 {
 	//platform independent extensions
 	m_enabledInstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+	m_enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);//Tangram:BINDLESS
 
 	//platform dependent extensions
 #ifdef CRY_PLATFORM_WINDOWS
@@ -588,6 +589,7 @@ void CInstance::GatherPhysicalDeviceExtensionsToEnable()
 	m_enabledPhysicalDeviceExtensions.emplace_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, true);
 	m_enabledPhysicalDeviceExtensions.emplace_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME, true);
 	m_enabledPhysicalDeviceExtensions.emplace_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME, true);
+	m_enabledPhysicalDeviceExtensions.emplace_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, true);
 
 	std::vector<NCryVulkan::Extensions::CVulkanDeviceExtensionWithFeature*>& deviceExtensions = NCryVulkan::Extensions::GetVulkanDeviceExtensionWithFeatureList();
 	for (auto extension : deviceExtensions)

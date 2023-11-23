@@ -298,6 +298,10 @@ add_sources("CryRenderer_uber_5_vulkan_vulkan.cpp"
 		"DeviceManager/Vulkan/DeviceRayTracing_Vulkan.cpp"
 		"DeviceManager/Vulkan/DeviceRayTracing_Vulkan.h"
 		#TanGram:VKRT:END
+		#TanGram:BINDLESS:BEGIN
+		"DeviceManager/Vulkan/DeviceBindless_Vulkan.cpp"
+		"DeviceManager/Vulkan/DeviceBindless_Vulkan.h"
+		#TanGram:BINDLESS:END
 		"DeviceManager/Vulkan/DeviceResources_Vulkan.inl"
 		"DeviceManager/Vulkan/DeviceCommandList_Vulkan.h"
 		"DeviceManager/Vulkan/DeviceResourceSet_Vulkan.h"
@@ -752,6 +756,11 @@ add_sources("CryRenderer_uber_5.cpp"
 		"DeviceManager/DeviceRayTracing.cpp"
 		"DeviceManager/DeviceRayTracing.h"
 		#TanGram:VKRT:END
+
+		#TanGram:BINDLESS:BEGIN
+		"DeviceManager/DeviceBindless.cpp"
+		"DeviceManager/DeviceBindless.h"
+		#TanGram:BINDLESS:END
 )
 
 add_sources("CryRenderer_uber_6.cpp"

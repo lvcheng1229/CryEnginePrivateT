@@ -204,6 +204,8 @@ public:
 
 	static bool OnResourceInvalidated(void* pThis, SResourceBindPoint bindPoint, UResourceReference pResource, uint32 flags) threadsafe;
 
+	bool m_needBindless = false;
+
 protected:
 	EDirtyFlags SetResources(const CDeviceResourceSetDesc& other);
 
@@ -303,6 +305,8 @@ struct TMP_RENDER_API SDeviceResourceLayoutDesc
 	uint64          GetHash() const;
 
 	VectorMap<SLayoutBindPoint, VectorMap<SResourceBindPoint, SResourceBinding> > m_resourceBindings;
+	
+	bool m_needBindlessLayout;
 
 	bool operator<(const SDeviceResourceLayoutDesc& other) const;
 };

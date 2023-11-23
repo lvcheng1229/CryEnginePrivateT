@@ -167,6 +167,12 @@ static void CreateCylinder(ObjVertexBuffer& vb, ObjIndexBuffer& ib, float radius
 	}
 }
 
+SObjectGeometry::~SObjectGeometry()
+{
+	GetDeviceObjectFactory().UnBindBindlessResource(m_vbBindlessIndex, 0);
+	GetDeviceObjectFactory().UnBindBindlessResource(m_ibBindlessIndex, 1);
+}
+
 template<typename TMeshFunc>
 void CreateMesh(SObjectGeometry& ObjectGeometry, TMeshFunc meshFunction)
 {
@@ -190,6 +196,9 @@ void CreateMesh(SObjectGeometry& ObjectGeometry, TMeshFunc meshFunction)
 	indexStreamInfo.nStride = sizeof(vtx_idx);
 	indexStreamInfo.nSlot = 0;
 	ObjectGeometry.m_pObjectIndexInputSet = GetDeviceObjectFactory().CreateIndexStreamSet(&indexStreamInfo);
+
+	ObjectGeometry.m_vbBindlessIndex = GetDeviceObjectFactory().SetBindlessUniformBuffer(ObjectGeometry.m_pObjectVertexInputSet, 0);
+	ObjectGeometry.m_ibBindlessIndex = GetDeviceObjectFactory().SetBindlessUniformBuffer(ObjectGeometry.m_pObjectIndexInputSet, 1);
 }
 
 void CBindlessRayTracingTestStage::CreateVBAndIB()
@@ -226,6 +235,9 @@ void CBindlessRayTracingTestStage::CreateVBAndIB()
 			ib.push_back(3);
 		}
 	);
+
+	
+
 	m_objectGeometry[0] = &m_objectSphere;
 	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-4.0, 0.0, 3.0)) });
 	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-0.0, 0.0, 3.0)) });
@@ -273,6 +285,7 @@ void CBindlessRayTracingTestStage::CreateAndBuildBLAS(CDeviceGraphicsCommandInte
 void CBindlessRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInterface* pCommandInterface)
 {
 	std::vector<SAccelerationStructureInstanceInfo> accelerationStructureInstanceInfos;
+	std::vector<SBindlessIndex>bindlessIndexArray;
 
 	for (uint32 geometryIndex = 0; geometryIndex < m_nObjectNum; geometryIndex++)
 	{
@@ -285,8 +298,13 @@ void CBindlessRayTracingTestStage::CreateAndBuildTLAS(CDeviceGraphicsCommandInte
 			accelerationStructureInstanceInfo.m_rayMask = 0xFF;
 
 			accelerationStructureInstanceInfos.push_back(accelerationStructureInstanceInfo);
+			SBindlessIndex bindlessIndex = { m_objectGeometry[geometryIndex]->m_vbBindlessIndex,m_objectGeometry[geometryIndex]->m_ibBindlessIndex };
+			bindlessIndexArray.push_back(bindlessIndex);
 		}
 	}
+
+	m_pBindlessIndexBuffer.Create(bindlessIndexArray.size(), sizeof(SBindlessIndex), DXGI_FORMAT_UNKNOWN, CDeviceObjectFactory::USAGE_STRUCTURED | CDeviceObjectFactory::BIND_SHADER_RESOURCE, bindlessIndexArray.data());
+	
 
 	SRayTracingTopLevelASCreateInfo rtTopLevelASCreateInfo;
 	rtTopLevelASCreateInfo.m_nHitShaderNumPerTriangle = 1;
@@ -348,6 +366,8 @@ void CBindlessRayTracingTestStage::CreateUniformBuffer()
 
 	m_pRayTracingCB = gcpRendD3D->m_DevBufMan.CreateConstantBuffer(sizeof(SRayCameraMatrix));
 	m_pRayTracingCB->UpdateBuffer(&rayCameraMatrix, sizeof(SRayCameraMatrix), 0, 1);
+
+	
 }
 
 void CBindlessRayTracingTestStage::Init()
@@ -365,9 +385,11 @@ void CBindlessRayTracingTestStage::Execute(CTexture* rayTracingResultTexture)
 	if (bInit)
 	{
 		m_bindlessRayTracingRenderPass.SetTechnique(CShaderMan::s_shBindlessRayTracingTest, CCryNameTSCRC("BindlessRayTracingTestTech"), 0);
+		m_bindlessRayTracingRenderPass.SetNeedBindless(true);
 		m_bindlessRayTracingRenderPass.SetConstantBuffer(0, m_pRayTracingCB);
 		m_bindlessRayTracingRenderPass.SetBuffer(1, m_pRtTopLevelAS->GetAccelerationStructureBuffer());
 		m_bindlessRayTracingRenderPass.SetOutputUAV(2, rayTracingResultTexture);
+		m_bindlessRayTracingRenderPass.SetBuffer(3, &m_pBindlessIndexBuffer);
 		m_bindlessRayTracingRenderPass.PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
 		m_bindlessRayTracingRenderPass.DispatchRayTracing(GetDeviceObjectFactory().GetCoreCommandList(), rayTracingResultTexture->GetWidth(), rayTracingResultTexture->GetHeight());
 	}

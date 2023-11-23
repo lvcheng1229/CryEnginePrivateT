@@ -219,7 +219,7 @@ HRESULT D3DCompile(_In_reads_bytes_(SrcDataSize) LPCVOID pSrcData, _In_ SIZE_T S
 		std::string sEntrypoint = " -E " + std::string(pEntrypoint);
 		if (strcmp(pTarget, "lib_6_3") == 0)
 		{
-			vkRayTracingArgs = "-fspv-target-env=vulkan1.2 -fspv-extension=SPV_KHR_ray_query -fspv-extension=SPV_KHR_ray_tracing -fvk-use-scalar-layout -fspv-extension=SPV_GOOGLE_hlsl_functionality1 -fspv-extension=SPV_GOOGLE_user_type";
+			vkRayTracingArgs = "-fspv-target-env=vulkan1.2 -fspv-extension=SPV_KHR_ray_query -fspv-extension=SPV_KHR_ray_tracing -fvk-use-scalar-layout -fspv-extension=SPV_EXT_descriptor_indexing -fspv-extension=SPV_GOOGLE_hlsl_functionality1 -fspv-extension=SPV_GOOGLE_user_type";
 			//vkRayTracingArgs = "-fspv-target-env=vulkan1.2 -fspv-extension=SPV_KHR_ray_tracing -fspv-extension=SPV_GOOGLE_hlsl_functionality1 -fspv-extension=SPV_GOOGLE_user_type";
 			sEntrypoint = "";
 		}

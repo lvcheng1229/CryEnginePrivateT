@@ -70,6 +70,7 @@ private:
 };
 
 #include "DeviceRayTracing.h"
+#include "DeviceBindless.h"
 
 ////////////////////////////////////////////////////////////////////////////
 #include "DeviceObjects.h" // CComposedDeviceObjectStorage,STexturePayload

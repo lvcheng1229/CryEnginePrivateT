@@ -41,6 +41,8 @@ RaytracingAccelerationStructure            tlas: register(t0);
 StructuredBuffer<FBasicRayData>            Rays: register(t1); 
 RWStructuredBuffer<uint>                   OcclusionOutput: register(u2);
 
+
+
 [shader("raygeneration")] 
 void RayGenMain()
 {
@@ -77,7 +79,6 @@ void ClostHitMain(
 	inout FDefaultPayload Payload,
 	in FRayTracingIntersectionAttributes Attributes)
 {
-	Payload.HitT = RayTCurrent();
 	Payload.Barycentrics = Attributes.GetBarycentrics();
 	Payload.InstanceIndex = InstanceIndex();
 	Payload.PrimitiveIndex = PrimitiveIndex();
