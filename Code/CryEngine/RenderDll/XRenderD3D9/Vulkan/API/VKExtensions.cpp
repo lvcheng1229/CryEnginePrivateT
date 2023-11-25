@@ -180,6 +180,31 @@ namespace Extensions
 		VkPhysicalDeviceDescriptorBufferFeaturesEXT m_descriptorBufferFeatures;
 	};
 
+	class CVulkanEXTScalarBlockLayoutExtension : public CVulkanDeviceExtensionWithFeature
+	{
+	public:
+
+		CVulkanEXTScalarBlockLayoutExtension()
+			: CVulkanDeviceExtensionWithFeature(VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME) {}
+
+		virtual void WritePhysicalDeviceFeatures(VkPhysicalDeviceFeatures2KHR& PhysicalDeviceFeatures2)override
+		{
+			m_scalarBlockLayoutFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES_EXT };
+			AddToPNext(PhysicalDeviceFeatures2, m_scalarBlockLayoutFeatures);
+		}
+
+		virtual void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties2KHR& PhysicalDeviceProperties2, CDevice* pDevice)override
+		{
+		}
+
+		virtual void EnablePhysicalDeviceFeatures(VkDeviceCreateInfo& DeviceInfo) override
+		{
+			AddToPNext(DeviceInfo, m_scalarBlockLayoutFeatures);
+		}
+
+	private:
+		VkPhysicalDeviceScalarBlockLayoutFeaturesEXT m_scalarBlockLayoutFeatures;
+	};
 
 	static std::vector<CVulkanDeviceExtensionWithFeature*> extensionsWithFeatures;
 	static bool isDeviceExtensionInit = false;
@@ -194,11 +219,13 @@ namespace Extensions
 			static CVulkanKHRRayQueryExtension vulkanKHRRayQueryExtension;
 			static CVulkanEXTDescriptorIndexingExtension vulkanEXTDescriptorIndexingExtension;
 			static CVulkanEXTDescriptorBufferExtension vulkanEXTDescriptorBufferExtension;
+			static CVulkanEXTScalarBlockLayoutExtension vulkanEXTScalarBlockLayoutExtension;
 			extensionsWithFeatures.push_back(&vkAccelerationStructureExtension);
 			extensionsWithFeatures.push_back(&vkRayTracingPipelineExtension);
 			extensionsWithFeatures.push_back(&vkKHRBufferDeviceAddressExtension);
 			extensionsWithFeatures.push_back(&vulkanKHRRayQueryExtension);
 			extensionsWithFeatures.push_back(&vulkanEXTDescriptorIndexingExtension);
+			extensionsWithFeatures.push_back(&vulkanEXTScalarBlockLayoutExtension);
 			//extensionsWithFeatures.push_back(&vulkanEXTDescriptorBufferExtension);
 		}
 		isDeviceExtensionInit = true;

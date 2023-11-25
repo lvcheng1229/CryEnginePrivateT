@@ -12,9 +12,9 @@ CDeviceBindlessDescriptorManager* CDeviceObjectFactory::GetDeviceBindlessDescrip
 	return m_pDeviceBindlessDescriptorManager;
 }
 
-uint32 CDeviceObjectFactory::SetBindlessUniformBuffer(const CDeviceInputStream* DeviceStreaming, uint32 bindingIndex)
+uint32 CDeviceObjectFactory::SetBindlessStorageBuffer(const CDeviceInputStream* DeviceStreaming, uint32 bindingIndex)
 {
-	return SetBindlessUniformBufferImpl(DeviceStreaming, bindingIndex);
+	return SetBindlessStorageBufferImpl(DeviceStreaming, bindingIndex);
 }
 
 void CDeviceObjectFactory::UnBindBindlessResource(uint32 descriptorIndex, uint32 unBindIndex)

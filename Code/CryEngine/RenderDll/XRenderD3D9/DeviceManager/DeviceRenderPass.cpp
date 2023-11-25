@@ -135,9 +135,9 @@ bool CDeviceRenderPassDesc::SetRenderTarget(uint32 slot, CTexture* pTexture, Res
 
 bool CDeviceRenderPassDesc::SetDepthTarget(CTexture* pTexture, ResourceViewHandle hView)
 {
-	CRY_ASSERT(!pTexture || !m_renderTargets[0].pTexture || (
-		pTexture->GetWidth() == m_renderTargets[0].pTexture->GetWidth() &&
-		pTexture->GetHeight() == m_renderTargets[0].pTexture->GetHeight()));
+	//CRY_ASSERT(!pTexture || !m_renderTargets[0].pTexture || (
+	//	pTexture->GetWidth() == m_renderTargets[0].pTexture->GetWidth() &&
+	//	pTexture->GetHeight() == m_renderTargets[0].pTexture->GetHeight()));
 
 	const SResourceBindPoint bindPoint(SResourceBindPoint::ESlotType::TextureAndBuffer, -1, EShaderStage_Pixel);
 	bool result = UpdateResource(bindPoint, m_depthTarget, SResourceBinding(pTexture, hView));

@@ -519,6 +519,7 @@ bool CDeviceResourceLayout_Vulkan::Init(const SDeviceResourceLayoutDesc& desc)
 	//TanGram:BINDLESS:BEGIN
 	if (desc.m_needBindlessLayout)
 	{
+		m_needBindless = true;
 		descriptorSetCount++;
 		descriptorSets[descriptorSetCount] = static_cast<CDeviceBindlessDescriptorManager_Vulkan*>(
 			GetDeviceObjectFactory().GetDeviceBindlessDescriptorManager())->m_bindlessDescriptorSetLayout;

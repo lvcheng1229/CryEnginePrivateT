@@ -39,6 +39,15 @@ void CRayTracingRenderPass::SetTechnique(CShader* pShader, const CCryNameTSCRC& 
 void CRayTracingRenderPass::PrepareResourcesForUse(CDeviceCommandListRef RESTRICT_REFERENCE commandList)
 {
 	Compile();
+
+	if (m_dirtyMask == eDirty_None)
+	{
+		CDeviceGraphicsCommandInterface* pComputeInterface = commandList.GetGraphicsInterface();
+
+		// Prepare resources
+		int bindSlot = 0;
+		pComputeInterface->PrepareResourcesForUse(bindSlot++, m_pResourceSet.get());
+	}
 }
 
 CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()

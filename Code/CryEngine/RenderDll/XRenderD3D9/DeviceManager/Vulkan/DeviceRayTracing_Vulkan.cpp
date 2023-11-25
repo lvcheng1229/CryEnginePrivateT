@@ -614,14 +614,17 @@ void CDeviceGraphicsCommandInterfaceImpl::DispatchRayTracingImpl(uint32 width, u
 	CDeviceBindlessDescriptorManager_Vulkan* pDeviceBindlessDescriptorManager = static_cast<CDeviceBindlessDescriptorManager_Vulkan*>(GetDeviceObjectFactory().GetDeviceBindlessDescriptorManager());
 	pDeviceBindlessDescriptorManager->UpdatePendingDescriptorSets();
 
-	vkCmdBindDescriptorSets(
-		GetVKCommandList()->GetVkCommandList(),
-		VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
-		pVkLayout->GetVkPipelineLayout(),
-		1, /*TODO:FixMe*/
-		1,
-		&pDeviceBindlessDescriptorManager->m_bindlessDescriptorSet, 0, nullptr);
-	
+	if (pVkLayout->m_needBindless)
+	{
+		vkCmdBindDescriptorSets(
+			GetVKCommandList()->GetVkCommandList(),
+			VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+			pVkLayout->GetVkPipelineLayout(),
+			1, /*TODO:FixMe*/
+			1,
+			&pDeviceBindlessDescriptorManager->m_bindlessDescriptorSet, 0, nullptr);
+	}
+
 	//m_raytracingState.custom.pendingBindings.Reset();
 	m_raytracingState.pPipelineState = nullptr;
 

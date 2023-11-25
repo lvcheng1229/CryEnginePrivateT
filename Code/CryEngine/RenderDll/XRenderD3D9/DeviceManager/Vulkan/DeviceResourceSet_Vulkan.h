@@ -148,6 +148,7 @@ public:
 		, m_pDevice(pDevice)
 		, m_pipelineLayout(VK_NULL_HANDLE)
 		, m_hash(0)
+		, m_needBindless(false)
 	{}
 
 	~CDeviceResourceLayout_Vulkan();
@@ -158,7 +159,7 @@ public:
 	uint64                    GetHash()             const { return m_hash; }
 	const std::vector<uint8>& GetEncodedLayout()    const { return *GetDeviceObjectFactory().LookupResourceLayoutEncoding(m_hash); }
 
-
+	bool m_needBindless;
 
 protected:
 	std::vector<uint8>        EncodeDescriptorSet(const VectorMap<SResourceBindPoint, SResourceBinding>& resources);

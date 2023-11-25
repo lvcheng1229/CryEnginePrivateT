@@ -25,9 +25,12 @@ static inline VkDescriptorType ConvertToDescriptorType(uint32 index)
 	{
 	case EBindlessDescriptorBindingType::e_bdstUniform_0:    
 	case EBindlessDescriptorBindingType::e_bdstUniform_1:    
-	case EBindlessDescriptorBindingType::e_bdstUniform_2:    
-	case EBindlessDescriptorBindingType::e_bdstUniform_3:    
 		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	case EBindlessDescriptorBindingType::e_bdstStorage_0:
+	case EBindlessDescriptorBindingType::e_bdstStorage_1:
+	case EBindlessDescriptorBindingType::e_bdstStorage_2:
+	case EBindlessDescriptorBindingType::e_bdstStorage_3:
+		return  VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	default: CRY_ASSERT(false);
 	}
 	return VK_DESCRIPTOR_TYPE_MAX_ENUM;
@@ -109,16 +112,15 @@ void CDeviceBindlessDescriptorManager_Vulkan::Init()
 
 	constexpr uint32 bindlessDescriptorCounrPerType = 1024;
 
-	for (uint32 indexUniform = 0; indexUniform < EBindlessDescriptorBindingType::e_bdstUniformNum; indexUniform++)
+	for (uint32 indexStorage = 0; indexStorage < EBindlessDescriptorBindingType::e_bdstUniformNum + EBindlessDescriptorBindingType::e_bdstStorageNum; indexStorage++)
 	{
-		uniformBufferBindingState[indexUniform].m_freeIndexArray.resize(1024);
-		for (uint32 index = 0; index < uniformBufferBindingState[indexUniform].m_freeIndexArray.size(); index++)
+		m_BufferBindingState[indexStorage].m_freeIndexArray.resize(1024);
+		for (uint32 index = 0; index < m_BufferBindingState[indexStorage].m_freeIndexArray.size(); index++)
 		{
-			uniformBufferBindingState[indexUniform].m_freeIndexArray[index] = index + 1;
+			m_BufferBindingState[indexStorage].m_freeIndexArray[index] = index + 1;
 		}
-		uniformBufferBindingState[indexUniform].m_currentFreeIndex = 0;
+		m_BufferBindingState[indexStorage].m_currentFreeIndex = 0;
 	}
-
 
 	std::vector<VkDescriptorBindingFlags> bindingFlags;
 	std::vector< VkDescriptorSetLayoutBinding>descriptorSetLayoutBindings;
@@ -172,39 +174,44 @@ CDeviceBindlessDescriptorManager_Vulkan::CDeviceBindlessDescriptorManager_Vulkan
 
 }
 
-uint32 CDeviceObjectFactory::SetBindlessUniformBufferImpl(const CDeviceInputStream* DeviceStreaming, uint32 bindingIndex)
+uint32 CDeviceObjectFactory::SetBindlessStorageBufferImpl(const CDeviceInputStream* DeviceStreaming, uint32 bindingIndex)
 {
+	CRY_ASSERT(bindingIndex >= 2 && bindingIndex <= 5);
+
 	CDeviceBindlessDescriptorManager_Vulkan* pDeviceBindlessDescriptorManager = static_cast<CDeviceBindlessDescriptorManager_Vulkan*>(m_pDeviceBindlessDescriptorManager);
 	
 	buffer_size_t offset;
 	CBufferResource* const pActualBuffer = gcpRendD3D.m_DevBufMan.GetD3D(((SStreamInfo*)DeviceStreaming)->hStream, &offset);
 	VkBuffer buffer = pActualBuffer->GetHandle();
 
-	SUniformBufferBindingState& uniformBufferBindingState = pDeviceBindlessDescriptorManager->uniformBufferBindingState[bindingIndex];
+	SBufferBindingState& storageufferBindingState = pDeviceBindlessDescriptorManager->m_BufferBindingState[bindingIndex];
 
-	uint32 currentFreeIndex = uniformBufferBindingState.m_currentFreeIndex;
-	uniformBufferBindingState.m_currentFreeIndex = uniformBufferBindingState.m_freeIndexArray[uniformBufferBindingState.m_currentFreeIndex];
+	uint32 currentFreeIndex = storageufferBindingState.m_currentFreeIndex;
+	storageufferBindingState.m_currentFreeIndex = storageufferBindingState.m_freeIndexArray[storageufferBindingState.m_currentFreeIndex];
 
-	uint32 bufferSize = uniformBufferBindingState.m_buffers.size();
+	uint32 bufferSize = storageufferBindingState.m_buffers.size();
 	if (currentFreeIndex >= bufferSize)
 	{
-		uniformBufferBindingState.m_buffers.resize(alignedValue(currentFreeIndex + 1, 1024));
+		storageufferBindingState.m_buffers.resize(alignedValue(currentFreeIndex + 1, 1024));
+		storageufferBindingState.m_bufferInfos.resize(alignedValue(currentFreeIndex + 1, 1024));
 	}
-	uniformBufferBindingState.m_buffers[currentFreeIndex] = buffer;
+	storageufferBindingState.m_buffers[currentFreeIndex] = buffer;
 	
 	
 	VkDescriptorBufferInfo descriptorBufferInfo;
 	//range is the size in bytes that is used for this descriptor update, or VK_WHOLE_SIZE to use the range from offset to the end of the buffer.
 	descriptorBufferInfo.range = VK_WHOLE_SIZE;
-	descriptorBufferInfo.buffer = uniformBufferBindingState.m_buffers[currentFreeIndex];
+	descriptorBufferInfo.buffer = storageufferBindingState.m_buffers[currentFreeIndex];
 	descriptorBufferInfo.offset = offset;
+	storageufferBindingState.m_bufferInfos[currentFreeIndex] = descriptorBufferInfo;
 
 	VkWriteDescriptorSet writeDescriptorSet = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
 	writeDescriptorSet.dstSet = pDeviceBindlessDescriptorManager->m_bindlessDescriptorSet;
 	writeDescriptorSet.dstBinding = bindingIndex;
 	writeDescriptorSet.dstArrayElement = currentFreeIndex;
 	writeDescriptorSet.descriptorType = ConvertToDescriptorType(bindingIndex);
-	writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
+	writeDescriptorSet.pBufferInfo = &storageufferBindingState.m_bufferInfos[currentFreeIndex];
+	writeDescriptorSet.descriptorCount = 1;
 
 	pDeviceBindlessDescriptorManager->m_descriptorSetWrites.emplace_back(writeDescriptorSet);
 	pDeviceBindlessDescriptorManager->m_isUpdateDescriptor = false;
@@ -215,10 +222,11 @@ uint32 CDeviceObjectFactory::SetBindlessUniformBufferImpl(const CDeviceInputStre
 void CDeviceObjectFactory::UnBindBindlessResourceImpl(uint32 descriptorIndex ,uint32 unBindIndex)
 {
 	CDeviceBindlessDescriptorManager_Vulkan* pDeviceBindlessDescriptorManager = static_cast<CDeviceBindlessDescriptorManager_Vulkan*>(m_pDeviceBindlessDescriptorManager);
-	SUniformBufferBindingState& uniformBufferBindingState = pDeviceBindlessDescriptorManager->uniformBufferBindingState[unBindIndex];
-	uniformBufferBindingState.m_buffers[descriptorIndex] = VkBuffer();
-	uniformBufferBindingState.m_freeIndexArray[descriptorIndex] = uniformBufferBindingState.m_currentFreeIndex;
-	uniformBufferBindingState.m_currentFreeIndex = descriptorIndex;
+	SBufferBindingState& bufferBindingState = pDeviceBindlessDescriptorManager->m_BufferBindingState[unBindIndex];
+	bufferBindingState.m_buffers[descriptorIndex] = VkBuffer();
+	bufferBindingState.m_bufferInfos[descriptorIndex] = VkDescriptorBufferInfo();
+	bufferBindingState.m_freeIndexArray[descriptorIndex] = bufferBindingState.m_currentFreeIndex;
+	bufferBindingState.m_currentFreeIndex = descriptorIndex;
 
 	//todo@remove buffer
 }

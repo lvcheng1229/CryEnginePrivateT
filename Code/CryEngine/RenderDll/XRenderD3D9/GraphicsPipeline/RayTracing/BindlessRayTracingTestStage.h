@@ -19,6 +19,7 @@ struct SObjVertex
 	Vec3 m_normal;
 };
 
+
 using ObjVertexBuffer = std::vector<SObjVertex>;
 using ObjIndexBuffer = std::vector<vtx_idx>;
 

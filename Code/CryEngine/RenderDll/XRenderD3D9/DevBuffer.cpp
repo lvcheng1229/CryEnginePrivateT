@@ -1753,7 +1753,7 @@ struct CBufferPoolImpl final
 			uint32 eAcceleratinFlag = 0;
 			if ((BIND_FLAGS & CDeviceObjectFactory::USAGE_CPU_WRITE) == 0)
 			{
-				eAcceleratinFlag = CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE;
+				eAcceleratinFlag = CDeviceObjectFactory::USAGE_ACCELERATION_STRUCTURE ;
 			}
 			//TanGram:VKRT:END
 

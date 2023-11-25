@@ -219,7 +219,7 @@ public:
 	//TanGram:VKRT:END
 
 	//TanGram:BINDLESS:BEGIN
-	uint32 SetBindlessUniformBuffer(const CDeviceInputStream* DeviceStreaming,uint32 bindingIndex);
+	uint32 SetBindlessStorageBuffer(const CDeviceInputStream* DeviceStreaming,uint32 bindingIndex);
 	void UnBindBindlessResource(uint32 descriptorIndex, uint32 unBindIndex);
 	CDeviceBindlessDescriptorManager* GetDeviceBindlessDescriptorManager();
 	//TanGram:BINDLESS:END
@@ -498,7 +498,7 @@ private:
 	//TanGram:VKRT:END
 
 	//TanGram:BINDLESS:BEGIN
-	uint32 SetBindlessUniformBufferImpl(const CDeviceInputStream* DeviceStreaming, uint32 bindingIndex);
+	uint32 SetBindlessStorageBufferImpl(const CDeviceInputStream* DeviceStreaming, uint32 bindingIndex);
 	void UnBindBindlessResourceImpl(uint32 descriptorIndex, uint32 unBindIndex);
 	CDeviceBindlessDescriptorManager* InitBindlessDescriptorManagerImpl();
 	//TanGram:BINDLESS:END
