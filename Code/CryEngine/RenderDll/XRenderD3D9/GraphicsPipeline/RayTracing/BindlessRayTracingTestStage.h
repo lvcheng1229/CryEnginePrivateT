@@ -58,6 +58,10 @@ struct SRayCameraMatrix
 	Matrix44A m_viewProj;
 	Matrix44A m_viewInverse;
 	Matrix44A m_projInverse;
+	Vec4 m_lightDirection;
+	Vec4 m_padding0;
+	Vec4 m_padding1;
+	Vec4 m_padding2;
 };
 
 class CBindlessRayTracingTestStage : public CGraphicsPipelineStage
@@ -86,7 +90,7 @@ private:
 	void CreateUniformBuffer();
 
 private:
-	static constexpr uint32 m_nObjectNum = 2;
+	static constexpr uint32 m_nObjectNum = 3;
 
 	SObjectGeometry m_objectSphere;
 	SObjectGeometry m_objectCylinder;

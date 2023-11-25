@@ -23,6 +23,8 @@ public:
 	void PrepareResourcesForUse(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
 	void DispatchRayTracing(CDeviceCommandListRef RESTRICT_REFERENCE commandList,uint32 width,uint32 height);
 
+	void SetMaxPipelineRayRecursionDepth(uint32 depth);
+
 	void SetNeedBindless(bool needBindless);
 	void SetBuffer(uint32 slot, CGpuBuffer* pBuffer);
 	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
@@ -46,9 +48,16 @@ private:
 
 	bool                     m_bCompiled;
 	bool					 m_needBindless;
+
+	uint32					 m_maxPipelineRayRecursionDepth;
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(CRayTracingRenderPass::EDirtyFlags);
+
+inline void CRayTracingRenderPass::SetMaxPipelineRayRecursionDepth(uint32 depth)
+{
+	m_maxPipelineRayRecursionDepth = depth;
+}
 
 inline void CRayTracingRenderPass::SetNeedBindless(bool needBindless)
 {

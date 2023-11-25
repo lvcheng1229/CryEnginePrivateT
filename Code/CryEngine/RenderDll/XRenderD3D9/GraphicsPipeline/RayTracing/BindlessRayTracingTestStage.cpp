@@ -76,21 +76,16 @@ static void CreateCylinder(ObjVertexBuffer& vb, ObjIndexBuffer& ib, float radius
 	uint32 numVertices(4 * (sections + 1) + 2);
 	uint32 numTriangles(4 * sections);
 	uint32 numIndices(numTriangles * 3);
-
 	// setup buffers
 	vb.clear();
 	vb.reserve(numVertices);
-
 	ib.clear();
 	ib.reserve(numIndices);
-
 	float sectionSlice(DEG2RAD(360.0f / (float)sections));
-
 	// bottom cap
 	{
 		// center bottom vertex
 		vb.emplace_back(Vec3(0.0f, -0.5f * height, 0.0f), Vec3(0.0f, -1.0f, 0.0f));
-
 		// create circle around it
 		for (uint32 i(0); i <= sections; ++i)
 		{
@@ -100,7 +95,6 @@ static void CreateCylinder(ObjVertexBuffer& vb, ObjIndexBuffer& ib, float radius
 			v.z = radius * sinf(i * sectionSlice);
 			vb.emplace_back(v, Vec3(0.0f, -1.0f, 0.0f));
 		}
-
 		// build faces
 		for (uint16 i(0); i < sections; ++i)
 		{
@@ -109,44 +103,35 @@ static void CreateCylinder(ObjVertexBuffer& vb, ObjIndexBuffer& ib, float radius
 			ib.push_back((vtx_idx)(1 + i + 1));
 		}
 	}
-
 	// side
 	{
 		int vIdx(vb.size());
-
 		for (uint32 i(0); i <= sections; ++i)
 		{
 			Vec3 v;
 			v.x = radius * cosf(i * sectionSlice);
 			v.y = -0.5f * height;
 			v.z = radius * sinf(i * sectionSlice);
-
 			Vec3 n(v.normalized());
 			vb.emplace_back(v, n);
 			vb.emplace_back(Vec3(v.x, -v.y, v.z), n);
 		}
-
 		// build faces
 		for (uint16 i(0); i < sections; ++i, vIdx += 2)
 		{
 			ib.push_back((vtx_idx)(vIdx));
 			ib.push_back((vtx_idx)(vIdx + 1));
 			ib.push_back((vtx_idx)(vIdx + 2));
-
 			ib.push_back((vtx_idx)(vIdx + 1));
 			ib.push_back((vtx_idx)(vIdx + 3));
 			ib.push_back((vtx_idx)(vIdx + 2));
-
 		}
 	}
-
 	// top cap
 	{
 		size_t vIdx(vb.size());
-
 		// center top vertex
 		vb.emplace_back(Vec3(0.0f, 0.5f * height, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
-
 		// create circle around it
 		for (uint32 i(0); i <= sections; ++i)
 		{
@@ -156,7 +141,6 @@ static void CreateCylinder(ObjVertexBuffer& vb, ObjIndexBuffer& ib, float radius
 			v.z = radius * sinf(i * sectionSlice);
 			vb.emplace_back(v, Vec3(0.0f, 1.0f, 0.0f));
 		}
-
 		// build faces
 		for (uint16 i(0); i < sections; ++i)
 		{
@@ -166,7 +150,6 @@ static void CreateCylinder(ObjVertexBuffer& vb, ObjIndexBuffer& ib, float radius
 		}
 	}
 }
-
 SObjectGeometry::~SObjectGeometry()
 {
 	GetDeviceObjectFactory().UnBindBindlessResource(m_vbBindlessIndex, 2);
@@ -236,17 +219,22 @@ void CBindlessRayTracingTestStage::CreateVBAndIB()
 		}
 	);
 
-	
-
 	m_objectGeometry[0] = &m_objectSphere;
 	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-4.0, 0.0, 3.0)) });
 	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-0.0, 0.0, 3.0)) });
+	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3( 4.0, 0.0, 3.0)) });
+	
+	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-4.0, 4.0, 3.0)) });
+	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-0.0, 4.0, 3.0)) });
+	m_objectGeometry[0]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3( 4.0, 4.0, 3.0)) });
 
 	m_objectGeometry[1] = &m_objectCylinder;
-	m_objectGeometry[1]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3( 4.0, 0.0, 3.0)) });
+	m_objectGeometry[1]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-4.0,-4.0, 3.0)) });
+	m_objectGeometry[1]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(-0.0,-4.0, 3.0)) });
+	m_objectGeometry[1]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3( 4.0,-4.0, 3.0)) });
 
-	//m_objectGeometry[2] = &m_objectPlane;
-	//m_objectGeometry[2]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(0.0, 0.0, 0.0)) });
+	m_objectGeometry[2] = &m_objectPlane;
+	m_objectGeometry[2]->m_rayTracingTransforms.push_back(SRayTracingInstanceTransform{ Matrix34::CreateTranslationMat(Vec3(0.0, 0.0, 0.0)) });
 }
 
 void CBindlessRayTracingTestStage::CreateAndBuildBLAS(CDeviceGraphicsCommandInterface* pCommandInterface)
@@ -346,7 +334,7 @@ void CBindlessRayTracingTestStage::CreateUniformBuffer()
 	float fov = 60.0 / 360.0 * (2 * PI);
 	float aspect = 1.0 / 0.618;
 
-	Vec3 eye(0.0, -10.0, 10.0);
+	Vec3 eye(5.0, -15.0, 8.0);
 	Vec3 lookAt(0.0, 0.0, 0.0);
 	Vec3 up(0.0, 0.0, 1.0);
 
@@ -363,6 +351,8 @@ void CBindlessRayTracingTestStage::CreateUniformBuffer()
 
 	mProj.Invert();
 	rayCameraMatrix.m_projInverse = mProj.GetTransposed();
+
+	rayCameraMatrix.m_lightDirection = Vec4(-1.0, -1.0, 1.0, 1.0);
 
 	m_pRayTracingCB = gcpRendD3D->m_DevBufMan.CreateConstantBuffer(sizeof(SRayCameraMatrix));
 	m_pRayTracingCB->UpdateBuffer(&rayCameraMatrix, sizeof(SRayCameraMatrix), 0, 1);
@@ -387,6 +377,7 @@ void CBindlessRayTracingTestStage::Execute(CTexture* rayTracingResultTexture)
 		CClearSurfacePass::Execute(rayTracingResultTexture, ColorF(0, 0, 0, 0));
 		m_bindlessRayTracingRenderPass.SetTechnique(CShaderMan::s_shBindlessRayTracingTest, CCryNameTSCRC("BindlessRayTracingTestTech"), 0);
 		m_bindlessRayTracingRenderPass.SetNeedBindless(true);
+		m_bindlessRayTracingRenderPass.SetMaxPipelineRayRecursionDepth(2);
 		m_bindlessRayTracingRenderPass.SetConstantBuffer(0, m_pRayTracingCB);
 		m_bindlessRayTracingRenderPass.SetBuffer(1, m_pRtTopLevelAS->GetAccelerationStructureBuffer());
 		m_bindlessRayTracingRenderPass.SetBuffer(2, &m_pBindlessIndexBuffer);

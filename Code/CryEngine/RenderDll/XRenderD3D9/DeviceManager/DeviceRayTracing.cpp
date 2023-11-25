@@ -40,7 +40,7 @@ CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(const CDeviceRayTracingPSODes
 	*this = other;
 }
 
-CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(CDeviceResourceLayoutPtr pResourceLayout,::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags)
+CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(CDeviceResourceLayoutPtr pResourceLayout,::CShader* pShader, const CCryNameTSCRC& technique, uint64 rtFlags, uint32 mdFlags,uint32 maxPipelineRayRecursionDepth)
 {
 	memset(this, 0, sizeof(CDeviceRayTracingPSODesc));
 	m_pShader = pShader;
@@ -48,6 +48,7 @@ CDeviceRayTracingPSODesc::CDeviceRayTracingPSODesc(CDeviceResourceLayoutPtr pRes
 	m_ShaderFlags_RT = rtFlags;
 	m_ShaderFlags_MD = mdFlags;
 	m_pResourceLayout = pResourceLayout;
+	m_maxPipelineRayRecursionDepth = maxPipelineRayRecursionDepth;
 }
 
 CDeviceRayTracingPSODesc& CDeviceRayTracingPSODesc::operator=(const CDeviceRayTracingPSODesc& other)

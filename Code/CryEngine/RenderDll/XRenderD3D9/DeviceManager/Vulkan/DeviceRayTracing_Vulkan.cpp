@@ -497,7 +497,7 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 	rayTracingPipelineCreateInfo.pStages = shaderStages.data();
 	rayTracingPipelineCreateInfo.groupCount = shaderGroups.size();
 	rayTracingPipelineCreateInfo.pGroups = shaderGroups.data();
-	rayTracingPipelineCreateInfo.maxPipelineRayRecursionDepth = 1;//todo:fixme
+	rayTracingPipelineCreateInfo.maxPipelineRayRecursionDepth = psoDesc.m_maxPipelineRayRecursionDepth;//todo:fixme
 	rayTracingPipelineCreateInfo.layout = static_cast<CDeviceResourceLayout_Vulkan*>(psoDesc.m_pResourceLayout.get())->GetVkPipelineLayout();
 	//rayTracingPipelineCreateInfo.flags = VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
 	CRY_VERIFY(Extensions::KHR_ray_tracing_pipeline::vkCreateRayTracingPipelinesKHR(GetDevice()->GetVkDevice() , {}, {}, 1, &rayTracingPipelineCreateInfo, nullptr, &m_pipeline) == VK_SUCCESS);
@@ -549,6 +549,7 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 			for (uint32 c = 0; c < nRayGenCount; c++)
 			{
 				memcpy(pData, getHandle(handleIdx), nHandleSize);
+				pData += m_sRayTracingSBT.m_rayGenRegion.stride;
 				handleIdx++;
 			}
 		}
@@ -558,6 +559,7 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 			for (uint32 c = 0; c < nRayMissCount; c++)
 			{
 				memcpy(pData, getHandle(handleIdx), nHandleSize);
+				pData += m_sRayTracingSBT.m_rayMissRegion.stride;
 				handleIdx++;
 			}
 		}
@@ -567,6 +569,7 @@ bool CDeviceRayTracingPSO_Vulkan::Init(const CDeviceRayTracingPSODesc& psoDesc)
 			for (uint32 c = 0; c < nHitGroupCount; c++)
 			{
 				memcpy(pData, getHandle(handleIdx), nHandleSize);
+				pData += m_sRayTracingSBT.m_hitGroupRegion.stride;
 				handleIdx++;
 			}
 		}

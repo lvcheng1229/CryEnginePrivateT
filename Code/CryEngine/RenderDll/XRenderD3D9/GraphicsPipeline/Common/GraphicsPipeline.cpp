@@ -240,7 +240,7 @@ void CGraphicsPipelineResources::CreateHDRMaps(int resourceWidth, int resourceHe
 	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, nHDRFormat, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$BloomTiled1").c_str(), &m_pTexTiledBloom[1], FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
 	//TanGram: TiledBloom:[END]
 
-	m_renderTargetPool.AddRenderTarget(width_r4, height_r4, Clr_Unknown, eTF_R16G16B16A16F, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$RayTracingResult").c_str(), &m_pTexRayTracingResult, FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
+	m_renderTargetPool.AddRenderTarget(1920, 1080, Clr_Unknown, eTF_R16G16B16A16F, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$RayTracingResult").c_str(), &m_pTexRayTracingResult, FT_DONT_RELEASE | FT_USAGE_UNORDERED_ACCESS);
 
 	//TanGram:VSM:[BEGIN]
 	m_renderTargetPool.AddRenderTarget(1024, 1024, Clr_Unknown, eTF_R16G16B16A16F, 0.9f, m_graphicsPipeline.MakeUniqueTexIdentifierName("$VSMBufferVisualize").c_str(), &m_pTexVSMVisualize, FT_DONT_RELEASE);

@@ -5,6 +5,7 @@ CRayTracingRenderPass::CRayTracingRenderPass(CGraphicsPipeline* pGraphicsPipelin
 	, m_bCompiled(false)
 	, m_resourceDesc()
 	, m_needBindless(false)
+	, m_maxPipelineRayRecursionDepth(1)
 {
 	m_pResourceSet = GetDeviceObjectFactory().CreateResourceSet(CDeviceResourceSet::EFlags_ForceSetAllState);
 }
@@ -78,7 +79,7 @@ CRayTracingRenderPass::EDirtyFlags CRayTracingRenderPass::Compile()
 
 		if (dirtyMask & (eDirty_Technique | eDirty_ResourceLayout))
 		{
-			CDeviceRayTracingPSODesc psoDesc(m_pResourceLayout, m_pShader, m_techniqueName, m_rtMask, 0);
+			CDeviceRayTracingPSODesc psoDesc(m_pResourceLayout, m_pShader, m_techniqueName, m_rtMask, 0, m_maxPipelineRayRecursionDepth);
 			m_pPipelineState = GetDeviceObjectFactory().CreateRayTracingPSO(psoDesc);
 
 			if (!m_pPipelineState || !m_pPipelineState->IsValid())
