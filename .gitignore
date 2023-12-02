@@ -42,10 +42,9 @@ __pycache__/*
 /recode.lic
 
 # These are handled elsewhere.
-/Code/SDKs/*
 
-!/Code/SDKs/spirv-cross/*
-!/Code/SDKs/VulkanSDK/*
+/Code/SDKs/*
+!/Code/SDKs/spirv-cross
 
 #tropical_toon_island
 #TanGram
