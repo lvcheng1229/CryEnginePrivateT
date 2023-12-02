@@ -31,9 +31,6 @@ struct SObjectGeometry
 	buffer_handle_t m_pObjectVB;
 	buffer_handle_t m_pObjectIB;
 
-	SStreamInfo objectVertexStreamInfo;
-	SStreamInfo objectIndexStreamInfo;
-
 	const CDeviceInputStream* m_pObjectVertexInputSet = nullptr;
 	const CDeviceInputStream* m_pObjectIndexInputSet = nullptr;
 
@@ -44,7 +41,6 @@ struct SObjectGeometry
 	CRayTracingBottomLevelAccelerationStructurePtr m_pRtBottomLevelAS;
 
 	~SObjectGeometry();
-	
 };
 
 struct SBindlessIndex

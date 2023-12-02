@@ -44,6 +44,8 @@ __pycache__/*
 # These are handled elsewhere.
 /Code/SDKs/*
 
+!/Code/SDKs/spirv-cross/*
+!/Code/SDKs/VulkanSDK/*
 
 #tropical_toon_island
 #TanGram
