@@ -34,6 +34,9 @@
 #include "Util/Ruler.h"
 #include "Vegetation/VegetationMap.h"
 
+#include "EditorBaker/EditorBaker.h" // TanGram:GIBaker:EditorBaker
+
+
 #include "BackgroundScheduleManager.h"
 #include "BackgroundTaskManager.h"
 #include "BaseLibraryDialog.h"
@@ -151,6 +154,7 @@ CEditorImpl::CEditorImpl(CGameEngine* ge)
 	m_pTerrainManager = new CTerrainManager;
 	m_pVegetationMap = new CVegetationMap;
 	m_pObjectManager = new CObjectManager;
+	m_pEditorBaker = new CEditorBaker;// TanGram: GIBaker:EditorBaker
 	m_pGizmoManager = new CGizmoManager;
 	m_pViewManager = new CViewManager;
 	m_pIconManager = new CIconManager;
@@ -248,6 +252,7 @@ CEditorImpl::~CEditorImpl()
 	SAFE_DELETE(m_pIconManager)
 	SAFE_DELETE(m_pViewManager)
 	SAFE_DELETE(m_pObjectManager)  // relies on prefab manager
+	SAFE_DELETE(m_pEditorBaker)    // TanGram: GIBaker:EditotBaker
 	SAFE_DELETE(m_pPrefabManager); // relies on flowgraphmanager
 	SAFE_DELETE(m_pGizmoManager)
 	SAFE_DELETE(m_pFlowGraphManager);
@@ -693,6 +698,13 @@ IObjectManager* CEditorImpl::GetObjectManager()
 {
 	return m_pObjectManager;
 }
+
+//TanGram:GIBaker:EditorBaker:BEGIN
+IEditorBaker* CEditorImpl::GetEditorBaker()
+{
+	return m_pEditorBaker;
+}
+//TanGram:GIBaker:EditorBaker:END
 
 IGizmoManager* CEditorImpl::GetGizmoManager()
 {

@@ -44,8 +44,18 @@ int CTextureManager::GetTextureCount() const
 
 CTextureManager::TextureHandle CTextureManager::GetTextureFromIndex(int index)
 {
-	CRY_ASSERT(index >= 0 && index < m_textures.size());
-	return m_textures[index].get();
+	//TanGram:GIBaker:BEGIN
+	if (m_textures.size() == 0)
+	{
+		return nullptr;
+	}
+	else
+	//TanGram:GIBaker:END
+	{
+		CRY_ASSERT(index >= 0 && index < m_textures.size());
+		return m_textures[index].get();
+	}
+
 }
 
 CTextureManager::TextureHandle CTextureManager::GetTextureFromSourcePath(const string& sourceFilePath)

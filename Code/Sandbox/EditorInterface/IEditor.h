@@ -56,6 +56,7 @@ struct IMaterial;
 struct IMovieSystem;
 struct INotificationCenter;
 struct IObjectManager;
+struct IEditorBaker;//TanGram:GIBaker:EditorBaker
 struct IPane;
 struct IPythonManager;
 struct IRenderer;
@@ -374,6 +375,8 @@ struct IEditor
 
 	//! Get access to object manager.
 	virtual IObjectManager* GetObjectManager() = 0;
+
+	virtual IEditorBaker* GetEditorBaker() = 0; // TanGram:GIBaker:EditorBaker
 
 	//! Creates a new object.
 	//! bInteractive: when true, will force visibility of the object type, will show and unfreeze the layer if necessary and select the object,

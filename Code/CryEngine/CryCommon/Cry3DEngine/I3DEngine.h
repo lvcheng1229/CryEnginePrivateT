@@ -2918,6 +2918,11 @@ inline void SRenderingPassInfo::InitRenderingFlags(uint32 nRenderingFlags)
 	static ICVar* pGeomCaches = gEnv->pConsole->GetCVar("e_GeomCaches");
 	static ICVar* pMergedMeshes = gEnv->pConsole->GetCVar("e_MergedMeshes");
 
+	//TanGram:GIBaker:BEGIN
+	m_nRenderingFlags &= ~SRenderingPassInfo::SHADOWS;
+	m_nRenderingFlags &= ~SRenderingPassInfo::WATEROCEAN;
+	//TanGram:GIBaker:BEGIN
+
 	if (pShadows->GetIVal() == 0)        m_nRenderingFlags &= ~SRenderingPassInfo::SHADOWS;
 	if (pBrushes->GetIVal() == 0)        m_nRenderingFlags &= ~SRenderingPassInfo::BRUSHES;
 	if (pVegetation->GetIVal() == 0)     m_nRenderingFlags &= ~SRenderingPassInfo::VEGETATION;

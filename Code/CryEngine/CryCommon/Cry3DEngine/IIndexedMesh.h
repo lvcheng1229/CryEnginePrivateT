@@ -861,6 +861,8 @@ public:
 
 		EXTRABONEMAPPING,     //!< Extra stream. Does not have a stream ID in the CGF. Its data is saved at the end of the BONEMAPPING stream.
 
+		LIGHTMAPUV,//TanGram:GIBaker
+
 		LAST_STREAM,
 	};
 
@@ -876,6 +878,7 @@ public:
 	SMeshTangents*           m_pTangents;
 	SMeshQTangents*          m_pQTangents;
 	SMeshTexCoord*           m_pTexCoord;
+	SMeshTexCoord*           m_pLightMapUV; // TanGram:GIBaker:LightMapUV
 	SMeshColor*              m_pColor0;
 	SMeshColor*              m_pColor1;
 
@@ -886,6 +889,7 @@ public:
 	SMeshBoneMapping_uint16* m_pExtraBoneMapping; //!< Bone indices and weights for bones 5 to 8.
 
 	int                      m_nCoorCount;  //!< Number of texture coordinates in m_pTexCoord array.
+	int						 m_nLightMapUVCount; //TanGram:GIBaker:LightMapUV
 	int                      m_streamSize[LAST_STREAM];
 
 	//! Bounding box.
@@ -949,6 +953,7 @@ public:
 		m_pTangents = NULL;
 		m_pQTangents = NULL;
 		m_pTexCoord = NULL;
+		m_pLightMapUV = NULL; // TanGram:GIBaker:LightMapUV
 		m_pColor0 = NULL;
 		m_pColor1 = NULL;
 		m_pVertMats = NULL;
@@ -957,6 +962,7 @@ public:
 		m_pExtraBoneMapping = NULL;
 
 		m_nCoorCount = 0;
+		m_nLightMapUVCount = 0; //TanGram:GIBaker:LightMapUV
 
 		memset(m_streamSize, 0, sizeof(m_streamSize));
 
@@ -994,6 +1000,12 @@ public:
 	{
 		return m_nCoorCount;
 	}
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	int GetLightMapUVCount() const
+	{
+		return m_nLightMapUVCount;
+	}
+	//TanGram:GIBaker:LightMapUV:END
 	int GetTangentCount() const
 	{
 		return m_streamSize[TANGENTS];
@@ -1045,6 +1057,17 @@ public:
 			m_nCoorCount = nNewCount;
 		}
 	}
+
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	void SetLightMapUVCount(int nNewCount)
+	{
+		if (m_nLightMapUVCount != nNewCount || m_nLightMapUVCount == 0)
+		{
+			ReallocStream(LIGHTMAPUV, nNewCount);
+			m_nLightMapUVCount = nNewCount;
+		}
+	}
+	//TanGram:GIBaker:LightMapUV:END
 
 	void SetTexCoordsAndTangentsCount(int nNewCount)
 	{
@@ -1130,6 +1153,12 @@ public:
 			pStream = m_pTexCoord;
 			nElementSize = sizeof(SMeshTexCoord);
 			break;
+		//TanGram:GIBaker:LightMapUV:BEGIN
+		case LIGHTMAPUV:
+			pStream = m_pLightMapUV;
+			nElementSize = sizeof(SMeshTexCoord);
+			break;
+		//TanGram:GIBaker:LightMapUV:END
 		case COLORS_0:
 			pStream = m_pColor0;
 			nElementSize = sizeof(SMeshColor);
@@ -1914,6 +1943,12 @@ private:
 			m_pTexCoord = (SMeshTexCoord*)pStream;
 			m_nCoorCount = nNewCount;
 			break;
+			//TanGram:GIBaker:LightMapUV:BEGIN
+		case LIGHTMAPUV:
+			m_pLightMapUV = (SMeshTexCoord*)pStream;
+			m_nLightMapUVCount = nNewCount;
+			break;
+			//TanGram:GIBaker:LightMapUV:END
 		case COLORS_0:
 			m_pColor0 = (SMeshColor*)pStream;
 			break;
@@ -1963,10 +1998,12 @@ struct IIndexedMesh
 		const SMeshNormal*   m_pNorms;      //!< Pointer to array of normals.
 		const SMeshColor*    m_pColor;      //!< Pointer to array of vertex colors.
 		const SMeshTexCoord* m_pTexCoord;   //!< Pointer to array of texture coordinates.
+		const SMeshTexCoord* m_pLightMapUV;  //TanGram:GIBaker:LightMapUV
 		const vtx_idx*       m_pIndices;    //!< pointer to array of indices.
 		int                  m_nFaceCount;  //!< Number of elements m_pFaces array.
 		int                  m_nVertCount;  //!< Number of elements in m_pVerts, m_pNorms and m_pColor arrays.
 		int                  m_nCoorCount;  //!< Number of elements in m_pTexCoord array.
+		int					 m_nLightMapUVCount; // TanGram:GIBaker:LightMapUV
 		int                  m_nIndexCount; //!< Number of elements in m_pIndices array.
 	};
 

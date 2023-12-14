@@ -34,6 +34,7 @@ class CLevelIndependentFileMan;
 class CMainThreadWorker;
 class CMaterialFXGraphMan;
 class CObjectManager;
+class CEditorBaker;//TanGram:GIBaker:EditorBaker
 class CParticleManager;
 class CPluginManager;
 class CPolledKeyManager;
@@ -155,6 +156,7 @@ public:
 	CBaseObject*                    CloneObject(CBaseObject* obj);
 	bool                            StartObjectCreation(const char* type, const char* file = nullptr) override;
 	IObjectManager*                 GetObjectManager();
+	IEditorBaker*					GetEditorBaker()override; //TanGram:GIBaker:EditorBaker
 	IGizmoManager*                  GetGizmoManager();
 	const CSelectionGroup*          GetSelection() const;
 	const ISelectionGroup*          GetISelectionGroup() const override;
@@ -352,6 +354,7 @@ protected:
 	CEditorPythonManager*                    m_pPythonManager;
 	CPolledKeyManager*                       m_pPolledKeyManager;
 	CObjectManager*                          m_pObjectManager;
+	CEditorBaker*							 m_pEditorBaker;//TanGram:GIBaker:EditorBaker
 	CGizmoManager*                           m_pGizmoManager;
 	CPluginManager*                          m_pPluginManager;
 	CViewManager*                            m_pViewManager;

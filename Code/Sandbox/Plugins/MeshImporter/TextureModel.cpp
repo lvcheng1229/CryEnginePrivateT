@@ -24,7 +24,7 @@ QModelIndex CTextureModel::index(int row, int col, const QModelIndex& parent) co
 {
 	if (!parent.isValid())
 	{
-		CRY_ASSERT(row >= 0 && row < m_pTextureManager->GetTextureCount());
+		//CRY_ASSERT(row >= 0 && row < m_pTextureManager->GetTextureCount());
 		CRY_ASSERT(col >= 0 && col < eColumn_COUNT);
 		return createIndex(row, col, m_pTextureManager->GetTextureFromIndex(row));
 	}

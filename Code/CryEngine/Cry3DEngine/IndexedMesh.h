@@ -32,11 +32,13 @@ public:
 		meshDesc.m_pNorms = m_pNorms;
 		meshDesc.m_pColor = m_pColor0;
 		meshDesc.m_pTexCoord = m_pTexCoord;
+		meshDesc.m_pLightMapUV = m_pLightMapUV; // TanGram:GIBaker:LightMapUV
 		meshDesc.m_pIndices = m_pIndices;
 		meshDesc.m_nFaceCount = GetFaceCount();
 		meshDesc.m_nVertCount = GetVertexCount();
 		meshDesc.m_nCoorCount = GetTexCoordCount();
 		meshDesc.m_nIndexCount = GetIndexCount();
+		meshDesc.m_nLightMapUVCount = GetLightMapUVCount(); // Tangram:GIBaker:LightMapUV
 	}
 
 	virtual CMesh* GetMesh()

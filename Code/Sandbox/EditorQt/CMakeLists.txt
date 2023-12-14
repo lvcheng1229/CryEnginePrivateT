@@ -255,6 +255,14 @@ add_sources("Editor_Uber_HyperFlowGraph.cpp"
 		"UI/UIManager.h"
 )
 
+#TanGram:GIBaker:EditorBaker:BEGIN
+add_sources("Editor_Uber_EditorBaker.cpp"
+	SOURCE_GROUP "EditorBaker"
+		"EditorBaker/EditorBaker.h"
+		"EditorBaker/EditorBaker.cpp"
+)
+#TanGram:GIBaker:EditorBaker:END
+
 add_sources("Editor_Uber_IndirectLighting.cpp"
 	SOURCE_GROUP "Terrain\\\\IndirectLighting"
 		"LightmapCompiler/SimpleTriangleRasterizer.h"

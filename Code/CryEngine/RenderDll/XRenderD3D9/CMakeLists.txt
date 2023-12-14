@@ -583,6 +583,7 @@ add_sources("CryRenderer_uber_1.cpp"
 		"BenchmarkCustom/BenchmarkRendererSensor.cpp"
 )
 
+
 add_sources("CryRenderer_uber_2.cpp"
 	PROJECTS CryRenderGNM CryRenderD3D11 CryRenderD3D12 CryRenderVulkan
 	SOURCE_GROUP "Source Files"
@@ -896,6 +897,15 @@ add_sources("CryRenderer_uber_6.cpp"
 		"GraphicsPipeline/Common/RayTracingRenderPass.cpp"
 		#TanGram:VKRT:END
 )
+
+#TanGram:GIBaker:BEGIN
+add_sources("CryRenderer_uber_7.cpp"
+	PROJECTS CryRenderGNM CryRenderD3D11 CryRenderD3D12 CryRenderVulkan
+	SOURCE_GROUP "GIBaker"
+		"GIBaker/GIBaker.h"
+		"GIBaker/GIBaker.cpp"
+)
+#TanGram:GIBaker:END
 
 add_sources("NoUberFile"
 	PROJECTS CryRenderGNM CryRenderD3D11 CryRenderD3D12 CryRenderVulkan

@@ -45,6 +45,8 @@
 #include <RenderViewport.h>
 #include <UIEnumsDatabase.h>
 
+#include <EditorBaker/EditorBaker.h> // TanGram:GIBaker:EditorBaker
+
 #include <Cry3DEngine/I3DEngine.h>
 #include <Cry3DEngine/ITimeOfDay.h>
 #include <CryAISystem/IAgent.h>
@@ -1039,6 +1041,11 @@ void CGameEngine::SetGameMode(bool bInGame)
 	if (QAction *pAction = GetIEditorImpl()->GetICommandManager()->GetAction("game.toggle_game_mode"))
 		pAction->setChecked(bInGame);
 
+	//TanGram:GIBaker:EditorBaker:BEGIN
+	if (QAction* pAction = GetIEditorImpl()->GetICommandManager()->GetAction("game.begin_editor_bake"))
+		pAction->setChecked(bInGame);
+	//TanGram:GIBaker:EditorBaker:END
+
 	GetIEditorImpl()->GetObjectManager()->SendEvent(EVENT_PHYSICS_APPLYSTATE);
 
 	// Enables engine to know about that.
@@ -1867,6 +1874,13 @@ void ToggleGameMode()
 	}
 }
 
+//TanGram:GIBaker:EditorBaker:BEGIN
+void BeginEditorBake()
+{
+	GetIEditorImpl()->GetEditorBaker()->Bake(GetIEditorImpl()->GetObjectManager());
+}
+//TanGram:GIBaker:EditorBaker:END
+
 void ToggleSuspendGameInput()
 {
 	if (GetIEditorImpl()->GetGameEngine() && GetIEditorImpl()->IsInGameMode())
@@ -1915,6 +1929,13 @@ REGISTER_EDITOR_AND_SCRIPT_COMMAND(Private_EditorCommands::ToggleGameMode, game,
                                    CCommandDescription("Toggles game mode"))
 REGISTER_EDITOR_UI_COMMAND_DESC(game, toggle_game_mode, "Game Mode", "F5; Ctrl+G", "icons:Game/Game_Play.ico", true)
 REGISTER_COMMAND_REMAPPING(ui_action, actionSwitch_to_Game, game, toggle_game_mode)
+
+//TanGram:GIBaker:EditorBaker:BEGIN
+REGISTER_EDITOR_AND_SCRIPT_COMMAND(Private_EditorCommands::BeginEditorBake, game, begin_editor_bake,
+	CCommandDescription("Begin editor bake"))
+REGISTER_EDITOR_UI_COMMAND_DESC(game, begin_editor_bake, "Editor Bake", "Ctrl+B", "icons:General/General_Placeholder.ico", true)
+REGISTER_COMMAND_REMAPPING(ui_action, actionEditor_Bake, game, begin_editor_bake)
+//TanGram:GIBaker:EditorBaker:END
 
 REGISTER_EDITOR_AND_SCRIPT_COMMAND(Private_EditorCommands::ToggleSuspendGameInput, game, toggle_suspend_input,
                                    CCommandDescription("Suspend game input and allow editor to tweak properties"))

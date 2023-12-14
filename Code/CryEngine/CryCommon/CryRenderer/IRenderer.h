@@ -43,6 +43,7 @@ struct ILog;
 struct IOpticsManager;
 struct IPhysicalEntity;
 struct IRenderAuxGeom;
+struct IGIBaker; // TanGram:GIBaker:Renderer
 struct IRenderMesh;
 struct IScaleformPlayback;
 struct IStatObj;
@@ -1468,6 +1469,8 @@ struct IRenderer//: public IRendererCallbackServer
 
 	//! Interface for renderer side SVO.
 	virtual ISvoRenderer*         GetISvoRenderer() { return 0; }
+
+	virtual IGIBaker*			  GetIGIBaker() = 0; // TanGram:GIBaker
 
 	virtual CVrProjectionManager* GetVrProjectionManager() = 0;
 	virtual IStereoRenderer*      GetIStereoRenderer() const = 0;

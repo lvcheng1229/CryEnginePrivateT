@@ -590,6 +590,8 @@ public:
 	virtual ISvoRenderer* GetISvoRenderer() override;
 #endif
 
+	virtual IGIBaker*	 GetIGIBaker()override; // TanGram:GIBaker
+
 	IRenderAuxGeom*      GetIRenderAuxGeom() override;
 	IRenderAuxGeom*      GetOrCreateIRenderAuxGeom(const CCamera* pCustomCamera = nullptr) override;
 	void                 UpdateAuxDefaultCamera(const CCamera& systemCamera) override;

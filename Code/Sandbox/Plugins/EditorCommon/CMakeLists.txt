@@ -342,6 +342,7 @@ add_sources("Uber_EditorFramework.cpp"
 		"HitContext.h"
 		"ObjectEvent.h"
 		"IObjectManager.h"
+		"IEditorBaker.h"#TanGram:GIBaker:EditorBaker
 		"Objects/BaseObject.cpp"
 		"Objects/BaseObject.h"
 		"Objects/ClassDesc.cpp"

@@ -387,7 +387,7 @@ void CVars::Init()
 	              "Debug");
 	DefineConstFloatCVar(e_WindBendingDistRatio, VF_CHEAT,
 	                     "Wind cutoff distance for bending (linearly attentuated to that distance)");
-	REGISTER_CVAR(e_Shadows, 1, VF_NULL,
+	REGISTER_CVAR(e_Shadows, 0, VF_NULL,
 	              "Controls rendering of shadows\n"
 	              "  0=off,\n"
 	              "  1=on,\n"

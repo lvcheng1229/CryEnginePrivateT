@@ -6,6 +6,8 @@
 #include <CrySystem/ITimer.h>
 #include <unordered_map>
 
+#include "LightMapHelper/LightMapHelper.h"//TanGram:GIBaker
+
 // The terminology in the FBX documentation is different from the one used in games. The main concepts
 // are related as follows (FBX on left hand side):
 // Control point = vertex position
@@ -56,6 +58,7 @@ struct SVertex
 	Vec3          position;
 	Vec3          normal;
 	SMeshTexCoord texCoords;
+	SMeshTexCoord lightMapUV;//TanGram:GIBaker
 };
 
 // Relative epsilon comparison.
@@ -675,16 +678,19 @@ void CreateMesh(const SVertex* vertices, int nIndices, CMesh& outputMesh, SCreat
 		const int nVertices = uniqueVertices.size();
 		outputMesh.SetVertexCount(nVertices);
 		outputMesh.SetTexCoordsCount(nVertices);
+		outputMesh.SetLightMapUVCount(nVertices);//TanGram:GIBaker:LightMapUV
 
 		Vec3* const pOutputPositions = outputMesh.GetStreamPtr<Vec3>(CMesh::POSITIONS);
 		Vec3* const pOutputNormals = outputMesh.GetStreamPtr<Vec3>(CMesh::NORMALS);
 		SMeshTexCoord* const pOutputTexCoords = outputMesh.GetStreamPtr<SMeshTexCoord>(CMesh::TEXCOORDS);
+		SMeshTexCoord* const pOutputLightMapUV = outputMesh.GetStreamPtr<SMeshTexCoord>(CMesh::LIGHTMAPUV);//TanGram:GIBaker:LightMapUV
 
 		for (int i = 0; i < nVertices; ++i)
 		{
 			pOutputPositions[i] = uniqueVertices[i].position;
 			pOutputNormals[i] = uniqueVertices[i].normal;
 			pOutputTexCoords[i] = uniqueVertices[i].texCoords;
+			pOutputLightMapUV[i] = uniqueVertices[i].lightMapUV;//TanGram:GIBaker:LightMapUV
 		}
 	}
 
@@ -721,6 +727,12 @@ const char* CreateEngineMesh(
 	startTime = pTimer->GetAsyncCurTime();
 	CreateDirectMesh(inputMesh, vertices);
 	endTime = pTimer->GetAsyncCurTime();
+
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	SLightMapResult lightMapResult;
+	GenerateLightMapUV(vertices.data(), vertices.size(), &lightMapResult);
+	//TanGram:GIBaker:LightMapUV:END
+
 	if (pStats)
 	{
 		pStats->elapsedCreateDirectMesh += endTime - startTime;

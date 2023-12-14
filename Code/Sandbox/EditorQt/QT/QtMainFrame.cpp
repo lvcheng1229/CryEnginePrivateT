@@ -533,6 +533,7 @@ public:
 		menuSwitch_Camera->AddCommand("viewport.make_selected_camera_current");
 		menuSwitch_Camera->AddCommand("viewport.cycle_current_camera");
 		menuGame->AddCommand("game.toggle_game_mode");
+		menuGame->AddCommand("game.begin_editor_bake");//TanGram:GIBaker:EditorBaker
 		menuGame->AddCommand("game.toggle_suspend_input");
 		menuGame->AddCommand("game.toggle_simulate_physics_ai");
 		menuGame->addSeparator();
