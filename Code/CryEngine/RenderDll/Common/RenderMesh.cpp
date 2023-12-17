@@ -1155,6 +1155,7 @@ size_t CRenderMesh::SetMesh_Int(CMesh &mesh, int nSecColorsSetOffset, uint32 fla
   SPipQTangents *pQTBuff = NULL;
   SVF_P3F *pVelocities = NULL;
   SPipNormal *pNBuff = NULL;
+  Vec2f16* pLightMapUV = NULL;//TanGram:GIBaker:LightMapUV
   uint32 nVerts = mesh.GetVertexCount();
   uint32 nInds = mesh.GetIndexCount();
   vtx_idx *pInds = NULL;
@@ -1313,6 +1314,12 @@ size_t CRenderMesh::SetMesh_Int(CMesh &mesh, int nSecColorsSetOffset, uint32 fla
 		pNBuff = (SPipNormal *)LockVB(VSF_NORMALS, FSL_VIDEO_CREATE);
 # endif
 
+	//TanGram:GIBaker:LightMapUV:BEGIN
+#if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+	pLightMapUV = (Vec2f16*)LockVB(VSF_LIGHTMAPUV, FSL_VIDEO_CREATE);
+#endif
+	//TanGram:GIBaker:LightMapUV:END
+
   if (!(flags & FSM_NO_TANGENTS))
 	{
 		if (mesh.m_pQTangents)
@@ -1361,7 +1368,8 @@ size_t CRenderMesh::SetMesh_Int(CMesh &mesh, int nSecColorsSetOffset, uint32 fla
 			pInds,
 			pPosOffset,
 			flags,
-			pNBuff
+			pNBuff,
+			pLightMapUV,//TanGram:GIBaker:LightMapUV
 		};
 		SetMesh_IntImpl( setMeshIntData );
 	}
@@ -1372,6 +1380,11 @@ size_t CRenderMesh::SetMesh_Int(CMesh &mesh, int nSecColorsSetOffset, uint32 fla
 	if (m_nFlags & FRM_ENABLE_NORMALSTREAM)
 		UnlockVB(VSF_NORMALS);
 # endif
+
+#if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+	UnlockVB(VSF_LIGHTMAPUV); //TanGram:GIBaker:LightMapUV
+# endif
+
 	UnlockIB();
 
 	if (!(flags & FSM_NO_TANGENTS))
@@ -1770,6 +1783,8 @@ IIndexedMesh *CRenderMesh::GetIndexedMesh(IIndexedMesh *pIdxMesh)
 
   pIdxMesh->SetVertexCount(m_nVerts);
   pIdxMesh->SetTexCoordCount(m_nVerts);
+  pIdxMesh->SetLightMapUVCount(m_nVerts);//TanGram:GIBaker:LightMapUV
+  pIdxMesh->SetSubSetCount(m_nVerts);
   pIdxMesh->SetTangentCount(m_nVerts);
   pIdxMesh->SetIndexCount(m_nInds);
   pIdxMesh->SetSubSetCount(m_Chunks.size());
@@ -1777,10 +1792,12 @@ IIndexedMesh *CRenderMesh::GetIndexedMesh(IIndexedMesh *pIdxMesh)
   strided_pointer<Vec3> pVtx;
   strided_pointer<SPipTangents> pTangs;
   strided_pointer<Vec2> pTex;
+  strided_pointer<Vec2f16> pLightMapYV;
   pVtx.data = (Vec3*)GetPosPtr(pVtx.iStride, FSL_READ);
   //pNorm.data = (Vec3*)GetNormalPtr(pNorm.iStride);
   pTex.data = (Vec2*)GetUVPtr(pTex.iStride, FSL_READ);
   pTangs.data = (SPipTangents*)GetTangentPtr(pTangs.iStride, FSL_READ);
+  pLightMapYV.data = (Vec2f16*)GetLightMapUVPtr(pLightMapYV.iStride, FSL_READ);//TanGram:GIBaker:LightMapUV
 
 	// don't copy if some src, or dest buffer is NULL (can happen because of failed allocations)
 	if(		pVtx.data == NULL			|| (pMesh->m_pPositions == NULL && pMesh->m_pPositionsF16 == NULL) ||
@@ -1802,13 +1819,23 @@ IIndexedMesh *CRenderMesh::GetIndexedMesh(IIndexedMesh *pIdxMesh)
     pMesh->m_pNorms    [i] = SMeshNormal(n);
   }
 
+  //TanGram:GIBaker:LightMapUV:BEGIN
+  if (pLightMapYV.data != NULL)
+  {
+	  for (int indexLightMapUV = 0; indexLightMapUV < (int)m_nVerts; indexLightMapUV++)
+	  {
+		pMesh->m_pLightMapUV[indexLightMapUV] = SMeshTexCoord(pLightMapYV[indexLightMapUV]);
+	  }
+  }
+  //TanGram:GIBaker:LightMapUV:END
+
   if (m_eVF==EDefaultInputLayouts::P3S_C4B_T2S || m_eVF==EDefaultInputLayouts::P3F_C4B_T2F || m_eVF==EDefaultInputLayouts::P3S_N4B_C4B_T2S)
   {
     strided_pointer<UCol> pColors;
     pColors.data = (UCol*)GetColorPtr(pColors.iStride, FSL_READ);
     pIdxMesh->SetColorCount(m_nVerts);
-		for (i = 0; i < (int)m_nVerts; i++)
-		{
+	for (i = 0; i < (int)m_nVerts; i++)
+	{
       pMesh->m_pColor0[i] = SMeshColor(pColors[i].r, pColors[i].g, pColors[i].b, pColors[i].a);
     }
   }
@@ -2322,6 +2349,25 @@ byte *CRenderMesh::GetNormPtr(int32& nStride, uint32 nFlags, int32 nOffset)
     return &pData[offs];
   return NULL;
 }
+
+byte* CRenderMesh::GetLightMapUVPtr(int32& nStride, uint32 nFlags, int32 nOffset)
+{
+	int nStr = 0;
+	byte* pData = 0;
+# if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+	pData = (byte*)LockVB(VSF_LIGHTMAPUV, nFlags, nOffset, 0, &nStr);
+	if (pData)
+	{
+		nStride = sizeof(Vec2f16);
+		int8 offs = CDeviceObjectFactory::GetInputLayoutDescriptor(EDefaultInputLayouts::T2S)->m_Offsets[SInputLayout::eOffset_LightMapUV];
+		if (offs >= 0)
+			return &pData[offs];
+		return NULL;
+	}
+# endif
+	return NULL;
+}
+
 byte *CRenderMesh::GetUVPtrNoCache(int32& nStride, uint32 nFlags, int32 nOffset)
 {
 	PROFILE_FRAME(Mesh_GetUVPtrNoCache);
@@ -4685,6 +4731,9 @@ bool CRenderMesh::SyncAsyncUpdate(int threadID, bool block)
 #   if ENABLE_NORMALSTREAM_SUPPORT
 		UnlockStream(VSF_NORMALS);
 #   endif
+#if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+		UnlockStream(VSF_LIGHTMAPUV); //TanGram:GIBaker:LightMapUV
+#endif
 		UnlockIndexStream();
 		m_asyncUpdateStateCounter[threadID] = 0;
 		UnLockForThreadAccess();

@@ -2044,6 +2044,11 @@ struct IIndexedMesh
 	//! Reallocates texture coordinates. Calling this function invalidates SMeshDescription pointers.
 	virtual void SetTexCoordCount(int nNewCount) = 0;
 
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	virtual int GetLightMapUVCount() const = 0;
+	virtual void SetLightMapUVCount(int nNewCount) = 0;
+	//TanGram:GIBaker:LightMapUV:END
+
 	//! Return number of allocated tangents.
 	virtual int GetTangentCount() const = 0;
 

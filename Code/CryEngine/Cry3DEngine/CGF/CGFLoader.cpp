@@ -849,17 +849,19 @@ static bool CompactBoneVertices(
 	return true;
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////
 bool CLoaderCGF::ReadBoneMesh(IChunkFile::ChunkDesc* pChunkDesc)
 {
 	if (pChunkDesc->chunkVersion != MESH_CHUNK_DESC_0745::VERSION &&
-	    pChunkDesc->chunkVersion != MESH_CHUNK_DESC_0745::COMPATIBLE_OLD_VERSION)
+		pChunkDesc->chunkVersion != MESH_CHUNK_DESC_0745::COMPATIBLE_OLD_VERSION)
 	{
 		m_LastError.Format(
-		  "Unknown version (0x%x) of BoneMesh chunk. The only supported versions are 0x%x and 0x%x.",
-		  (uint)pChunkDesc->chunkVersion,
-		  (uint)MESH_CHUNK_DESC_0745::VERSION,
-		  (uint)MESH_CHUNK_DESC_0745::COMPATIBLE_OLD_VERSION);
+			"Unknown version (0x%x) of BoneMesh chunk. The only supported versions are 0x%x and 0x%x.",
+			(uint)pChunkDesc->chunkVersion,
+			(uint)MESH_CHUNK_DESC_0745::VERSION,
+			(uint)MESH_CHUNK_DESC_0745::COMPATIBLE_OLD_VERSION);
 		return false;
 	}
 
@@ -2311,17 +2313,19 @@ inline const char* stristr2(const char* szString, const char* szSubstring)
 	return NULL;
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////
 bool CLoaderCGF::LoadNodeChunk(IChunkFile::ChunkDesc* pChunkDesc, bool bJustGeometry)
 {
 	if (pChunkDesc->chunkVersion != NODE_CHUNK_DESC_0824::VERSION &&
-	    pChunkDesc->chunkVersion != NODE_CHUNK_DESC_0824::COMPATIBLE_OLD_VERSION)
+		pChunkDesc->chunkVersion != NODE_CHUNK_DESC_0824::COMPATIBLE_OLD_VERSION)
 	{
 		m_LastError.Format(
-		  "Unknown version (0x%x) of Node chunk. The only supported versions are 0x%x and 0x%x.",
-		  (uint)pChunkDesc->chunkVersion,
-		  (uint)NODE_CHUNK_DESC_0824::VERSION,
-		  (uint)NODE_CHUNK_DESC_0824::COMPATIBLE_OLD_VERSION);
+			"Unknown version (0x%x) of Node chunk. The only supported versions are 0x%x and 0x%x.",
+			(uint)pChunkDesc->chunkVersion,
+			(uint)NODE_CHUNK_DESC_0824::VERSION,
+			(uint)NODE_CHUNK_DESC_0824::COMPATIBLE_OLD_VERSION);
 		return false;
 	}
 
@@ -2504,6 +2508,21 @@ void CLoaderCGF::SetupMeshSubsets(CMesh& mesh, CMaterialCGF* pMaterialCGF)
 	}
 }
 
+
+//TanGram:GIBaker:LightMapUV:BEGIN
+static bool ChunkVersionValid(int inputChunkVersion)
+{
+	if (inputChunkVersion == MESH_CHUNK_DESC_0801::VERSION_ORIGINAL ||
+		inputChunkVersion == MESH_CHUNK_DESC_0801::COMPATIBLE_OLD_VERSION ||
+		inputChunkVersion == MESH_CHUNK_DESC_0801::VERSION_LIGHTMAP_UV
+		)
+	{
+		return true;
+	}
+	return false;
+}
+//TanGram:GIBaker:LightMapUV:END
+// 
 //////////////////////////////////////////////////////////////////////////
 bool CLoaderCGF::LoadGeomChunk(CNodeCGF* pNode, IChunkFile::ChunkDesc* pChunkDesc)
 {
@@ -2524,16 +2543,14 @@ bool CLoaderCGF::LoadGeomChunk(CNodeCGF* pNode, IChunkFile::ChunkDesc* pChunkDes
 
 	assert(pChunkDesc && pChunkDesc->chunkType == ChunkType_Mesh);
 
-	if (pChunkDesc->chunkVersion == MESH_CHUNK_DESC_0801::VERSION ||
-	    pChunkDesc->chunkVersion == MESH_CHUNK_DESC_0801::COMPATIBLE_OLD_VERSION)
+	if (ChunkVersionValid(pChunkDesc->chunkVersion))
 	{
 		m_pCGF->GetExportInfo()->bCompiledCGF = true;
 		return LoadCompiledMeshChunk(pNode, pChunkDesc);
 	}
 
 	// Uncompiled format
-	if (pChunkDesc->chunkVersion == MESH_CHUNK_DESC_0745::VERSION ||
-	    pChunkDesc->chunkVersion == MESH_CHUNK_DESC_0745::COMPATIBLE_OLD_VERSION)
+	if (ChunkVersionValid(pChunkDesc->chunkVersion))
 	{
 #if !defined(RESOURCE_COMPILER)
 		m_LastError.Format("%s: non-compiled geometry chunk in %s", __FUNCTION__, m_filename);
@@ -3328,14 +3345,53 @@ bool CLoaderCGF::LoadCompiledMeshChunk(CNodeCGF* pNode, IChunkFile::ChunkDesc* p
 		return false;
 	}
 
-	if (pChunkDesc->chunkVersion != MESH_CHUNK_DESC_0801::VERSION &&
-	    pChunkDesc->chunkVersion != MESH_CHUNK_DESC_0801::COMPATIBLE_OLD_VERSION)
+	if (!ChunkVersionValid(pChunkDesc->chunkVersion))
 	{
 		m_LastError.Format("Unknown version of compiled mesh chunk");
 		return false;
 	}
 
-	MESH_CHUNK_DESC_0801& chunk = *(MESH_CHUNK_DESC_0801*)pChunkDesc->data;
+	//TanGram:LightMapUV:BEGIN
+	MESH_CHUNK_DESC_0801 chunk;
+
+	if (pChunkDesc->chunkVersion >= MESH_CHUNK_DESC_0801::VERSION_LIGHTMAP_UV)
+	{
+		chunk = *(MESH_CHUNK_DESC_0801*)pChunkDesc->data;
+	}
+	else
+	{
+		struct MESH_CHUNK_DESC_TANGRAM_VERSION_ORIGINAL
+		{
+			int nFlags; 
+			int nFlags2;
+			int nVerts; 
+			int nIndices;
+			int nSubsets;
+			int nSubsetsChunkId;
+			int nVertAnimID;
+
+			int nStreamChunkID[16];
+			int nPhysicsDataChunkId[4];
+			Vec3  bboxMin;
+			Vec3  bboxMax;
+			float texMappingDensity;
+			float geometricMeanFaceArea;
+			int   reserved[31];
+			AUTO_STRUCT_INFO;
+		};
+
+		//static_assert(sizeof(MESH_CHUNK_DESC_TANGRAM_VERSION_ORIGINAL) + sizeof(int) == sizeof(MESH_CHUNK_DESC_0801));
+
+		MESH_CHUNK_DESC_TANGRAM_VERSION_ORIGINAL chunkOriginal = *(MESH_CHUNK_DESC_TANGRAM_VERSION_ORIGINAL*)pChunkDesc->data;
+		uint32 offset = offsetof(MESH_CHUNK_DESC_TANGRAM_VERSION_ORIGINAL, nStreamChunkID);
+		memcpy(&chunk, &chunkOriginal, offset);
+		memcpy(((uint8*)&chunk) + offset, ((uint8*)&chunkOriginal) + offset, sizeof(int) * 16);
+		offset = offset + sizeof(int) * 16;
+		memcpy(((uint8*)&chunk) + offset + uint32(sizeof(int)), ((uint8*)&chunkOriginal) + offset, uint32(sizeof(MESH_CHUNK_DESC_TANGRAM_VERSION_ORIGINAL)) - offset);
+		chunk.nStreamChunkID[16] = -1;
+	}
+	//TanGram:LightMapUV:END
+	
 
 	if (pChunkDesc->bSwapEndian)
 	{
@@ -3447,6 +3503,11 @@ bool CLoaderCGF::LoadCompiledMeshChunk(CNodeCGF* pNode, IChunkFile::ChunkDesc* p
 
 	// Read Texture coordinates stream.
 	ok = ok && LoadStreamChunk<SMeshTexCoord>(mesh, chunk, CGF_STREAM_TEXCOORDS, CMesh::TEXCOORDS);
+
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	// Read light map uv
+	ok = ok && LoadStreamChunk<SMeshTexCoord>(mesh, chunk, CGF_STREAM_LIGHTMAP_UV, CMesh::LIGHTMAPUV);
+	//TanGram:GIBaker:LightMapUV:END
 
 	// Read indices stream.
 	ok = ok && LoadIndexStreamChunk(mesh, chunk);

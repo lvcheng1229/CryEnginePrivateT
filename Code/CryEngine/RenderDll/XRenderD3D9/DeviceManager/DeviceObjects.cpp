@@ -278,6 +278,13 @@ static const D3D11_INPUT_ELEMENT_DESC VertexDecl_V4Fi[] =
 	{ "TEXCOORD"    , 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 3, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 };
 
+//TanGram:GIBaker:LightMapUV:BEGIN
+static const D3D11_INPUT_ELEMENT_DESC VertexDecl_2U[] =
+{
+	{ "LIGHTMAPUV"    , 0, DXGI_FORMAT_R16G16_FLOAT, VSF_LIGHTMAPUV, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+};
+//TanGram:GIBaker:LightMapUV:BEGIN
+
 static const struct
 {
 	size_t numDescs;
@@ -311,8 +318,8 @@ VertexDecls[EDefaultInputLayouts::PreAllocated] =
 	{ CRY_ARRAY_COUNT(VertexDecl_W4B_I4S         ), VertexDecl_W4B_I4S          },
 	{ CRY_ARRAY_COUNT(VertexDecl_V3F             ), VertexDecl_V3F              },
 	{ CRY_ARRAY_COUNT(VertexDecl_W2F             ), VertexDecl_W2F              },
-
-	{ CRY_ARRAY_COUNT(VertexDecl_V4Fi            ), VertexDecl_V4Fi             }
+	{ CRY_ARRAY_COUNT(VertexDecl_V4Fi            ), VertexDecl_V4Fi             },
+	{ CRY_ARRAY_COUNT(VertexDecl_2U				 ),	VertexDecl_2U               },//TanGram:GIBaker:LightMapUV
 };
 
 void CDeviceObjectFactory::AllocatePredefinedInputLayouts()
@@ -433,6 +440,7 @@ SInputLayout CDeviceObjectFactory::CreateInputLayoutForPermutation(const SShader
 		case VSF_HWSKIN_INFO: AttachmentFormat = EDefaultInputLayouts::W4B_I4S; break;
 		case VSF_VERTEX_VELOCITY: AttachmentFormat = EDefaultInputLayouts::V3F; break;
 		case VSF_NORMALS: AttachmentFormat = EDefaultInputLayouts::N3F; break;
+		case VSF_LIGHTMAPUV: AttachmentFormat = EDefaultInputLayouts::T2S; break;//TanGram:GIBaker:LightMapUV
 		}
 
 		const auto* addLayout = GetInputLayoutDescriptor(AttachmentFormat);

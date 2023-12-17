@@ -8,6 +8,7 @@
 
 //! Stream Configuration options
 #define ENABLE_NORMALSTREAM_SUPPORT 1
+#define ENABLE_LIGHTMAPUVSTREAM_SUPPORT 1 //TanGram:GIBaker:LightMapUV
 
 //////////////////////////////////////////////////////////////////////
 // All possible primitive types
@@ -80,7 +81,9 @@ struct EDefaultInputLayouts : InputLayoutHandle
 
 		V4Fi                  = 19,    //!< Instanced Vec4 stream
 
-		PreAllocated          = 20,    // from this value and up custom input layouts are assigned
+		T2S					  = 20,	   //TanGram:GIBaker:LightMapUV
+		PreAllocated          = 21,    // from this value and up custom input layouts are assigned
+
 		MaxRenderMesh         = PreAllocated
 	};
 };
@@ -695,6 +698,11 @@ enum EStreamIDs
 #if ENABLE_NORMALSTREAM_SUPPORT
 	VSF_NORMALS,                 //!< Normals, used for skinning.
 #endif
+
+#if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+	VSF_LIGHTMAPUV,				//!< LightMapUV
+#endif
+
 	//   <- Insert new stream IDs here.
 	VSF_NUM,                     //!< Number of vertex streams.
 

@@ -37,6 +37,11 @@ void CEditorBaker::Bake(IObjectManager* pObjectManager)
 		{
 			if (addedObjects.find(objects[i]) == addedObjects.end())
 			{
+				if (!objects[i]->IsKindOf(RUNTIME_CLASS(CBrushObject)))
+				{
+					continue;
+				}
+
 				CBrushObject* pObj = (CBrushObject*)(objects[i]);
 				IStatObj* pStatObj = pObj->GetIStatObj();
 				IIndexedMesh* pIMesh = pStatObj->GetIndexedMesh();

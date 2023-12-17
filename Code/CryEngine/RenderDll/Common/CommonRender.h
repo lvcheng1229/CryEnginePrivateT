@@ -537,7 +537,7 @@ struct SInputLayout
 	std::vector<D3D11_INPUT_ELEMENT_DESC> m_Declaration;			 // Configuration
 	uint16                                m_firstSlot;
 	std::vector<uint16>                   m_Strides;				 // Stride of each input slot, starting from m_firstSlot
-	std::array<int8, 4>                   m_Offsets;				 // The offsets of "POSITION", "COLOR", "TEXCOORD" and "NORMAL"
+	std::array<int8, 5>                   m_Offsets;				 // The offsets of "POSITION", "COLOR", "TEXCOORD" , "NORMAL" and "LIGHTMAPUV" //TanGram:GIBaker:LightMapUV
 
 	enum
 	{
@@ -545,6 +545,7 @@ struct SInputLayout
 		eOffset_Color,
 		eOffset_TexCoord,
 		eOffset_Normal,
+		eOffset_LightMapUV,//TanGram:GIBaker:LightMapUV
 	};
 
 	SInputLayout(std::vector<D3D11_INPUT_ELEMENT_DESC> &&decs) : m_Declaration(std::move(decs))
@@ -565,7 +566,7 @@ struct SInputLayout
 		}
 
 		// Calculate offsets
-		m_Offsets[eOffset_Position] = m_Offsets[eOffset_Color] = m_Offsets[eOffset_TexCoord] = m_Offsets[eOffset_Normal] = -1;
+		m_Offsets[eOffset_Position] = m_Offsets[eOffset_Color] = m_Offsets[eOffset_TexCoord] = m_Offsets[eOffset_Normal] = m_Offsets[eOffset_LightMapUV] = -1;
 		for (int n = 0; n < m_Declaration.size(); ++n)
 		{
 			if (!m_Declaration[n].SemanticName)
@@ -579,6 +580,11 @@ struct SInputLayout
 				m_Offsets[eOffset_TexCoord] = m_Declaration[n].AlignedByteOffset;
 			if ((m_Offsets[eOffset_Normal] == -1) && (!stricmp(m_Declaration[n].SemanticName, "NORMAL") || !stricmp(m_Declaration[n].SemanticName, "TANGENT")))
 				m_Offsets[eOffset_Normal] = m_Declaration[n].AlignedByteOffset;
+
+			//TanGram:GIBaker:LightMapUV:BEGIN
+			if ((m_Offsets[eOffset_LightMapUV] == -1) && (!stricmp(m_Declaration[n].SemanticName, "LIGHTMAPUV")))
+				m_Offsets[eOffset_LightMapUV] = m_Declaration[n].AlignedByteOffset;
+			//TanGram:GIBaker:LightMapUV:END
 		}
 	}
 

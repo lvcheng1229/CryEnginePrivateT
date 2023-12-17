@@ -144,6 +144,14 @@ add_sources("Cry3DEngine_main_2_uber.cpp"
 		"MeshCompiler/MeshCompiler.h"
 		"MeshCompiler/TangentSpaceCalculation.h"
 		"MeshCompiler/TransformHelpers.h"
+	#TanGram:GIBaker:LightMapUV:BEGIN
+	SOURCE_GROUP "UnwarpLightMapUV"
+		"UnwarpLightMapUV/LightMapHelper.cpp"
+		"UnwarpLightMapUV/LightMapHelper.h"
+		"UnwarpLightMapUV/stb_image_write.h"
+		"UnwarpLightMapUV/xatlas.cpp"
+		"UnwarpLightMapUV/xatlas.h"
+	#TanGram:GIBaker:LightMapUV:END
 )
 
 add_sources("Cry3DEngine_main_3_uber.cpp"

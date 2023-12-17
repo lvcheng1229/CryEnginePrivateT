@@ -85,6 +85,8 @@ enum ECgfStreamType
 	CGF_STREAM_SKINDATA,
 	CGF_STREAM_DUMMY2_,  //!< Used to be CGF_STREAM_PS3EDGEDATA, dummy is needed to keep existing assets loadable.
 	CGF_STREAM_P3S_C4B_T2S,
+	CGF_STREAM_LIGHTMAP_UV,//TanGram:GIBaker:LightMapUV
+	CGF_STREAM_NUM
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -576,8 +578,17 @@ struct MESH_CHUNK_DESC_0801
 	//! NODE_CHUNK_DESC(!) chunk format was changed and cannot be read
 	//! by them (old CLoaderCGF::LoadNodeChunk() didn't check
 	//! NODE_CHUNK_DESC's version number).
-	enum { VERSION = 0x0801 };
-	enum { COMPATIBLE_OLD_VERSION = 0x0800 };
+	enum 
+	{ 
+		VERSION_ORIGINAL = 0x0801,
+		VERSION_LIGHTMAP_UV = 0x802,
+		VERSION = VERSION_LIGHTMAP_UV
+	};
+
+	enum 
+	{ 
+		COMPATIBLE_OLD_VERSION = 0x0800
+	};
 
 	enum EFlags
 	{
@@ -600,7 +611,7 @@ struct MESH_CHUNK_DESC_0801
 
 	//! ChunkIDs of data streams (Must be ChunkType_DataStream).
 	//! Index is one of ECgfStreamType values.
-	int nStreamChunkID[16];
+	int nStreamChunkID[CGF_STREAM_NUM];
 
 	//! Chunk IDs of physical mesh data. (Must be ChunkType_MeshPhysicsData).
 	int nPhysicsDataChunkId[4];

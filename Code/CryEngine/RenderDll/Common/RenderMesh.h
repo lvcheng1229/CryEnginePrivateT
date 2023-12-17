@@ -113,6 +113,7 @@ struct SSetMeshIntData
 	const Vec3 *m_pPosOffset;
 	uint32 m_flags;
  	Vec3 *m_pNormalsBuff;
+	Vec2f16* pLightMapUVBuff;//TanGram:GIBaker:LightMapUV
 };
 
 class CRenderMesh : public IRenderMesh
@@ -294,6 +295,7 @@ public:
 				case VSF_HWSKIN_INFO    : eVF = EDefaultInputLayouts::W4B_I4S; break;
 				case VSF_VERTEX_VELOCITY: eVF = EDefaultInputLayouts::V3F; break;
 				case VSF_NORMALS        : eVF = EDefaultInputLayouts::N3F; break;
+				case VSF_LIGHTMAPUV		: eVF = EDefaultInputLayouts::T2S; break; //TanGram:GIBaker:LightMapUV
 				default:
 					CryWarning(EValidatorModule::VALIDATOR_MODULE_RENDERER, EValidatorSeverity::VALIDATOR_WARNING, "Unknown nStream");
 					return 0;
@@ -452,6 +454,7 @@ public:
 	virtual byte* GetPosPtrNoCache(int32& nStride, uint32 nFlags, int32 nOffset = 0) final;
 	virtual byte* GetPosPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) final;
 	virtual byte* GetNormPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) final;
+	virtual byte* GetLightMapUVPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) final; //TanGram:GIbaker:LightMapUV
 	virtual byte* GetColorPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) final;
 	virtual byte* GetUVPtrNoCache(int32& nStride, uint32 nFlags, int32 nOffset = 0) final;
 	virtual byte* GetUVPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) final;

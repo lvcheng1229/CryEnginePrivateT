@@ -191,6 +191,7 @@ struct IRenderMesh
 	virtual uint8*                               GetPosPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) = 0;
 	virtual uint8*                               GetColorPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) = 0;
 	virtual uint8*                               GetNormPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) = 0;
+	virtual uint8*                               GetLightMapUVPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) = 0; //TanGram:GIBaker:LightMapUV
 	virtual uint8*                               GetUVPtrNoCache(int32& nStride, uint32 nFlags, int32 nOffset = 0) = 0;
 	virtual uint8*                               GetUVPtr(int32& nStride, uint32 nFlags, int32 nOffset = 0) = 0;
 

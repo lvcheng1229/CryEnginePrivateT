@@ -1,10 +1,11 @@
 #include "StdAfx.h"
 #include "xatlas.h"
 #include "LightMapHelper.h"
+#include "../MeshCompiler/MeshCompiler.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#include <Cry3DEngine/IIndexedMesh.h>
+#include <vector>
 
 static void RandomColor(uint8_t* color)
 {
@@ -140,40 +141,17 @@ void DebugUnwarp(xatlas::Atlas* atlas)
 	}
 }
 
-struct SInputVertex
+void GenerateLightMapUV(Vec3* positions, uint32_t vertexCount, uint32* indices, uint32 indexCount, Vec3* normals, SMeshTexCoord* outputTexCoords, SLightMapResult* pReturnResult)
 {
-	int           material;
-	int           uberMaterial;
-	Vec3          position;
-	Vec3          normal;
-	SMeshTexCoord texCoords;
-	SMeshTexCoord lightMapUV;//TanGram:GIBaker
-};
-
-void GenerateLightMapUV(void* inputData, int nVertex, SLightMapResult* pReturnResult)
-{
-	SInputVertex* inputVertices = static_cast<SInputVertex*>(inputData);
-
-	std::vector<Vec3>positions;
-	std::vector<Vec3>normals;
-	std::vector<SMeshTexCoord>texCoords;
-	
-	for (int32 index = 0; index < nVertex; index++)
-	{
-		positions.push_back(Vec3(inputVertices[index].position));
-		normals.push_back(Vec3(inputVertices[index].normal));
-		texCoords.push_back(SMeshTexCoord(inputVertices[index].texCoords));
-	}
-
 	xatlas::MeshDecl inputMesh;
-	inputMesh.indexData = nullptr;
-	inputMesh.indexCount = 0;
+	inputMesh.indexData = indices;
+	inputMesh.indexCount = indexCount;
 	inputMesh.indexFormat = xatlas::IndexFormat::UInt32;
 
-	inputMesh.vertexCount = positions.size();
-	inputMesh.vertexPositionData = positions.data();
+	inputMesh.vertexCount = vertexCount;
+	inputMesh.vertexPositionData = positions;
 	inputMesh.vertexPositionStride = sizeof(Vec3);
-	inputMesh.vertexNormalData = normals.data();
+	inputMesh.vertexNormalData = normals;
 	inputMesh.vertexNormalStride = sizeof(Vec3);
 	inputMesh.vertexUvData = nullptr;
 	inputMesh.vertexUvStride = 0;
@@ -187,7 +165,7 @@ void GenerateLightMapUV(void* inputData, int nVertex, SLightMapResult* pReturnRe
 	packOptions.padding = 1;
 	packOptions.maxChartSize = 4094; // 4096 - 2 padding
 	packOptions.blockAlign = true;
-	packOptions.texelsPerUnit = 1.0 / texelSize;
+	packOptions.texelsPerUnit = 1.0f / texelSize;
 
 	xatlas::Atlas* atlas = xatlas::Create();
 	xatlas::AddMeshError err = xatlas::AddMesh(atlas, inputMesh, 1);
@@ -195,8 +173,8 @@ void GenerateLightMapUV(void* inputData, int nVertex, SLightMapResult* pReturnRe
 
 	xatlas::Generate(atlas, chartOptions, packOptions);
 
-	float w = atlas->width;
-	float h = atlas->height;
+	uint32 w = atlas->width;
+	uint32 h = atlas->height;
 
 	pReturnResult->m_width = w;
 	pReturnResult->m_height = h;
@@ -206,14 +184,15 @@ void GenerateLightMapUV(void* inputData, int nVertex, SLightMapResult* pReturnRe
 		return;
 	}
 
-	const xatlas::Mesh& output = atlas->meshes[0];
-	assert(output.vertexCount == nVertex);
+	const xatlas::Mesh& resultMesh = atlas->meshes[0];
 
-	for (int32 index = 0; index < nVertex; index++)
+	for (uint32 index = 0; index < resultMesh.vertexCount; index++)
 	{
-		uint32_t originIndex = output.vertexArray[index].xref;
-		float* uv = output.vertexArray[index].uv;
-		inputVertices[originIndex].lightMapUV = SMeshTexCoord(uv[0] / w, uv[1] / h);
+		uint32_t originIndex = resultMesh.vertexArray[index].xref;
+		assert(originIndex >= 0 && originIndex <= indexCount);
+		uint32 indexVertex = indices[originIndex];
+		float* uv = resultMesh.vertexArray[index].uv;
+		outputTexCoords[indexVertex] = SMeshTexCoord(uv[0] / w, uv[1] / h);
 	}
 
 #if 1

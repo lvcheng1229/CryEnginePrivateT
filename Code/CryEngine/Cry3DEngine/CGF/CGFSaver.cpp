@@ -798,6 +798,15 @@ int CSaverCGF::SaveNodeMesh(
 			SwapEndian(mesh.m_pNorms, vertexCount, bSwapEndian);
 		}
 
+		//TanGram:GIBaker:LightMapUV:BEGIN
+		if (mesh.m_pLightMapUV && !m_bCompactVertexStreams)
+		{
+			SwapEndian(mesh.m_pLightMapUV, vertexCount, bSwapEndian);
+			chunk.nStreamChunkID[CGF_STREAM_LIGHTMAP_UV] = SaveStreamDataChunk(mesh.m_pLightMapUV, CGF_STREAM_LIGHTMAP_UV, vertexCount, sizeof(CryUV), bSwapEndian);
+			SwapEndian(mesh.m_pLightMapUV, vertexCount, bSwapEndian);
+		}
+		//TanGram:GIBaker:LightMapUV:END
+
 		if (mesh.m_pTexCoord && !bInterleaved)
 		{
 			SwapEndian(mesh.m_pTexCoord, mesh.GetTexCoordCount(), bSwapEndian);

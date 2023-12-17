@@ -91,6 +91,18 @@ public:
 		CMesh::ReallocStream(TEXCOORDS, nNewCount);
 	}
 
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	virtual int GetLightMapUVCount() const
+	{
+		return CMesh::GetLightMapUVCount();
+	}
+
+	virtual void SetLightMapUVCount(int nNewCount)override
+	{
+		CMesh::ReallocStream(LIGHTMAPUV, nNewCount);
+	}
+	//TanGram:GIBaker:LightMapUV:END
+
 	virtual int GetTangentCount() const
 	{
 		return CMesh::GetTangentCount();

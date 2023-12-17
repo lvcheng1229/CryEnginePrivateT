@@ -249,6 +249,8 @@ C3DEngine::C3DEngine(ISystem* pSystem)
 	m_volFogGlobalDensityMultiplierLDR = 1.0f;
 	m_volFogFinalDensityClamp = 1.0f;
 
+	m_vSkyBoxExposure = Vec3(1.0f, 1.0f, 1.0f);//TanGram:GIBaker
+
 	m_idMatLeaves = -1;
 
 	/* // structures should not grow too much - commented out as in 64bit they do

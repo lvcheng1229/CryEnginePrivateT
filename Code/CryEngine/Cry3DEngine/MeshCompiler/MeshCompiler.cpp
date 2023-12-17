@@ -20,6 +20,10 @@
 
 #include <cstring>    // memset()
 
+//TanGram:GIBaker:LightMapUV:BEGIN
+#include "../Cry3DEngine/UnwarpLightMapUV/LightMapHelper.h"
+//TanGram:GIBaker:LightMapUV:END
+
 namespace mesh_compiler
 {
 
@@ -860,6 +864,16 @@ bool CMeshCompiler::Compile(CMesh& mesh, int flags)
 	}
 
 	FindVertexRanges(outMesh);
+
+
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	{
+		int nVertexCount = outMesh.GetVertexCount();
+		outMesh.ReallocStream(CMesh::LIGHTMAPUV, nVertexCount);
+		SLightMapResult pLightMapResult;
+		GenerateLightMapUV(outMesh.m_pPositions, nVertexCount, outMesh.m_pIndices, outMesh.GetIndexCount(), (Vec3*)outMesh.m_pNorms, outMesh.m_pLightMapUV, &pLightMapResult);
+	}
+	//TanGram:GIBaker:LightMapUV:END
 
 	// Copy modified mesh back to original one.
 	mesh.CopyFrom(outMesh);

@@ -240,6 +240,31 @@ struct StreamCompactor<VSF_NORMALS, Size>
 };
 #endif
 
+//TanGram:GIBaker:LightMapUV:BEGIN
+#if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+template<size_t Size>
+struct StreamCompactor<VSF_LIGHTMAPUV, Size>
+{
+	static uint32 Compact(uint8(&buffer)[Size], SSetMeshIntData& data, CMesh& mesh, uint32 beg, uint32 end)
+	{
+		if (mesh.m_pLightMapUV == NULL || data.pLightMapUVBuff == NULL)
+			return end;
+
+		Vec2f16* pBuffer = alias_cast<Vec2f16*>(&buffer[0]);
+
+		uint32 amount = min((uint32)(end - beg), (uint32)(Size / sizeof(pBuffer[0])));
+		if (mesh.m_pLightMapUV)
+			for (size_t i = 0; i < amount; ++i)
+				mesh.m_pLightMapUV[beg + i].ExportTo(pBuffer[i]);
+		
+		
+		transfer_writecombined(&data.pLightMapUVBuff[beg], &pBuffer[0], amount * sizeof(pBuffer[0]));
+		return amount;
+	}
+};
+#endif
+//TanGram:GIBaker:LightMapUV:END
+
 template<size_t Size>
 struct StreamCompactor<VSF_VERTEX_VELOCITY, Size>
 {
@@ -292,6 +317,12 @@ void CRenderMesh::SetMesh_IntImpl(SSetMeshIntData data)
 	for (uint32 iter = 0; iter < data.m_nVerts; iter += CompactStream<VSF_NORMALS>(stagingBuffer, data, mesh, iter, data.m_nVerts))
 		;
 #endif
+	//TanGram:GIBaker:LightMapUV:BEGIN
+#if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+	for (uint32 iter = 0; iter < data.m_nVerts; iter += CompactStream<VSF_LIGHTMAPUV>(stagingBuffer, data, mesh, iter, data.m_nVerts))
+		;
+#endif
+	//TanGram:GIBaker:LightMapUV:END
 	for (uint32 iter = 0; iter < data.m_nVerts; iter += CompactStream<VSF_VERTEX_VELOCITY>(stagingBuffer, data, mesh, iter, data.m_nVerts))
 		;
 	for (uint32 iter = 0; iter < data.m_nInds; iter += CompactIndices(stagingBuffer, data, mesh, iter, data.m_nInds))
