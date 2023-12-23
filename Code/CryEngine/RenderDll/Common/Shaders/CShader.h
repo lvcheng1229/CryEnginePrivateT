@@ -338,6 +338,11 @@ public:
 	static CShader*				 s_shRayTracingTest;
 	static CShader*				 s_shBindlessRayTracingTest;
 	//TanGram:VKRT:END
+
+	//TanGram:GIBaker:LightMapGBuffer:BEGIN
+	static CShader*				 s_shLightMapGBuffer;
+	//TanGram:GIBaker:LightMapGBuffer:END
+
 	static CShader*              s_shHDRPostProcess;
 	static CShader*              s_shPostEffectsGame; // game specific post process effects
 	static CShader*              s_shPostEffectsRenderModes;

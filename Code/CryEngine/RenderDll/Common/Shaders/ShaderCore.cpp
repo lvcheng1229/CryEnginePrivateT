@@ -47,6 +47,9 @@ CShader* CShaderMan::s_shBloomSetup;//TanGram: TiledBloom
 CShader* CShaderMan::s_shRayTracingTest;
 CShader* CShaderMan::s_shBindlessRayTracingTest;
 //TanGram:VKRT:END
+//TanGram:GIBaker:LightMapGBuffer:BEGIN
+CShader* CShaderMan::s_shLightMapGBuffer;
+//TanGram:GIBaker:LightMapGBuffer:END
 CShader* CShaderMan::s_shHDRPostProcess;
 CShader* CShaderMan::s_ShaderDebug;
 CShader* CShaderMan::s_ShaderLensOptics;
@@ -1441,6 +1444,9 @@ void CShaderMan::mfReleaseSystemShaders()
 	SAFE_RELEASE_FORCE(s_shRayTracingTest);
 	SAFE_RELEASE_FORCE(s_shBindlessRayTracingTest);
 	//TanGram:VKRT:END
+	//TanGram:GIBaker:LightMapGBuffer:BEGIN
+	SAFE_RELEASE_FORCE(s_shLightMapGBuffer);
+	//TanGram:GIBaker:LightMapGBuffer:END
 	SAFE_RELEASE_FORCE(s_shHDRPostProcess);
 	SAFE_RELEASE_FORCE(s_ShaderDebug);
 	SAFE_RELEASE_FORCE(s_ShaderLensOptics);
@@ -1506,6 +1512,9 @@ void CShaderMan::mfLoadDefaultSystemShaders()
 		sLoadShader("RayTracingTestShader", s_shRayTracingTest);
 		sLoadShader("BindlessRayTracingTestShader", s_shBindlessRayTracingTest);
 		//TanGram:VKRT:BEGIN
+		//TanGram:GIBaker:LightMapGBuffer:BEGIN
+		sLoadShader("GBLightMapGBuffer", s_shLightMapGBuffer);
+		//TanGram:GIBaker:LightMapGBuffer:END
 		sLoadShader("HDRPostProcess", s_shHDRPostProcess);
 		sLoadShader("Hud3D", s_sh3DHUD);
 

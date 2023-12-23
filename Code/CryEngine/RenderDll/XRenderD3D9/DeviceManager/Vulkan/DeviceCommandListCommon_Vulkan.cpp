@@ -486,9 +486,22 @@ void CDeviceGraphicsCommandInterfaceImpl::SetVertexBuffersImpl(uint32 numStreams
 		}
 	}
 
+	//TanGram:GIBaker:LightMapGBuffer:BEGIN
 	// NOTE: assuming slot 0 is always used
-	VK_ASSERT(buffers[0] != VK_NULL_HANDLE, "Invalid vertex buffer stream #0");
-	for (int rangeStart = 0, rangeEnd = 1; rangeStart <= lastStreamSlot; rangeStart = rangeEnd = rangeEnd + 1)
+	//VK_ASSERT(buffers[0] != VK_NULL_HANDLE, "Invalid vertex buffer stream #0");
+	int rangeStart = 0;
+	for (rangeStart = 0; rangeStart <= lastStreamSlot; rangeStart++)
+	{
+		if (buffers[rangeStart] != VK_NULL_HANDLE)
+		{
+			break;
+		}
+	}
+	int rangeEnd = rangeStart + 1;
+	VK_ASSERT(rangeStart <= lastStreamSlot, "Invalid vertex buffer stream");
+	//TanGram:GIBaker:LightMapGBuffer:END
+
+	for (; rangeStart <= lastStreamSlot; rangeStart = rangeEnd = rangeEnd + 1)
 	{
 		while (buffers[rangeEnd] != VK_NULL_HANDLE)
 			++rangeEnd;

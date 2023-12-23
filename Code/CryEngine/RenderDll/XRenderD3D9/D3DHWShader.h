@@ -686,7 +686,7 @@ public:
 	static void mfGatherFXParameters(SHWSInstance* pInst, std::vector<SCGBind>& BindVars, CHWShader_D3D* pSH, int nFlags, CShader* pFXShader);
 
 	static void mfCreateBinds(std::vector<SCGBind>& binds, const void* pConstantTable, std::size_t nSize);
-	static void mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH, bool bCol, byte bNormal, bool bTC0, bool bTC1[2], bool bPSize, bool bTangent[2], bool bBitangent[2], bool bHWSkin, bool bSH[2], bool bMorphTarget, bool bMorph);
+	static void mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH, bool bCol, byte bNormal, bool bTC0, bool bTC1[2], bool bPSize, bool bTangent[2], bool bBitangent[2], bool bHWSkin, bool bSH[2], bool bMorphTarget, bool bMorph, bool bLightMapUV/*TanGram:GIBaker:LightMapUV*/);
 	void        mfUpdateFXVertexFormat(SHWSInstance* pInst, CShader* pSH);
 
 	void        ModifyLTMask(uint32& nMask);

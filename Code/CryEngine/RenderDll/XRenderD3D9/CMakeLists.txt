@@ -670,6 +670,7 @@ add_sources("CryRenderer_uber_3.cpp"
 		"DeviceInfo.h"
 		"DriverD3D.h"
 		"renderdoc_app.h"#TanGram:RenderDoc
+		"NGFX_Injection.h"#TanGram:RenderDoc
 		"NullD3D11Device.h"
 		"PipelineProfiler.h"
 		"resource.h"
@@ -904,6 +905,8 @@ add_sources("CryRenderer_uber_7.cpp"
 	SOURCE_GROUP "GIBaker"
 		"GIBaker/GIBaker.h"
 		"GIBaker/GIBaker.cpp"
+		"GIBaker/LightMapGBufferPass.h"
+		"GIBaker/LightMapGBufferPass.cpp"
 )
 #TanGram:GIBaker:END
 

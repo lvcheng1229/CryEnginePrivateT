@@ -686,7 +686,9 @@ void CPrimitiveRenderPass::Execute()
 
 		if (pPrimitive->m_pVertexInputSet)
 		{
-			pCommandInterface->SetVertexBuffers(1, 0, pPrimitive->m_pVertexInputSet);
+			//TanGram:GIBaker:LightMapGBuffer:BEGIN
+			pCommandInterface->SetVertexBuffers(pPrimitive->m_nStreamingCount, pPrimitive->m_nMaxStreamingSlot, pPrimitive->m_pVertexInputSet);
+			//TanGram:GIBaker:LightMapGBuffer:END
 		}
 
 		if (pPrimitive->m_pIndexInputSet)

@@ -700,7 +700,7 @@ enum EStreamIDs
 #endif
 
 #if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
-	VSF_LIGHTMAPUV,				//!< LightMapUV
+	VSF_LIGHTMAPUV,				//!< TanGram:GIBaker:LightMapUV
 #endif
 
 	//   <- Insert new stream IDs here.
@@ -721,6 +721,10 @@ enum EStreamMasks : uint16
 	VSM_VERTEX_VELOCITY = BIT(VSF_VERTEX_VELOCITY),
 #if ENABLE_NORMALSTREAM_SUPPORT
 	VSM_NORMALS         = BIT(VSF_NORMALS),
+#endif
+
+#if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
+	VSM_LIGHTMAPUV		= BIT(VSF_LIGHTMAPUV),	//!< TanGram:GIBaker:LightMapUV
 #endif
 
 	VSM_MORPHBUDDY      = BIT(VSF_MORPHBUDDY),

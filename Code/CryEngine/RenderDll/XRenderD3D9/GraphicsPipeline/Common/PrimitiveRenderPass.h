@@ -43,6 +43,11 @@ struct SCompiledRenderPrimitive : private NoCopy
 	uint8                      m_stencilRef = 0;
 	EType                      m_type = eType_Base;
 	SDrawInfo                  m_drawInfo;
+
+	//TanGram:GIBaker:LightMapGBuffer:BEGIN
+	uint32					   m_nStreamingCount = 1;
+	uint32					   m_nMaxStreamingSlot = 0;
+	//TanGram:GIBaker:LightMapGBuffer:END
 };
 
 class TMP_RENDER_API CRenderPrimitive : public SCompiledRenderPrimitive

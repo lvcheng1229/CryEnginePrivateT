@@ -113,7 +113,7 @@ struct SSetMeshIntData
 	const Vec3 *m_pPosOffset;
 	uint32 m_flags;
  	Vec3 *m_pNormalsBuff;
-	Vec2f16* pLightMapUVBuff;//TanGram:GIBaker:LightMapUV
+	Vec2* pLightMapUVBuff;//TanGram:GIBaker:LightMapUV
 };
 
 class CRenderMesh : public IRenderMesh

@@ -185,14 +185,15 @@ void GenerateLightMapUV(Vec3* positions, uint32_t vertexCount, uint32* indices, 
 	}
 
 	const xatlas::Mesh& resultMesh = atlas->meshes[0];
-
-	for (uint32 index = 0; index < resultMesh.vertexCount; index++)
+	
+	uint32 genIndexCount = resultMesh.indexCount;
+	for (int i = 0; i < genIndexCount; i ++)
 	{
-		uint32_t originIndex = resultMesh.vertexArray[index].xref;
-		assert(originIndex >= 0 && originIndex <= indexCount);
-		uint32 indexVertex = indices[originIndex];
-		float* uv = resultMesh.vertexArray[index].uv;
-		outputTexCoords[indexVertex] = SMeshTexCoord(uv[0] / w, uv[1] / h);
+		uint32 newIndex = resultMesh.indexArray[i];
+		uint32_t originIndex = resultMesh.vertexArray[newIndex].xref;
+		float* uv = resultMesh.vertexArray[newIndex].uv;
+		outputTexCoords[originIndex] = SMeshTexCoord(uv[0] / w, uv[1] / h);
+		assert(originIndex >= 0 && originIndex <= vertexCount);
 	}
 
 #if 1

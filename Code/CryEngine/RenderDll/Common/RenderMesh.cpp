@@ -1155,7 +1155,7 @@ size_t CRenderMesh::SetMesh_Int(CMesh &mesh, int nSecColorsSetOffset, uint32 fla
   SPipQTangents *pQTBuff = NULL;
   SVF_P3F *pVelocities = NULL;
   SPipNormal *pNBuff = NULL;
-  Vec2f16* pLightMapUV = NULL;//TanGram:GIBaker:LightMapUV
+  Vec2* pLightMapUV = NULL;//TanGram:GIBaker:LightMapUV
   uint32 nVerts = mesh.GetVertexCount();
   uint32 nInds = mesh.GetIndexCount();
   vtx_idx *pInds = NULL;
@@ -1316,7 +1316,7 @@ size_t CRenderMesh::SetMesh_Int(CMesh &mesh, int nSecColorsSetOffset, uint32 fla
 
 	//TanGram:GIBaker:LightMapUV:BEGIN
 #if ENABLE_LIGHTMAPUVSTREAM_SUPPORT
-	pLightMapUV = (Vec2f16*)LockVB(VSF_LIGHTMAPUV, FSL_VIDEO_CREATE);
+	pLightMapUV = (Vec2*)LockVB(VSF_LIGHTMAPUV, FSL_VIDEO_CREATE);
 #endif
 	//TanGram:GIBaker:LightMapUV:END
 
@@ -1792,12 +1792,12 @@ IIndexedMesh *CRenderMesh::GetIndexedMesh(IIndexedMesh *pIdxMesh)
   strided_pointer<Vec3> pVtx;
   strided_pointer<SPipTangents> pTangs;
   strided_pointer<Vec2> pTex;
-  strided_pointer<Vec2f16> pLightMapYV;
+  strided_pointer<Vec2> pLightMapUV;
   pVtx.data = (Vec3*)GetPosPtr(pVtx.iStride, FSL_READ);
   //pNorm.data = (Vec3*)GetNormalPtr(pNorm.iStride);
   pTex.data = (Vec2*)GetUVPtr(pTex.iStride, FSL_READ);
   pTangs.data = (SPipTangents*)GetTangentPtr(pTangs.iStride, FSL_READ);
-  pLightMapYV.data = (Vec2f16*)GetLightMapUVPtr(pLightMapYV.iStride, FSL_READ);//TanGram:GIBaker:LightMapUV
+  pLightMapUV.data = (Vec2*)GetLightMapUVPtr(pLightMapUV.iStride, FSL_READ);//TanGram:GIBaker:LightMapUV
 
 	// don't copy if some src, or dest buffer is NULL (can happen because of failed allocations)
 	if(		pVtx.data == NULL			|| (pMesh->m_pPositions == NULL && pMesh->m_pPositionsF16 == NULL) ||
@@ -1820,11 +1820,11 @@ IIndexedMesh *CRenderMesh::GetIndexedMesh(IIndexedMesh *pIdxMesh)
   }
 
   //TanGram:GIBaker:LightMapUV:BEGIN
-  if (pLightMapYV.data != NULL)
+  if (pLightMapUV.data != NULL)
   {
 	  for (int indexLightMapUV = 0; indexLightMapUV < (int)m_nVerts; indexLightMapUV++)
 	  {
-		pMesh->m_pLightMapUV[indexLightMapUV] = SMeshTexCoord(pLightMapYV[indexLightMapUV]);
+		pMesh->m_pLightMapUV[indexLightMapUV] = SMeshTexCoord(pLightMapUV[indexLightMapUV]);
 	  }
   }
   //TanGram:GIBaker:LightMapUV:END
@@ -2358,7 +2358,7 @@ byte* CRenderMesh::GetLightMapUVPtr(int32& nStride, uint32 nFlags, int32 nOffset
 	pData = (byte*)LockVB(VSF_LIGHTMAPUV, nFlags, nOffset, 0, &nStr);
 	if (pData)
 	{
-		nStride = sizeof(Vec2f16);
+		nStride = sizeof(Vec2);
 		int8 offs = CDeviceObjectFactory::GetInputLayoutDescriptor(EDefaultInputLayouts::T2S)->m_Offsets[SInputLayout::eOffset_LightMapUV];
 		if (offs >= 0)
 			return &pData[offs];

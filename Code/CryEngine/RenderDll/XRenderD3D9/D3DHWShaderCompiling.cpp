@@ -502,7 +502,7 @@ void CHWShader_D3D::mfUpdateFXVertexFormat(SHWSInstance* pInst, CShader* pSH)
 	}
 }
 
-void CHWShader_D3D::mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH, bool bCol, byte bNormal, bool bTC0, bool bTC1[2], bool bPSize, bool bTangent[2], bool bBitangent[2], bool bHWSkin, bool bSH[2], bool bVelocity, bool bMorph)
+void CHWShader_D3D::mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH, bool bCol, byte bNormal, bool bTC0, bool bTC1[2], bool bPSize, bool bTangent[2], bool bBitangent[2], bool bHWSkin, bool bSH[2], bool bVelocity, bool bMorph, bool bLightMapUV/*TanGram:GIBaker:LightMapUV*/)
 {
 	if (bBitangent[0])
 		pInst->m_VStreamMask_Decl |= EStreamMasks(1 << VSF_TANGENTS);
@@ -532,6 +532,14 @@ void CHWShader_D3D::mfPostVertexFormat(SHWSInstance* pInst, CHWShader_D3D* pHWSH
 		pInst->m_VStreamMask_Decl |= VSM_MORPHBUDDY;
 		pInst->m_VStreamMask_Stream |= VSM_MORPHBUDDY;
 	}
+
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	if (bLightMapUV)
+	{
+		pInst->m_VStreamMask_Decl |= VSM_LIGHTMAPUV;
+		pInst->m_VStreamMask_Stream |= VSM_LIGHTMAPUV;
+	}
+	//TanGram:GIBaker:LightMapUV:BEGIN
 
 	InputLayoutHandle eVF = VertFormatForComponents(bCol, bTC0, bPSize, bNormal != 0);
 	pInst->m_nVertexFormat = eVF;
@@ -581,6 +589,7 @@ InputLayoutHandle CHWShader_D3D::mfVertexFormat(SHWSInstance* pInst, CHWShader_D
 	bool bCol = false;
 	bool bSecCol = false;
 	bool bPos = false;
+	bool bLightMapUV = false;//TanGram:GIBaker:LightMapUV
 
 	size_t nSize = pShader->GetBufferSize();
 	void* pData = pShader->GetBufferPointer();
@@ -693,6 +702,12 @@ InputLayoutHandle CHWShader_D3D::mfVertexFormat(SHWSInstance* pInst, CHWShader_D
 			// S_VERTEX_ID and S_INSTANCE_ID are valid names
 		}
 #endif
+		//TanGram:GIBaker:LightMapUV:BEGIN
+		else if (!stricmp(IDesc.SemanticName, "LIGHTMAPUV"))
+		{
+			bLightMapUV = true;
+		}
+		//TanGram:GIBaker:LightMapUV:END
 		else
 		{
 			CRY_ASSERT(0, "Invalid SemanticName %s", IDesc.SemanticName);
@@ -703,7 +718,7 @@ InputLayoutHandle CHWShader_D3D::mfVertexFormat(SHWSInstance* pInst, CHWShader_D
 #endif
 	}
 
-	mfPostVertexFormat(pInst, pSH, bCol, bNormal, bTC0, bTC1, bPSize, bTangent, bBitangent, bHWSkin, bSH, bVelocity, bMorph);
+	mfPostVertexFormat(pInst, pSH, bCol, bNormal, bTC0, bTC1, bPSize, bTangent, bBitangent, bHWSkin, bSH, bVelocity, bMorph, bLightMapUV);
 
 	if (pConstantTable != pShaderReflection)
 	{

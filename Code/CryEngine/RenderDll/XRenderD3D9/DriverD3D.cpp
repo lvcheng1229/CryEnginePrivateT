@@ -97,12 +97,11 @@ RENDERDOC_API_1_6_0* GetRenderDocApi()
 
 	return rdoc;
 }
-//TanGram:RenderDoc:END
+
+
 
 void CD3D9Renderer::InitRenderer()
 {
-	CRenderer::InitRenderer();
-
 	//TanGram:RenderDoc:BEGIN
 	m_pRenderDocAPI = GetRenderDocApi();
 	if (m_pRenderDocAPI)
@@ -112,6 +111,8 @@ void CD3D9Renderer::InitRenderer()
 		m_pRenderDocAPI->SetCaptureFilePathTemplate(RDC_SAVE_PATH);
 	}
 	//TanGram:RenderDoc:END
+
+	CRenderer::InitRenderer();
 
 	m_renderToTexturePipelineKey = SGraphicsPipelineKey::InvalidGraphicsPipelineKey;
 	m_uLastBlendFlagsPassGroup = 0xFFFFFFFF;
@@ -3317,6 +3318,14 @@ void CD3D9Renderer::RT_EndFrame()
 	// Render-thread Aux
 	RenderAux_RT();
 
+	//TanGram:GIBaker:LightMapGBuffer:BEGIN
+	if (m_pBakeFunctionCallBack)
+	{
+		m_pBakeFunctionCallBack();
+		//m_pBakeFunctionCallBack = nullptr;
+	}
+	//TanGram:GIBaker:LightMapGBuffer:END
+	
 	// VR social screen
 	if (!GetS3DRend().IsMenuModeEnabled())
 		GetS3DRend().DisplaySocialScreen();
@@ -5447,6 +5456,28 @@ void CD3D9Renderer::EndRenderDocCapture()
 	}
 #endif
 }
+
+//TanGram:GIBaker:LightMapGBuffer:BEGIN
+void CD3D9Renderer::BeginNSightCapture()
+{
+	typedef NGFX_Injection_Result(*pNGFX_Injection_ExecuteActivityCommand)();
+	static pNGFX_Injection_ExecuteActivityCommand ngfx_Injection_ExecuteActivityCommand = nullptr;
+
+	//launch cryengine from nsight, then capture frame from souce code 
+	//C:\Program Files\NVIDIA Corporation\Nsight Graphics 2023.3.2\SDKs\NsightGraphicsSDK\0.8.0\lib\x64
+	HMODULE nsightModule = GetModuleHandleA("NGFX_Injection.dll");
+	if (ngfx_Injection_ExecuteActivityCommand == nullptr && nsightModule != NULL)
+	{
+		ngfx_Injection_ExecuteActivityCommand = (pNGFX_Injection_ExecuteActivityCommand)GetProcAddress(nsightModule, "NGFX_Injection_ExecuteActivityCommand");
+	}
+
+	if (ngfx_Injection_ExecuteActivityCommand != nullptr)
+	{
+		NGFX_Injection_Result result = ngfx_Injection_ExecuteActivityCommand();
+		assert(result == NGFX_Injection_Result::NGFX_INJECTION_RESULT_OK);
+	}
+}
+//TanGram:GIBaker:LightMapGBuffer:END
 
 #include "GraphicsPipeline/ComputeSkinning.h"
 

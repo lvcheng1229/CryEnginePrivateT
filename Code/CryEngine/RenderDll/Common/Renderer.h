@@ -1440,11 +1440,17 @@ public:
 		m_pRT->ExecuteRenderThreadCommand(std::forward<RenderThreadCallback>(callback), flags);
 	}
 
+
 	// Called every frame from the Render Thread to reclaim deleted resources.
 	void      ScheduleResourceForDelete(CBaseResource* pResource);
 	void      RT_DelayedDeleteResources(bool bAllResources = false);
 
 public:
+
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	std::function<void()> m_pBakeFunctionCallBack;
+	//TanGram:GIBaker:LightMapUV:END
+
 	Matrix44A      m_IdentityMatrix;
 
 	byte           m_bSystemResourcesInit;
@@ -1624,6 +1630,8 @@ public:
 	FILE*                 m_LogFile;
 	FILE*                 m_LogFileStr;
 	FILE*                 m_LogFileSh;
+
+
 
 protected:
 	//================================================================================
