@@ -907,6 +907,11 @@ add_sources("CryRenderer_uber_7.cpp"
 		"GIBaker/GIBaker.cpp"
 		"GIBaker/LightMapGBufferPass.h"
 		"GIBaker/LightMapGBufferPass.cpp"
+		"GIBaker/stb_rect_pack.h"
+		"GIBaker/LightMapRender.cpp"
+		"GIBaker/LightMapRender.h"
+		"GIBaker/GIBakerCommon.h"
+		
 )
 #TanGram:GIBaker:END
 

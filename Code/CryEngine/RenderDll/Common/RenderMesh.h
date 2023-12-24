@@ -544,6 +544,10 @@ public:
 	Vec3                           m_vBoxMin;
 	Vec3                           m_vBoxMax;
 
+	//TanGram:GIBaker:LightMapGBuffer:BEGIN
+	Vec2i						   m_nLightMapSize;
+	//TanGram:GIBaker:LightMapGBuffer:END
+
 	float                          m_fGeometricMeanFaceArea;
 	CGeomExtents                   m_Extents;
 	DynArray<PosNorm>              m_PosNorms;

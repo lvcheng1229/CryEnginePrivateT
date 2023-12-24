@@ -872,6 +872,7 @@ bool CMeshCompiler::Compile(CMesh& mesh, int flags)
 		outMesh.ReallocStream(CMesh::LIGHTMAPUV, nVertexCount);
 		SLightMapResult pLightMapResult;
 		GenerateLightMapUV(outMesh.m_pPositions, nVertexCount, outMesh.m_pIndices, outMesh.GetIndexCount(), (Vec3*)outMesh.m_pNorms, outMesh.m_pLightMapUV, &pLightMapResult);
+		outMesh.m_nLightMapSize = Vec2(static_cast<float>(pLightMapResult.m_width), static_cast<float>(pLightMapResult.m_height));
 	}
 	//TanGram:GIBaker:LightMapUV:END
 

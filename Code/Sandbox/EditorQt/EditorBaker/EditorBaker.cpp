@@ -51,7 +51,16 @@ void CEditorBaker::Bake(IObjectManager* pObjectManager)
 					IIndexedMesh* pIMesh = pStatObj->GetIndexedMesh();
 					if (pIMesh)
 					{
-						pGIBaker->AddMesh(pStatObj, pObj->GetWorldTM(),Vec2i(0,0));
+						Matrix33 rotation;
+						rotation.SetRow(0, pObj->GetRotation().GetRow0());
+						rotation.SetRow(1, pObj->GetRotation().GetRow1());
+						rotation.SetRow(2, pObj->GetRotation().GetRow2());
+						
+						SMeshParam meshParam;
+						meshParam.m_worldTM = Matrix44A(pObj->GetWorldTM());
+						meshParam.m_rotationTM = Matrix44A(rotation);
+
+						pGIBaker->AddMesh(pStatObj, meshParam);
 						addedObjects.insert(objects[i]);
 					}
 				}

@@ -4376,7 +4376,7 @@ CDeviceBuffer* CGpuBuffer::AllocateDeviceBuffer(const void* pInitialData) const
 	{
 		m_eFormat,
 		m_elementCount,
-		static_cast<uint16>(m_elementSize),
+		static_cast<uint32>(m_elementSize),
 		m_eFlags
 	};
 

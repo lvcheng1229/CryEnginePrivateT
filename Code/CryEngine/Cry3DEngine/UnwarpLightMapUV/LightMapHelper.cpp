@@ -163,9 +163,21 @@ void GenerateLightMapUV(Vec3* positions, uint32_t vertexCount, uint32* indices, 
 
 	xatlas::PackOptions packOptions;
 	packOptions.padding = 1;
-	packOptions.maxChartSize = 4094; // 4096 - 2 padding
+	packOptions.maxChartSize = 2046; // 2048 - 2 padding
 	packOptions.blockAlign = true;
-	packOptions.texelsPerUnit = 1.0f / texelSize;
+
+	//temporary code
+	if (indexCount == 12 * 3 || indexCount == 3072 * 3)
+	{
+		packOptions.resolution = 1024;
+		packOptions.texelsPerUnit = 0.0f;
+	}
+	else
+	{
+		packOptions.texelsPerUnit = 1.0f / texelSize;
+	}
+
+	
 
 	xatlas::Atlas* atlas = xatlas::Create();
 	xatlas::AddMeshError err = xatlas::AddMesh(atlas, inputMesh, 1);
@@ -187,7 +199,7 @@ void GenerateLightMapUV(Vec3* positions, uint32_t vertexCount, uint32* indices, 
 	const xatlas::Mesh& resultMesh = atlas->meshes[0];
 	
 	uint32 genIndexCount = resultMesh.indexCount;
-	for (int i = 0; i < genIndexCount; i ++)
+	for (uint32 i = 0; i < genIndexCount; i ++)
 	{
 		uint32 newIndex = resultMesh.indexArray[i];
 		uint32_t originIndex = resultMesh.vertexArray[newIndex].xref;

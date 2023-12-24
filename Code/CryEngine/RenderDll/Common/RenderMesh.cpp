@@ -1170,6 +1170,8 @@ size_t CRenderMesh::SetMesh_Int(CMesh &mesh, int nSecColorsSetOffset, uint32 fla
 
   m_fGeometricMeanFaceArea = mesh.m_geometricMeanFaceArea;
 
+  m_nLightMapSize = mesh.m_nLightMapSize;//TanGram:GIBaker:LightMapGBuffer
+
   //////////////////////////////////////////////////////////////////////////
   // Initialize Render Chunks.
   //////////////////////////////////////////////////////////////////////////
@@ -1788,6 +1790,7 @@ IIndexedMesh *CRenderMesh::GetIndexedMesh(IIndexedMesh *pIdxMesh)
   pIdxMesh->SetTangentCount(m_nVerts);
   pIdxMesh->SetIndexCount(m_nInds);
   pIdxMesh->SetSubSetCount(m_Chunks.size());
+  pIdxMesh->SetLightMapSize(m_nLightMapSize); // TanGram:GIBaker:LightMapUV
 
   strided_pointer<Vec3> pVtx;
   strided_pointer<SPipTangents> pTangs;

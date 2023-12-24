@@ -3445,6 +3445,7 @@ bool CLoaderCGF::LoadCompiledMeshChunk(CNodeCGF* pNode, IChunkFile::ChunkDesc* p
 	}
 
 	mesh.m_bbox = AABB(bboxMin, bboxMax);
+	mesh.m_nLightMapSize = chunk.nlightmapSize;//TanGram:GIBaker:LightMapUV
 
 	std::vector<std::vector<uint16>> globalBonesPerSubset;
 

@@ -1,39 +1,22 @@
 #pragma once
-
 #include "../GraphicsPipeline/Common/GraphicsPipelineStage.h"
 #include "../GraphicsPipeline/Common/GraphicsPipelineStateSet.h"
 #include "../GraphicsPipeline/Common/SceneRenderPass.h"
 #include "../GraphicsPipeline/Common/FullscreenPass.h"
 #include "../GraphicsPipeline/Common/UtilityPasses.h"
-
-struct SAtlasGeometry
-{
-	SStreamInfo m_posStream;
-	SStreamInfo m_normStream;
-	SStreamInfo m_2uStream;
-	SStreamInfo m_indexStream;
-
-	uint32 m_nVertexCount = 0;
-	uint32 m_nIndexCount = 0;
-};
-
-struct SAtlasBakeInformation
-{
-	std::vector<SAtlasGeometry>m_atlasGeometries;
-	_smart_ptr<CTexture> m_pPosTex;
-	_smart_ptr<CTexture> m_pFaceNormalTex;
-	_smart_ptr<CTexture> m_pShadingNormalTex;
-};
+#include "GIBakerCommon.h"
 
 class CLightMapGBufferGenerator
 {
 public:
-	void Init();
+	void Init(uint32 constantBufferNum, SBakerConfig bakerConfig);
+
 	void GenerateLightMapGBuffer(std::vector<SAtlasBakeInformation>& atlasBakeInfomation);
 	void ReleaseResource();
 private:
 	void GenerateGraphicsPSO();
 	
+	std::vector<CConstantBufferPtr>constantBuffers;
 
 	CDeviceGraphicsPSOPtr m_graphicsPSO;
 	CDeviceResourceLayoutPtr m_pResourceLayout;
@@ -42,6 +25,10 @@ private:
 	
 	CPrimitiveRenderPass         m_lightMapGBufferPass;
 
+	std::vector<SCompiledRenderPrimitive> primitives;
+
 	bool bPsoGenerated = false;
+
+	SBakerConfig m_bakerConfig;
 };
 

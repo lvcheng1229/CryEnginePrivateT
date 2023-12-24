@@ -261,7 +261,7 @@ struct SBufferLayout
 	DXGI_FORMAT   m_eFormat;
 
 	buffer_size_t m_elementCount;
-	uint16        m_elementSize;
+	uint32        m_elementSize; //TanGram:GIBaker:LightRender
 
 	uint32        m_eFlags;           // e.g. CDeviceObjectFactory::BIND_VERTEX_BUFFER
 };

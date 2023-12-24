@@ -622,7 +622,12 @@ struct MESH_CHUNK_DESC_0801
 
 	float texMappingDensity;
 	float geometricMeanFaceArea;
-	int   reserved[31];
+
+	//TanGram:GIBaker:LightMapUV:BEGIN
+	Vec2  nlightmapSize;
+	//TanGram:GIBaker:LightMapUV:END
+
+	int   reserved[29];
 	AUTO_STRUCT_INFO;
 };
 

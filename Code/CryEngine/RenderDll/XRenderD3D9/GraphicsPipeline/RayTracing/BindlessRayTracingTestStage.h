@@ -67,7 +67,7 @@ public:
 
 	CBindlessRayTracingTestStage(CGraphicsPipeline& graphicsPipeline)
 		: CGraphicsPipelineStage(graphicsPipeline)
-		, m_bindlessRayTracingRenderPass(&graphicsPipeline)
+		, m_bindlessRayTracingRenderPass()
 	{
 
 	}

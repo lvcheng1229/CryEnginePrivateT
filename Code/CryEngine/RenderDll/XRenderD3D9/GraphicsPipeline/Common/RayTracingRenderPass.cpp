@@ -1,6 +1,6 @@
 #include "RayTracingRenderPass.h"
 
-CRayTracingRenderPass::CRayTracingRenderPass(CGraphicsPipeline* pGraphicsPipeline)
+CRayTracingRenderPass::CRayTracingRenderPass()
 	: m_dirtyMask(eDirty_All)
 	, m_bCompiled(false)
 	, m_resourceDesc()

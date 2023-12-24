@@ -17,7 +17,7 @@ public:
 	};
 
 
-	CRayTracingRenderPass(CGraphicsPipeline* pGraphicsPipeline);
+	CRayTracingRenderPass();
 
 	void SetTechnique(CShader* pShader, const CCryNameTSCRC& techName, uint64 rtMask);
 	void PrepareResourcesForUse(CDeviceCommandListRef RESTRICT_REFERENCE commandList);
@@ -27,16 +27,18 @@ public:
 
 	void SetNeedBindless(bool needBindless);
 	void SetBuffer(uint32 slot, CGpuBuffer* pBuffer);
+	void SetTexture(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::Default);
 	void SetOutputUAV(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
 	void SetOutputUAV(uint32 slot, CGpuBuffer* pBuffer, ResourceViewHandle resourceViewID = EDefaultResourceViews::UnorderedAccess, ::EShaderStage shaderStages = EShaderStage_RayTracing);
 	void SetConstantBuffer(uint32 slot, CConstantBuffer* pConstantBuffer);
 
+	//temoporary
+	EDirtyFlags              m_dirtyMask;
+
 private:
 
 	EDirtyFlags Compile();
-
 private:
-	EDirtyFlags              m_dirtyMask;
 	CShader*				 m_pShader;
 	CCryNameTSCRC            m_techniqueName;
 	uint64                   m_rtMask;
@@ -62,6 +64,11 @@ inline void CRayTracingRenderPass::SetMaxPipelineRayRecursionDepth(uint32 depth)
 inline void CRayTracingRenderPass::SetNeedBindless(bool needBindless)
 {
 	m_needBindless = needBindless;
+}
+
+inline void CRayTracingRenderPass::SetTexture(uint32 slot, CTexture* pTexture, ResourceViewHandle resourceViewID)
+{
+	m_resourceDesc.SetTexture(slot, pTexture, resourceViewID, EShaderStage_RayTracing);
 }
 
 inline void CRayTracingRenderPass::SetBuffer(uint32 slot, CGpuBuffer* pBuffer)

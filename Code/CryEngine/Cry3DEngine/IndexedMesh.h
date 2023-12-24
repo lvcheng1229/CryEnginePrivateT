@@ -101,6 +101,11 @@ public:
 	{
 		CMesh::ReallocStream(LIGHTMAPUV, nNewCount);
 	}
+
+	virtual void SetLightMapSize(Vec2i nLightMapSize)override
+	{
+		m_nLightMapSize = nLightMapSize;
+	}
 	//TanGram:GIBaker:LightMapUV:END
 
 	virtual int GetTangentCount() const

@@ -892,6 +892,8 @@ public:
 	int						 m_nLightMapUVCount; //TanGram:GIBaker:LightMapUV
 	int                      m_streamSize[LAST_STREAM];
 
+	Vec2					 m_nLightMapSize; // TanGram:GIBaker:LightMapUV
+
 	//! Bounding box.
 	AABB m_bbox;
 
@@ -970,6 +972,7 @@ public:
 
 		m_nSharedStreamMask = 0;
 
+		m_nLightMapSize = Vec2(0, 0);//TanGram:GIBaker:LightMapUV
 		m_texMappingDensity = 0.0f;
 		m_geometricMeanFaceArea = 0.0f;
 		m_numMorphs = 0;
@@ -1303,6 +1306,7 @@ public:
 		}
 		m_bbox = mesh.m_bbox;
 		m_subsets = mesh.m_subsets;
+		m_nLightMapSize = mesh.m_nLightMapSize;//TanGram:GIBaker:LightMapUV
 		m_texMappingDensity = mesh.m_texMappingDensity;
 		m_geometricMeanFaceArea = mesh.m_geometricMeanFaceArea;
 
@@ -2047,6 +2051,7 @@ struct IIndexedMesh
 	//TanGram:GIBaker:LightMapUV:BEGIN
 	virtual int GetLightMapUVCount() const = 0;
 	virtual void SetLightMapUVCount(int nNewCount) = 0;
+	virtual void SetLightMapSize(Vec2i nLightMapSize) = 0;
 	//TanGram:GIBaker:LightMapUV:END
 
 	//! Return number of allocated tangents.

@@ -341,6 +341,7 @@ public:
 
 	//TanGram:GIBaker:LightMapGBuffer:BEGIN
 	static CShader*				 s_shLightMapGBuffer;
+	static CShader*				 s_shLightMapRenderer;
 	//TanGram:GIBaker:LightMapGBuffer:END
 
 	static CShader*              s_shHDRPostProcess;

@@ -680,6 +680,7 @@ int CSaverCGF::SaveNodeMesh(
 		chunk.nSubsets = mesh.GetSubSetCount();
 		chunk.bboxMin = mesh.m_bbox.min;
 		chunk.bboxMax = mesh.m_bbox.max;
+		chunk.nlightmapSize = mesh.m_nLightMapSize;//TanGram:GIBaker:LightMapUV
 	}
 	else
 	{

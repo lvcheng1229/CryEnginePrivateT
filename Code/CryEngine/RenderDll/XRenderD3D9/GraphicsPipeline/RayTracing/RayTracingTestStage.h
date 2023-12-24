@@ -12,7 +12,7 @@ public:
 
 	CRayTracingTestStage(CGraphicsPipeline& graphicsPipeline)
 		: CGraphicsPipelineStage(graphicsPipeline)
-		, m_rayTracingRenderPass(&graphicsPipeline)
+		, m_rayTracingRenderPass()
 	{
 
 	}
