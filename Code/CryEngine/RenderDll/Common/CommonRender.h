@@ -167,6 +167,8 @@ enum EReservedTextureSlot
 	EReservedTextureSlot_ParticlePositionStream         = 35,
 	EReservedTextureSlot_ParticleAxesStream             = 36,
 	EReservedTextureSlot_ParticleColorSTStream          = 37,
+
+	EReservedTextureSlot_LightMap						= 50,
 };
 
 ////////////////////////////////////////////////////////////////////////////

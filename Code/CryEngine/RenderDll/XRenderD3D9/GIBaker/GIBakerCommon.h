@@ -25,6 +25,8 @@ struct SGIMeshDescription
 
 	SMeshParam m_meshParam;
 	SLightMapParam m_lightMapParam;
+
+	IStatObj* m_statObj;
 };
 
 struct SGIMeshBufferHandles

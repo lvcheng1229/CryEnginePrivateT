@@ -254,6 +254,8 @@ typedef void (*RenderFunc)(void);
 // SF implementation enabled
 #define RENDERER_SUPPORT_SCALEFORM 1
 
+#define ENABLE_LIGHTMAP_DEBUG 1
+
 // windows desktop API available for usage
 #if CRY_PLATFORM_WINDOWS
 	#define WINDOWS_DESKTOP_API

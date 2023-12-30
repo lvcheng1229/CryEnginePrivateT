@@ -1085,6 +1085,8 @@ void CShaderMan::mfInitGlobal(void)
 				g_HWSR_MaskBit[HWSR_PROJECTION_MULTI_RES] = gb->m_Mask;
 			else if (gb->m_ParamName == "%_RT_PROJECTION_LENS_MATCHED")
 				g_HWSR_MaskBit[HWSR_PROJECTION_LENS_MATCHED] = gb->m_Mask;
+			else if (gb->m_ParamName == "%_RT_LIGHTMAP")
+				g_HWSR_MaskBit[HWSR_LIGHTMAP] = gb->m_Mask;//TanGram:GIBaker:RunTime
 			else
 				assert(0);
 		}

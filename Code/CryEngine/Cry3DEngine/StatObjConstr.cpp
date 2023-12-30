@@ -81,6 +81,12 @@ void CStatObj::Init()
 
 	m_fGeometricMeanFaceArea = 0.f;
 	m_fLodDistance = 0.0f;
+
+	//TanGram:GIBaker:RunTime:BEGIN
+	m_lightMapScale.set(0, 0);
+	m_lightMapOffset.set(0, 0);
+	//TanGram:GIBaker:RunTime:END
+
 	m_depthSortOffset.Set(0, 0, 0);
 
 	m_pRenderMesh = 0;

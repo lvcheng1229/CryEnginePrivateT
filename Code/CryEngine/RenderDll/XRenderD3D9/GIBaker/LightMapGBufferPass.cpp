@@ -1,13 +1,30 @@
 #include "LightMapGBufferPass.h"
 #include "../GraphicsPipeline/Common/GraphicsPipeline.h"
 
-void CLightMapGBufferGenerator::Init(uint32 constantBufferNum, SBakerConfig bakerConfig)
+void CLightMapGBufferGenerator::Init(uint32 constantBufferNum, SBakerConfig bakerConfig, std::vector<SAtlasBakeInformation>& atlasBakeInfomation)
 {
 	for (uint32 index = 0; index < constantBufferNum; index++)
 	{
 		CConstantBufferPtr m_pPerObjCB = gcpRendD3D->m_DevBufMan.CreateConstantBuffer(sizeof(SMeshParam));
 		constantBuffers.push_back(m_pPerObjCB);
 	}
+
+	static const std::string posTexName("$LightMapGBufferPos");
+	static const std::string faceNormalTexName("$LightMapGBufferFaceNormal");
+	static const std::string shadingNormalTexName("$LightMapGBufferShadingNormal");
+
+	for (uint32 index = 0; index < atlasBakeInfomation.size(); index++)
+	{
+		const std::string posTexNameSub = posTexName + std::to_string(index);
+		const std::string faceNormalTexNameSub = faceNormalTexName + std::to_string(index);
+		const std::string shadingNormalTexNameSub = shadingNormalTexName + std::to_string(index);
+
+		SAtlasBakeInformation& atlasBakeInformation = atlasBakeInfomation[index];
+		atlasBakeInformation.m_pPosTex = CTexture::GetOrCreateRenderTarget(posTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0, 0.0, 0.0, 0.0), ETEX_Type::eTT_2D, FT_DONT_RELEASE, ETEX_Format::eTF_R32G32B32A32F);
+		atlasBakeInformation.m_pFaceNormalTex = CTexture::GetOrCreateRenderTarget(faceNormalTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0, 0.0, 0.0, 0.0), ETEX_Type::eTT_2D, FT_DONT_RELEASE, ETEX_Format::eTF_R32G32B32A32F);
+		atlasBakeInformation.m_pShadingNormalTex = CTexture::GetOrCreateRenderTarget(shadingNormalTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0, 0.0, 0.0, 0.0), ETEX_Type::eTT_2D, FT_DONT_RELEASE, ETEX_Format::eTF_R32G32B32A32F);
+	}
+	
 
 	m_bakerConfig = bakerConfig;
 }
@@ -56,9 +73,7 @@ void CLightMapGBufferGenerator::GenerateGraphicsPSO()
 
 void CLightMapGBufferGenerator::GenerateLightMapGBuffer(std::vector<SAtlasBakeInformation>& atlasBakeInfomation)
 {
-	static const std::string posTexName("$LightMapGBufferPos");
-	static const std::string faceNormalTexName("$LightMapGBufferFaceNormal");
-	static const std::string shadingNormalTexName("$LightMapGBufferShadingNormal");
+
 
 	uint32 totalPrimitvie = 0;
 	for (uint32 index = 0; index < atlasBakeInfomation.size(); index++)
@@ -74,15 +89,8 @@ void CLightMapGBufferGenerator::GenerateLightMapGBuffer(std::vector<SAtlasBakeIn
 	for (uint32 index = 0; index < atlasBakeInfomation.size(); index++)
 	{
 		D3DViewPort viewport = { 0.0, 0.0, static_cast<float>(m_bakerConfig.m_nUsedAtlasSize.x), static_cast<float>(m_bakerConfig.m_nUsedAtlasSize.y),0.0, 1.0 };
-
-		const std::string posTexNameSub = posTexName + std::to_string(index);
-		const std::string faceNormalTexNameSub = faceNormalTexName + std::to_string(index);
-		const std::string shadingNormalTexNameSub = shadingNormalTexName + std::to_string(index);
 		
 		SAtlasBakeInformation& atlasBakeInformation = atlasBakeInfomation[index];
-		atlasBakeInformation.m_pPosTex = CTexture::GetOrCreateRenderTarget(posTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0,0.0,0.0,0.0),ETEX_Type::eTT_2D, FT_DONT_RELEASE,ETEX_Format::eTF_R32G32B32A32F);
-		atlasBakeInformation.m_pFaceNormalTex = CTexture::GetOrCreateRenderTarget(faceNormalTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0,0.0,0.0,0.0),ETEX_Type::eTT_2D, FT_DONT_RELEASE,ETEX_Format::eTF_R32G32B32A32F);
-		atlasBakeInformation.m_pShadingNormalTex = CTexture::GetOrCreateRenderTarget(shadingNormalTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0,0.0,0.0,0.0),ETEX_Type::eTT_2D, FT_DONT_RELEASE,ETEX_Format::eTF_R32G32B32A32F);
 
 		m_lightMapGBufferPass.SetRenderTarget(0, atlasBakeInformation.m_pPosTex);
 		m_lightMapGBufferPass.SetRenderTarget(1, atlasBakeInformation.m_pFaceNormalTex);

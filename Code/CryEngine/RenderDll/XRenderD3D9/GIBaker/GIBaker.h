@@ -16,7 +16,7 @@ public:
 	virtual void AddPointLight() override;
 	virtual void AddMesh(IStatObj* inputStatObj, SMeshParam meshParam) override;
 	virtual void Bake() override;
-
+	virtual void DirtyResource();
 private:
 
 	void PackMeshInToAtlas();
@@ -30,6 +30,9 @@ private:
 
 	std::vector<SGIMeshDescription> m_giMeshArray;
 	std::vector<SAtlasBakeInformation> m_atlasBakeInfomation;
+
+	std::vector<Vec4>m_giLightMapOffsetAndBias;
+
 	CLightMapGBufferGenerator m_lightMapGBufferGenerator;
 	CLightMapRenderer m_lightMapRenderer;
 

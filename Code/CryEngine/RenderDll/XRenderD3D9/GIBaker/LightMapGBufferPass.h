@@ -9,7 +9,7 @@
 class CLightMapGBufferGenerator
 {
 public:
-	void Init(uint32 constantBufferNum, SBakerConfig bakerConfig);
+	void Init(uint32 constantBufferNum, SBakerConfig bakerConfig, std::vector<SAtlasBakeInformation>& atlasBakeInfomation);
 
 	void GenerateLightMapGBuffer(std::vector<SAtlasBakeInformation>& atlasBakeInfomation);
 	void ReleaseResource();

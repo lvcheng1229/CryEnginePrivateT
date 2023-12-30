@@ -203,6 +203,12 @@ public:
 	int m_nRenderMatIds;
 	float m_fGeometricMeanFaceArea;
 	float m_fLodDistance;
+
+	//TanGram:GIBaker:RunTime:BEGIN
+	Vec2 m_lightMapScale;
+	Vec2 m_lightMapOffset; 
+	//TanGram:GIBaker:RunTime:END
+
 	Vec3 m_depthSortOffset;
 
 	// Default material.
@@ -321,13 +327,14 @@ private:
 
 	CGeomExtents m_Extents;           // Cached extents for random pos generation.
 
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Special AI/Physics parameters.
 	//////////////////////////////////////////////////////////////////////////
 	float m_aiVegetationRadius;
 	float m_phys_mass;
 	float m_phys_density;
-
 	//////////////////////////////////////////////////////////////////////////
 	// used only in the editor
 	//////////////////////////////////////////////////////////////////////////
@@ -410,6 +417,14 @@ public:
 
 	virtual float            GetAIVegetationRadius() const final       { return m_aiVegetationRadius; }
 	virtual void             SetAIVegetationRadius(float radius) final { m_aiVegetationRadius = radius; }
+
+	//TanGram:GIBaker:RunTime:BEGIN
+	virtual void		  SetLightMapScaleAndOffset(Vec4 scaleOffset)final 
+	{ 
+		m_lightMapScale = Vec2(scaleOffset.x, scaleOffset.y);
+		m_lightMapOffset = Vec2(scaleOffset.z, scaleOffset.w);
+	};
+	//TanGram:GIBaker:RunTime:END
 
 	//! Refresh object ( reload shaders or/and object geometry )
 	virtual void Refresh(int nFlags) final;

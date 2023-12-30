@@ -592,6 +592,12 @@ pixout_gbuffer Common_ZPassPS(vert2fragZ IN)
 		#endif
   #endif
 
+	//TanGram:GIBaker:RunTime:BEGIN
+#if %_RT_LIGHTMAP
+	OUT.GBufferA = GetTexture2D(lightmapTex, ssPointWrap, IN.baseTC.xy);
+	//OUT.GBufferA = GetTexture2D(normalsTex, ssPointWrap, IN.baseTC.xy);
+#endif
+	//TanGram:GIBaker:RunTime:END
 	return OUT;
 }
 

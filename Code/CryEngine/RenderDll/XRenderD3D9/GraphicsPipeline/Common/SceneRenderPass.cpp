@@ -13,6 +13,7 @@
 #include <iterator>
 #include <vector>
 
+bool bLightMapLayoutInit = false;
 int CSceneRenderPass::s_recursionCounter = 0;
 CDeviceResourceSetDesc* CSceneRenderPass::s_pDefaultMaterialBindPoints = nullptr;
 CDeviceResourceSetDesc* CSceneRenderPass::s_pDefaultDrawExtraRL = nullptr;
@@ -69,6 +70,13 @@ void CSceneRenderPass::Initialize()
 			s_pDefaultDrawExtraRS = GetDeviceObjectFactory().CreateResourceSet();
 			s_pDefaultDrawExtraRS->Update(*s_pDefaultDrawExtraRL);
 		}
+	}
+
+	if (CRendererResources::s_ptexBlack && bLightMapLayoutInit == false)
+	{
+		s_pDefaultDrawExtraRL->SetTexture(EReservedTextureSlot_LightMap, CRendererResources::s_ptexBlack, EDefaultResourceViews::Default, EShaderStage_Pixel);
+		s_pDefaultDrawExtraRS->Update(*s_pDefaultDrawExtraRL);
+		bLightMapLayoutInit = true;
 	}
 }
 

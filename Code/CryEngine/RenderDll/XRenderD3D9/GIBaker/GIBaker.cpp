@@ -59,6 +59,8 @@ void CGIbaker::AddMesh(IStatObj* inputStatObj, SMeshParam meshParam)
 
 	giMeshDescription.m_meshParam = meshParam;
 	giMeshDescription.m_lightMapParam.m_lightMapSize = pIMesh->GetMesh()->m_nLightMapSize;
+
+	giMeshDescription.m_statObj = inputStatObj;
 }
 
 static int NextPowOf2(int x)
@@ -95,6 +97,15 @@ static std::vector<Vec3i> PackRects(const std::vector<Vec2i> sourceLightMapSizes
 		result.push_back(Vec3i(stbrp_rects[i].x, stbrp_rects[i].y, stbrp_rects[i].was_packed != 0 ? 1 : 0));
 	}
 	return result;
+}
+
+void CGIbaker::DirtyResource()
+{
+	for (uint32 index = 0; index < m_giMeshArray.size(); index++)
+	{
+		SGIMeshDescription& giMeshDesc = m_giMeshArray[index];
+		giMeshDesc.m_statObj->SetLightMapScaleAndOffset(giMeshDesc.m_meshParam.m_lightMapScaleAndBias);
+	}
 }
 
 void CGIbaker::PackMeshInToAtlas()
@@ -194,7 +205,8 @@ void CGIbaker::PackMeshInToAtlas()
 
 		Vec2 scale = Vec2(giMeshDesc.m_lightMapParam.m_lightMapSize) / Vec2(bestAtlasSize);
 		Vec2 bias = Vec2(giMeshDesc.m_lightMapParam.m_LightMapOffset) / Vec2(bestAtlasSize);
-		giMeshDesc.m_meshParam.m_lightMapScaleAndBias = Vec4(scale.x, scale.y, bias.x, bias.y);
+		Vec4 scaleAndBias = Vec4(scale.x, scale.y, bias.x, bias.y);
+		giMeshDesc.m_meshParam.m_lightMapScaleAndBias = scaleAndBias;
 	}
 
 	m_config.m_nUsedAtlasSize = bestAtlasSize;
@@ -246,7 +258,7 @@ void CGIbaker::GenerateBufferHandle()
 	}
 
 	
-	m_lightMapGBufferGenerator.Init(m_giMeshArray.size(), m_config);
+	m_lightMapGBufferGenerator.Init(m_giMeshArray.size(), m_config, m_atlasBakeInfomation);
 	m_lightMapRenderer.InitScene(m_atlasBakeInfomation, m_config);
 
 	bInit = true;
@@ -276,10 +288,15 @@ void CGIbaker::Bake()
 			{
 				this->PackMeshInToAtlas();
 				this->GenerateBufferHandle();
+				for (uint32 index = 0; index < m_atlasBakeInfomation.size(); index++)
+				{
+					d3dRender->GetGIData()->AddLightMapTextures(m_atlasBakeInfomation[index].m_pResultTex);
+				}
 			}
 
 			this->GenerateLightMapGBuffer();
 			this->RenderLightMap();
 			this->RealseResource();
+			this->DirtyResource();
 		});
 }

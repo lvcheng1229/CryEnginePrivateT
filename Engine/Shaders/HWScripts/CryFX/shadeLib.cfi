@@ -10,7 +10,8 @@ SMOOTHNESSMAP
 DETAILMAP
 SCENEDEPTHMAP
 
-
+//TanGram:GIBaker:LightMap:RunTime
+LIGHTMAP
 
 // Deferred Shading Samplers /////////////
 
@@ -337,7 +338,7 @@ half4 Decode7E3F(in half4 color)
 	float3 e  = floor(me);
 	float3 m  = frac(me);	
 		
-	color.xyz = (e == 0.0f) ? 2.0f * m : (1.0f+m) * exp2(e);
+	color.xyz = select((e == 0.F), 2.F * m, (1.F + m) * exp2(e));
 	color.xyz *= 0.125f;
 
 	return color;

@@ -1143,6 +1143,13 @@ pixout DebugGBufferPS( vtxOut IN )
 		else if (maxComp <= 0.05 && maxComp - minComp > 0.005) OUT.Color.xyzw = float4( 1, 0, 0.5, 0.5 );
 		else OUT.Color = float4( 0.1, 0.1, 0.1, 0.8 );
 	}
+
+	//TanGram:GIBaker:RunTime:TemporaryDebug:BEGIN
+	else if (DebugViewMode.x == 10)
+	{
+		OUT.Color = float4(GetTexture2D( GBufDBG_Norms, GBufDBG_Sampler, IN.baseTC.xy ).xyz,1.0);
+	}
+	//TanGram:GIBaker:RunTime:TemporaryDebug:END
 	
   return OUT;
 }

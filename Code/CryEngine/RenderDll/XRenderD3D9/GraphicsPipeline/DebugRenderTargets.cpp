@@ -239,7 +239,7 @@ void CDebugRenderTargetsStage::OnShowRenderTargetsCmd(SDebugRenderTargetInfo& de
 
 void CDebugRenderTargetsStage::Execute()
 {
-	if (CRendererCVars::CV_r_DeferredShadingDebugGBuffer >= 1 && CRendererCVars::CV_r_DeferredShadingDebugGBuffer <= 9)
+	if (CRendererCVars::CV_r_DeferredShadingDebugGBuffer >= 1 && CRendererCVars::CV_r_DeferredShadingDebugGBuffer <= 10/*TanGram:GIBaker:RunTime*/)
 	{
 		ResetRenderTargetList();
 

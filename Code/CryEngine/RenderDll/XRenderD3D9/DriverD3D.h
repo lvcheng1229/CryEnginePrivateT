@@ -30,6 +30,10 @@ struct SGraphicsPipelinePassContext;
 #include "renderdoc_app.h"//TanGram:RenderDoc
 #include "NGFX_Injection.h"//TanGram:GIBaker:LightMapGBuffer
 
+#if ENABLE_LIGHTMAP_DEBUG
+#include "GIBaker/GIData.h"//TanGram:GIBaker:LightMapDebug
+#endif
+
 #if defined(DX11_ALLOW_D3D_DEBUG_RUNTIME)
 	#include "D3DDebug.h"
 #endif
@@ -652,6 +656,9 @@ public:
 	//TanGram:GIBaker:LightMapGBuffer:BEGIN
 	virtual void BeginNSightCapture();
 	//TanGram:GIBaker:LightMapGBuffer:END
+#if ENABLE_LIGHTMAP_DEBUG
+	CGIData*	GetGIData();//TanGram:GIBaker:LightMapGBuffer
+#endif 
 
 	virtual IGraphicsDeviceConstantBufferPtr           CreateGraphiceDeviceConstantBuffer() final;
 

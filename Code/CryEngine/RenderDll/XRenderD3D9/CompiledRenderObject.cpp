@@ -392,6 +392,25 @@ void CCompiledRenderObject::CompilePerInstanceCB(CRenderObject* pRenderObject, b
 //////////////////////////////////////////////////////////////////////////
 void CCompiledRenderObject::CompilePerDrawExtraResources(CRenderObject* pRenderObject, CRenderView* pRenderView)
 {
+	if (pRenderObject->m_ObjFlags & ERenderObjectFlags::FOB_LIGHTMAP)
+	{
+		//TanGram:GIBaker:RunTime:BEGIN
+		CDeviceResourceSetDesc perInstanceExtraResources(CSceneRenderPass::GetDefaultDrawExtraResourceLayout(), nullptr, nullptr);
+		_smart_ptr<CTexture> lightMapTex = gcpRendD3D->GetGIData()->GetLightMapTexture(0);
+		if (lightMapTex)
+		{
+			perInstanceExtraResources.SetTexture(EReservedTextureSlot_LightMap, lightMapTex.get(), EDefaultResourceViews::Default, EShaderStage::EShaderStage_Pixel);
+		}
+		else
+		{
+			perInstanceExtraResources.SetTexture(EReservedTextureSlot_LightMap, CRendererResources::s_ptexBlack, EDefaultResourceViews::Default, EShaderStage::EShaderStage_Pixel);
+		}
+		m_perDrawExtraResources = GetDeviceObjectFactory().CreateResourceSet(CDeviceResourceSet::EFlags_ForceSetAllState);
+		m_perDrawExtraResources->Update(perInstanceExtraResources);
+		return;
+		//TanGram:GIBaker:RunTime:END
+	}
+
 	if (!m_bHasTessellation && !pRenderObject->m_data.m_pSkinningData) // only needed for skinning and tessellation at the moment
 	{
 		m_perDrawExtraResources = CSceneRenderPass::GetDefaulDrawExtraResourceSet();
@@ -434,6 +453,8 @@ void CCompiledRenderObject::CompilePerDrawExtraResources(CRenderObject* pRenderO
 		perInstanceExtraResources.SetBuffer(EReservedTextureSlot_AdjacencyInfo, m_pTessellationAdjacencyBuffer, EDefaultResourceViews::Default, EShaderStage_Domain);
 	}
 
+	//TanGram:GIBaker:RunTime
+	perInstanceExtraResources.SetTexture(EReservedTextureSlot_LightMap, CRendererResources::s_ptexBlack, EDefaultResourceViews::Default, EShaderStage::EShaderStage_Pixel);
 	m_perDrawExtraResources = GetDeviceObjectFactory().CreateResourceSet(CDeviceResourceSet::EFlags_ForceSetAllState);
 	m_perDrawExtraResources->Update(perInstanceExtraResources);
 }
@@ -588,6 +609,10 @@ bool CCompiledRenderObject::Compile(EObjectCompilationOptions compilationOptions
 		CompilePerDrawExtraResources(pRenderObject, pRenderView);
 		m_compilationDirtyFlags[passType] &= ~eObjCompilationOption_PerDrawExtraResources;
 	}
+	else
+	{
+		assert(false);
+	}
 
 	// Data may come in later
 	if (!m_perDrawCB || !m_perDrawExtraResources || !m_perDrawExtraResources->IsValid())
@@ -669,6 +694,13 @@ bool CCompiledRenderObject::Compile(EObjectCompilationOptions compilationOptions
 		{
 			psoDescription.objectRuntimeMask |= g_HWSR_MaskBit[HWSR_SPRITE];      // Enable flag to output alpha in G-Buffer shader
 		}
+
+		//TanGram:GIBaker:RunTime:BEGIN
+		if ((pRenderObject->m_ObjFlags & ERenderObjectFlags::FOB_LIGHTMAP) || CRenderer::CV_r_DeferredShadingDebugGBuffer == 10)
+		{
+			psoDescription.objectRuntimeMask |= g_HWSR_MaskBit[HWSR_LIGHTMAP];
+		}
+		//TanGram:GIBaker:RunTime:END
 
 		if (!pRenderView->GetGraphicsPipeline()->CreatePipelineStates(m_pso, psoDescription, pResources->m_pipelineStateCache.get()))
 		{

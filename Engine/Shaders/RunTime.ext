@@ -1327,3 +1327,12 @@ Property
   Mask = 0x4000000000000000
   Precache = HDRPostProcessPS
 }
+
+Property
+{
+  Name = %_RT_LIGHTMAP
+  Mask = 0x8000000000000000
+  
+  Precache = ZVS
+  Precache = ZPS
+}

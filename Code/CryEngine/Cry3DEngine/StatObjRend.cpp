@@ -173,6 +173,7 @@ void CStatObj::FillRenderObject(const SRendParams& rParams, IRenderNode* pRender
 	pObj->m_ObjFlags |= rParams.dwFObjFlags;
 	//  SRenderObjData *pObjData = NULL;
 
+
 	if (rParams.nTextureID >= 0)
 		pObj->m_nTextureID = rParams.nTextureID;
 
@@ -1143,6 +1144,17 @@ void CStatObj::RenderInternal(CRenderObject* pRenderObject, hidemask nSubObjectH
 			}
 		}
 	}
+
+	//TanGram:GIBaker:RunTime:BEGIN
+	if (m_lightMapScale.x != 0 || m_lightMapScale.y != 0)
+	{
+		pRenderObject->m_ObjFlags |= FOB_LIGHTMAP;
+	}
+	else
+	{
+		pRenderObject->m_ObjFlags &= ~FOB_LIGHTMAP;
+	}
+	//TanGram:GIBaker:RunTime:END
 
 	if ((m_nFlags & STATIC_OBJECT_COMPOUND) && !m_bMerged)
 	{
