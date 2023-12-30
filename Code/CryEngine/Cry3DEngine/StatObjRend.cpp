@@ -1149,6 +1149,8 @@ void CStatObj::RenderInternal(CRenderObject* pRenderObject, hidemask nSubObjectH
 	if (m_lightMapScale.x != 0 || m_lightMapScale.y != 0)
 	{
 		pRenderObject->m_ObjFlags |= FOB_LIGHTMAP;
+		pRenderObject->SetLightMapParam(m_lightMapScale, m_lightMapOffset);
+		pRenderObject->m_nLightMapIndex = m_nLightmapIndex;
 	}
 	else
 	{

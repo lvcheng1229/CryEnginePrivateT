@@ -121,6 +121,12 @@ struct vert2fragZ
 	float3 HPosPrev : TEXCOORDN;
 #endif
 
+	//TanGram:GIBaker:RunTime:BEGIN
+#if %_RT_LIGHTMAP
+	float2 lightMapUV : TEXCOORDN;
+#endif
+	//TanGram:GIBaker:RunTime:END
+
 #if !%TEMP_TERRAIN && !%SILHOUETTE_PARALLAX_OCCLUSION_MAPPING
 	FRONT_FACE_PS
 #endif

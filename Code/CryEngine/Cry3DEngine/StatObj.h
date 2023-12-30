@@ -207,7 +207,9 @@ public:
 	//TanGram:GIBaker:RunTime:BEGIN
 	Vec2 m_lightMapScale;
 	Vec2 m_lightMapOffset; 
+	int m_nLightmapIndex;
 	//TanGram:GIBaker:RunTime:END
+
 
 	Vec3 m_depthSortOffset;
 
@@ -424,6 +426,11 @@ public:
 		m_lightMapScale = Vec2(scaleOffset.x, scaleOffset.y);
 		m_lightMapOffset = Vec2(scaleOffset.z, scaleOffset.w);
 	};
+
+	virtual void SetLightMapIndex(int lightMapIndex)final
+	{
+		m_nLightmapIndex = lightMapIndex;
+	}
 	//TanGram:GIBaker:RunTime:END
 
 	//! Refresh object ( reload shaders or/and object geometry )

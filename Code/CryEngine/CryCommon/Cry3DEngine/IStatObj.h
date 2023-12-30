@@ -369,7 +369,10 @@ struct IStatObj : IMeshObj, IStreamable
 	virtual float         GetAIVegetationRadius() const = 0;
 	virtual void          SetAIVegetationRadius(float radius) = 0;
 
-	virtual void		  SetLightMapScaleAndOffset(Vec4 scaleOffset) = 0;//TanGram:GIBaker:RunTime
+	//TanGram:GIBaker:RunTime:BEGIN
+	virtual void		  SetLightMapScaleAndOffset(Vec4 scaleOffset) = 0;
+	virtual void		  SetLightMapIndex(int lightMapIndex) = 0;
+	//TanGram:GIBaker:RunTime:END
 
 	//! Set default material for the geometry.
 	//! \param pMaterial Valid pointer to the material.

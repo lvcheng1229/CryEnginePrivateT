@@ -265,6 +265,7 @@ public:
 		Matrix34     m_Matrix;
 		ColorF       m_AmbColor;
 		SBendingData m_Bending;
+		Vec4		 m_lightMapScaleAndOffset;//TanGram:GIBaker:RunTime
 	};
 
 public:
@@ -289,6 +290,13 @@ public:
 		m_II.m_Bending = vbend;
 	}
 
+	//TanGram:GIBaker:RunTime:BEGIN
+	ILINE void SetLightMapParam(const Vec2 lightMapScale, const Vec2 lightMapOffset)
+	{
+		m_II.m_lightMapScaleAndOffset = Vec4(lightMapScale.x, lightMapScale.y, lightMapOffset.x, lightMapOffset.y);
+	}
+	//TanGram:GIBaker:RunTime:END
+
 	ILINE const Matrix34& GetMatrix() const
 	{
 		return m_II.m_Matrix;
@@ -304,6 +312,13 @@ public:
 		return m_II.m_Bending;
 	}
 
+	//TanGram:GIBaker:RunTime:BEGIN
+	Vec4 GetLightMapParam()
+	{
+		return m_II.m_lightMapScaleAndOffset;
+	}
+	//TanGram:GIBaker:RunTime:END
+
 	ERenderObjectFlags m_ObjFlags;     //!< Combination of FOB_ flags.
 
 	float m_fAlpha;                    //!< Object alpha.
@@ -315,6 +330,8 @@ public:
 		float  m_fSort;
 		uint16 m_nSort;
 	};
+
+	uint32 m_nLightMapIndex;	//Tangram:GIbaker:RunTime
 
 	uint32 m_nRTMask;                  //!< Shader runtime modification flags
 	EVertexModifier m_nMDV;            //!< Vertex modifier flags for Shader.
@@ -408,6 +425,11 @@ public:
 		m_II.m_Matrix.SetIdentity();
 		m_II.m_AmbColor = Col_White;
 		m_II.m_Bending = { 0.0f, 0.0f };
+
+		//TanGram:GIBaker:RunTime:BEGIN
+		m_II.m_lightMapScaleAndOffset = Vec4(1.0, 1.0, 0.0, 0.0);
+		m_nLightMapIndex = -1;
+		//TanGram:GIBaker:RunTime:END
 
 		m_editorSelectionID = 0;
 	}

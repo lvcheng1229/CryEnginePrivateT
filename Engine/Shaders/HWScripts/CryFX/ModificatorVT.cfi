@@ -30,7 +30,9 @@ cbuffer CBPerDraw : register(b0)
 	float4    CD_CustomData1;      // [xyzw=ShilouetteColor]
 	// TODO: Should be moved after all the data below
 	float4    CD_CustomData2;      // [x=selectionIDs in debug pass, y=AmbientColor, zw=Not used]
-	
+
+	float4    CD_LightMapScaleAndOffset; //TanGram:GIBaker:RunTime
+
 #if %TEMP_TERRAIN || (%TEMP_VEGETATION && %_RT_BLEND_WITH_TERRAIN_COLOR)
 	float4    CD_BlendTerrainColInfo;
 	float4x4  CD_TerrainLayerInfo;
@@ -219,6 +221,12 @@ struct app2vertCommon
 #if %_RT_ENVIRONMENT_CUBEMAP
 	uint InstIndex : SV_InstanceID;
 #endif
+	
+	//TanGram:GIBaker:RunTime:BEGIN
+#if %_RT_LIGHTMAP
+	float2 lightMapUV:LIGHTMAPUV;
+#endif
+	//TanGram:GIBaker:RunTime:END
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

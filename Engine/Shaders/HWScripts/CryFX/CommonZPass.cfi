@@ -16,6 +16,12 @@ vert2fragZ Common_ZPassVS(app2vertGBuffer IN_common)
 
   app2vertGBuffer IN = IN_common;
 
+	//TanGram:GIBaker:RunTime:BEGIN
+#if %_RT_LIGHTMAP && !%SILHOUETTE_PARALLAX_OCCLUSION_MAPPING
+	OUT.lightMapUV = IN.vertCommon.lightMapUV;
+#endif
+	//TanGram:GIBaker:RunTime:END
+
   streamPos vertPassPos = (streamPos)0;
   streamPos_FromGBuffer(IN, vertPassPos);
 	streamPos vertPassPosPrev = (streamPos) vertPassPos;
@@ -594,7 +600,7 @@ pixout_gbuffer Common_ZPassPS(vert2fragZ IN)
 
 	//TanGram:GIBaker:RunTime:BEGIN
 #if %_RT_LIGHTMAP
-	OUT.GBufferA = GetTexture2D(lightmapTex, ssPointWrap, IN.baseTC.xy);
+	OUT.GBufferA = GetTexture2D(lightmapTex, ssPointWrap, IN.lightMapUV.xy * CD_LightMapScaleAndOffset.xy + CD_LightMapScaleAndOffset.zw);
 	//OUT.GBufferA = GetTexture2D(normalsTex, ssPointWrap, IN.baseTC.xy);
 #endif
 	//TanGram:GIBaker:RunTime:END

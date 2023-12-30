@@ -55,6 +55,7 @@ hlsl_cbuffer_register(PerDrawConstantBuffer_Base, register (b0), 1) // eConstant
 	hlsl_float4(CD_CustomData);
 	hlsl_float4(CD_CustomData1);
 	hlsl_float4(CD_CustomData2);
+	hlsl_float4(CD_LightMapScaleAndOffset); //TanGram:GIBaker:RunTime
 };
 
 hlsl_cbuffer_register(PerDrawConstantBuffer_TeVe, register (b0), 1) // eConstantBufferShaderSlot_PerDraw
@@ -66,6 +67,7 @@ hlsl_cbuffer_register(PerDrawConstantBuffer_TeVe, register (b0), 1) // eConstant
 	// TODO: customdata2 should be added after terrainlayerinfo, make sure a vegetation shader is correctly detected when uploading data to
 	// constant buffer
 	hlsl_float4(CD_CustomData2);
+	hlsl_float4(CD_LightMapScaleAndOffset); //TanGram:GIBaker:RunTime
 
 	hlsl_float4(CD_BlendTerrainColInfo);
 	hlsl_matrix44(CD_TerrainLayerInfo);
@@ -79,6 +81,7 @@ hlsl_cbuffer_register(PerDrawConstantBuffer_Skin, register (b0), 1) // eConstant
 	hlsl_float4(CD_CustomData1);
 	// TODO: customdata2 should be added after WrinklesMask2. Since constant buffer definition is shared with vegetation, we need this here as well
 	hlsl_float4(CD_CustomData2);
+	hlsl_float4(CD_LightMapScaleAndOffset); //TanGram:GIBaker:RunTime
 
 	hlsl_float4(CD_SkinningInfo);
 	hlsl_float4(CD_WrinklesMask0);

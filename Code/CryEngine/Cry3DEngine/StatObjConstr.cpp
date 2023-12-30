@@ -85,6 +85,7 @@ void CStatObj::Init()
 	//TanGram:GIBaker:RunTime:BEGIN
 	m_lightMapScale.set(0, 0);
 	m_lightMapOffset.set(0, 0);
+	m_nLightmapIndex = -1;
 	//TanGram:GIBaker:RunTime:END
 
 	m_depthSortOffset.Set(0, 0, 0);

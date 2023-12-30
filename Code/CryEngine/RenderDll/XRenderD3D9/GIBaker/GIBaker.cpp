@@ -105,6 +105,7 @@ void CGIbaker::DirtyResource()
 	{
 		SGIMeshDescription& giMeshDesc = m_giMeshArray[index];
 		giMeshDesc.m_statObj->SetLightMapScaleAndOffset(giMeshDesc.m_meshParam.m_lightMapScaleAndBias);
+		giMeshDesc.m_statObj->SetLightMapIndex(giMeshDesc.m_lightMapParam.m_LightMapIndex);
 	}
 }
 

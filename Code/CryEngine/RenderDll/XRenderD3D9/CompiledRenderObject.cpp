@@ -338,6 +338,10 @@ void CCompiledRenderObject::CompilePerDrawCB(CRenderObject* pRenderObject, const
 			| (static_cast<uint32>(ambColor.a * 255.0f) & 0xFF);
 		cb->CD_CustomData2.y = alias_cast<float>(ambColorPacked);
 
+		//TanGram:GIBaker:RunTime:BEGIN
+		cb->CD_LightMapScaleAndOffset = pRenderObject->GetLightMapParam();
+		//TanGram:GIBaker:RunTime:END
+
 		UpdatePerDrawCB(cb, sizeof(HLSL_PerDrawConstantBuffer_Base));
 	}
 }
@@ -396,7 +400,7 @@ void CCompiledRenderObject::CompilePerDrawExtraResources(CRenderObject* pRenderO
 	{
 		//TanGram:GIBaker:RunTime:BEGIN
 		CDeviceResourceSetDesc perInstanceExtraResources(CSceneRenderPass::GetDefaultDrawExtraResourceLayout(), nullptr, nullptr);
-		_smart_ptr<CTexture> lightMapTex = gcpRendD3D->GetGIData()->GetLightMapTexture(0);
+		_smart_ptr<CTexture> lightMapTex = gcpRendD3D->GetGIData()->GetLightMapTexture(pRenderObject->m_nLightMapIndex);
 		if (lightMapTex)
 		{
 			perInstanceExtraResources.SetTexture(EReservedTextureSlot_LightMap, lightMapTex.get(), EDefaultResourceViews::Default, EShaderStage::EShaderStage_Pixel);
@@ -696,7 +700,7 @@ bool CCompiledRenderObject::Compile(EObjectCompilationOptions compilationOptions
 		}
 
 		//TanGram:GIBaker:RunTime:BEGIN
-		if ((pRenderObject->m_ObjFlags & ERenderObjectFlags::FOB_LIGHTMAP) || CRenderer::CV_r_DeferredShadingDebugGBuffer == 10)
+		if ((pRenderObject->m_ObjFlags & ERenderObjectFlags::FOB_LIGHTMAP))
 		{
 			psoDescription.objectRuntimeMask |= g_HWSR_MaskBit[HWSR_LIGHTMAP];
 		}

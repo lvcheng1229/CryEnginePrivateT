@@ -24,7 +24,6 @@ void CLightMapGBufferGenerator::Init(uint32 constantBufferNum, SBakerConfig bake
 		atlasBakeInformation.m_pFaceNormalTex = CTexture::GetOrCreateRenderTarget(faceNormalTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0, 0.0, 0.0, 0.0), ETEX_Type::eTT_2D, FT_DONT_RELEASE, ETEX_Format::eTF_R32G32B32A32F);
 		atlasBakeInformation.m_pShadingNormalTex = CTexture::GetOrCreateRenderTarget(shadingNormalTexNameSub.data(), m_bakerConfig.m_nUsedAtlasSize.x, m_bakerConfig.m_nUsedAtlasSize.y, ColorF(0.0, 0.0, 0.0, 0.0), ETEX_Type::eTT_2D, FT_DONT_RELEASE, ETEX_Format::eTF_R32G32B32A32F);
 	}
-	
 
 	m_bakerConfig = bakerConfig;
 }
@@ -73,8 +72,6 @@ void CLightMapGBufferGenerator::GenerateGraphicsPSO()
 
 void CLightMapGBufferGenerator::GenerateLightMapGBuffer(std::vector<SAtlasBakeInformation>& atlasBakeInfomation)
 {
-
-
 	uint32 totalPrimitvie = 0;
 	for (uint32 index = 0; index < atlasBakeInfomation.size(); index++)
 	{
